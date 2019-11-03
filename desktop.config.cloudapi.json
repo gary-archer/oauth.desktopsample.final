@@ -1,0 +1,12 @@
+{
+    "app": {
+        "apiBaseUrl":        "https://api.authguidance-examples.com/api",
+        "debugErrorDetails": false
+    },
+    "oauth": {
+        "authority":         "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_mZ3NBYpTo",
+        "clientId":          "76nlopdg790upkrdhb9512u8ac",
+        "scope":             "openid profile email",
+        "redirectUri":       "x-mycompany-desktopapp:/callback"
+    }
+}

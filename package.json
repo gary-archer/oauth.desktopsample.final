@@ -1,0 +1,44 @@
+{
+  "name": "basicdesktopapp",
+  "version": "2.0.0",
+  "description": "A Desktop App using the AppAuth-JS security library",
+  "main": "built/main.js",
+  "scripts": {
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "buildnative": "node_modules/.bin/electron-rebuild",
+    "build": "rimraf built && tsc && ts-node scripts/build.ts",
+    "start": "ts-node scripts/start.ts",
+    "httpDebug": "cross-env HTTPS_PROXY=http://127.0.0.1:8888 ts-node scripts/start.ts"
+  },
+  "files": [
+    "built/**"
+  ],
+  "keywords": [],
+  "author": "Gary Archer",
+  "license": "ISC",
+  "dependencies": {
+    "@openid/appauth": "^1.2.3",
+    "electron-default-menu": "^1.0.1",
+    "electron-log": "^3.0.5",
+    "jquery": "^3.4.0",
+    "keytar": "^4.3.0",
+    "moment": "^2.24.0",
+    "opener": "^1.5.1",
+    "query-string": "^6.2.0",
+    "username": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/core-js": "^2.5.0",
+    "@types/fs-extra": "^5.0.4",
+    "@types/jquery": "^3.3.29",
+    "cross-env": "^5.2.0",
+    "electron": "^5.0.1",
+    "electron-packager": "^13.1.1",
+    "electron-rebuild": "^1.8.5",
+    "fs-extra": "^7.0.1",
+    "rimraf": "^2.6.3",
+    "ts-node": "^6.2.0",
+    "tslint": "^5.15.0",
+    "typescript": "^3.4.3"
+  }
+}
