@@ -17,4 +17,5 @@
 
 * The [AppAuth-JS Library](https://github.com/openid/AppAuth-JS/blob/master/README.md) is used to implement the Authorization Code Flow (PKCE)
 * The [keytar](https://github.com/atom/node-keytar) library is used by the Desktop App for secure storage of OAuth tokens
-* Okta is used for the Authorization Server
+* AWS Cognito is used as a Cloud Authorization Server
+* AWS API Gateway is used to host our sample OAuth 2.0 Secured API
