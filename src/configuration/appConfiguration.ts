@@ -3,5 +3,4 @@
  */
 export interface AppConfiguration {
     apiBaseUrl: string;
-    debugErrorDetails: boolean;
 }

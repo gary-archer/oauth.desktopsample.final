@@ -1,6 +1,5 @@
 import * as $ from 'jquery';
 import * as QueryString from 'query-string';
-import {AppConfiguration} from '../configuration/appConfiguration';
 import {UIError} from '../plumbing/errors/uiError';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {ErrorFragment} from './errorFragment';
@@ -10,18 +9,10 @@ import {ErrorFragment} from './errorFragment';
  */
 export class LoginRequiredView {
 
-    /*
-     * Dependencies
-     */
     private readonly _authenticator: Authenticator;
-    private readonly _configuration: AppConfiguration;
 
-    /*
-     * Receive dependencies
-     */
-    public constructor(authenticator: Authenticator, configuration: AppConfiguration) {
+    public constructor(authenticator: Authenticator) {
         this._authenticator = authenticator;
-        this._configuration = configuration;
         this._setupCallbacks();
     }
 
@@ -70,7 +61,7 @@ export class LoginRequiredView {
         } catch (e) {
 
             // Report failures
-            const errorView = new ErrorFragment(this._configuration);
+            const errorView = new ErrorFragment();
             errorView.execute(e);
         }
     }
@@ -97,7 +88,7 @@ export class LoginRequiredView {
             $('.signingin').addClass('hide');
 
             // Then render the error details
-            const errorView = new ErrorFragment(this._configuration);
+            const errorView = new ErrorFragment();
             errorView.execute(e);
         }
     }

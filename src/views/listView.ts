@@ -1,23 +1,17 @@
+import {compile} from 'handlebars';
 import * as $ from 'jquery';
 import {Company} from '../entities/company';
 import {HttpClient} from '../plumbing/api/httpClient';
 import {Authenticator} from '../plumbing/oauth/authenticator';
-import {HtmlEncoder} from '../plumbing/utilities/htmlEncoder';
 
 /*
  * The list view takes up the entire screen except for the header
  */
 export class ListView {
 
-    /*
-     * Dependencies
-     */
     private readonly _authenticator: Authenticator;
     private readonly _apiBaseUrl: string;
 
-    /*
-     * Receive dependencies
-     */
     public constructor(authenticator: Authenticator, apiBaseUrl: string) {
         this._authenticator = authenticator;
         this._apiBaseUrl = apiBaseUrl;
@@ -52,38 +46,45 @@ export class ListView {
 
         companies.forEach((company: Company) => {
 
-            // Format fields for display
-            const name = HtmlEncoder.encode(company.name);
-            const formattedTargetUsd = Number(company.targetUsd).toLocaleString();
-            const formattedInvestmentUsd = Number(company.investmentUsd).toLocaleString();
+            // Create a view model
+            const companyViewModel = {
+                id: company.id,
+                name: company.name,
+                formattedTargetUsd: Number(company.targetUsd).toLocaleString(),
+                formattedInvestmentUsd: Number(company.investmentUsd).toLocaleString(),
+                noInvestors: company.noInvestors,
+            };
 
-            // Render the company details
-            const companyDiv = $(`<div class='panel panel-default'>
-                                    <div class='panel-body'>
-                                      <div class='row'>
-                                        <div class='col-xs-1 hide-mobile'>
-                                            <img src='images/${company.id}.svg' />
-                                        </div>
-                                        <div class='col-xs-2 image-padding'>
-                                            ${name}
-                                        </div>
-                                        <div class='col-xs-3 image-padding'>
-                                            <a class='companyLink' data-id=${company.id}>View Transactions</a>
-                                        </div>
-                                        <div class='col-xs-2 amount image-padding'>
-                                            ${formattedTargetUsd}<br/>
-                                        </div>
-                                        <div class='col-xs-2 amount image-padding'>
-                                            ${formattedInvestmentUsd}
-                                        </div>
-                                        <div class='col-xs-2 image-padding'>
-                                            <div class='col-xs-2'>${company.noInvestors}</div>
-                                        </div>
-                                    </div>
-                                  </div>`);
+            // Use Handlebars to compile the HTML and handle dangerous characters securely
+            const htmlTemplate = `<div class='panel panel-default'>
+                                      <div class='panel-body'>
+                                          <div class='row'>
+                                              <div class='col-xs-1'>
+                                                  <img src='images/{{id}}.svg'/>
+                                              </div>
+                                              <div class='col-xs-2 image-padding'>
+                                                  {{name}}
+                                              </div>
+                                              <div class='col-xs-3 image-padding'>
+                                                  <a class='companyLink' data-id={{id}}>View Transactions</a>
+                                              </div>
+                                              <div class='col-xs-2 amount image-padding'>
+                                                  {{formattedTargetUsd}}<br/>
+                                              </div>
+                                              <div class='col-xs-2 amount image-padding'>
+                                                  {{formattedInvestmentUsd}}
+                                              </div>
+                                              <div class='col-xs-2 image-padding'>
+                                                  <div class='col-xs-2'>{{noInvestors}}</div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>`;
+            const renderer = compile(htmlTemplate);
+            const html = renderer(companyViewModel);
 
-            // Update the DOM
-            $('.companyList').append(companyDiv);
+            // Render the data
+            $('.companyList').append(html);
         });
 
         // A click handler will change the view to look at transaction details

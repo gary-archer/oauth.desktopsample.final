@@ -1,34 +1,29 @@
 import {UIError} from './uiError';
 
 /*
- * A class to manage error translation and setting fields before display
+ * A class to handle error processing
  */
 export class ErrorHandler {
 
     /*
      * Return an error based on the exception type or properties
      */
-    public static getFromException(e: any): UIError  {
+    public static getFromException(exception: any): UIError {
 
         // Already handled errors
-        if (e instanceof UIError) {
-            return e;
+        if (exception instanceof UIError) {
+            return exception;
         }
 
         // Create the error
         const error = new UIError(
             'UI',
             'general_exception',
-            'A technical problem was encountered in the UI');
+            'A technical problem was encountered in the UI',
+            exception.stack);
 
         // Set technical details from the received exception
-        error.details = ErrorHandler._getExceptionMessage(e);
-
-        // Include the stack trace of the received exception
-        if (e.stack) {
-            error.addToStackFrames(e.stack);
-        }
-
+        error.details = ErrorHandler._getExceptionMessage(exception);
         return error;
     }
 
@@ -44,29 +39,46 @@ export class ErrorHandler {
     }
 
     /*
-     * Sign in response errors most commonly have OAuth error details
+     * Sign in request errors most commonly mean a CORS error or that the API is unavailable
      */
-    public static getFromOAuthResponse(e: any, errorCode: string): UIError {
+    public static getFromOAuthRequest(exception: any, errorCode: string): UIError {
 
         // Already handled errors
-        if (e instanceof UIError) {
-            return e;
+        if (exception instanceof UIError) {
+            return exception;
         }
 
         // Create the error
         const error = new UIError(
             'Login',
             errorCode,
-            `A technical problem occurred during login processing`);
+            `A technical problem occurred during login processing`,
+            exception.stack);
 
-        // Set technical details
-        error.details = ErrorHandler._getOAuthExceptionMessage(e);
+        // Set technical details from the received exception
+        error.details = ErrorHandler._getOAuthExceptionMessage(exception);
+        return error;
+    }
 
-        // Include the stack trace of the OIDC library
-        if (e.stack) {
-            error.addToStackFrames(e.stack);
+    /*
+     * Sign in response errors most commonly have OAuth error details
+     */
+    public static getFromOAuthResponse(exception: any, errorCode: string): UIError {
+
+        // Already handled errors
+        if (exception instanceof UIError) {
+            return exception;
         }
 
+        // Create the error
+        const error = new UIError(
+            'Login',
+            errorCode,
+            `A technical problem occurred during login processing`,
+            exception.stack);
+
+        // Set technical details from the received exception
+        error.details = ErrorHandler._getOAuthExceptionMessage(exception);
         return error;
     }
 
@@ -84,30 +96,32 @@ export class ErrorHandler {
     /*
      * Return an object for Ajax errors
      */
-    public static getFromApiError(xhr: any, url: string): UIError {
+    public static getFromApiError(exception: any, url: string): UIError {
 
         // Already handled errors
-        if (xhr instanceof UIError) {
-            return xhr;
+        if (exception instanceof UIError) {
+            return exception;
         }
 
         let error = null;
-        if (xhr.status === 0 ) {
+        if (exception.status === 0 ) {
 
             // This status is generally a CORS or availability problem
             error = new UIError(
                 'Network',
                 'api_uncontactable',
-                'A network problem occurred when the UI called the server');
+                'A network problem occurred when the UI called the server',
+                exception.stack);
             error.details = 'API not available or request was not allowed';
 
-        } else if (xhr.status >= 200 && xhr.status <= 299) {
+        } else if (exception.status >= 200 && exception.status <= 299) {
 
             // This status is generally a JSON parsing error
             error = new UIError(
                 'Data',
                 'api_data_error',
-                'A technical problem occurred when the UI received data');
+                'A technical problem occurred when the UI received data',
+                exception.stack);
             error.details = 'Unable to parse data from API response';
 
         } else {
@@ -116,14 +130,19 @@ export class ErrorHandler {
             error = new UIError(
                 'API',
                 'general_api_error',
-                'A technical problem occurred when the UI called the server');
+                'A technical problem occurred when the UI called the server',
+                exception.stack);
             error.details = 'API returned an error response';
 
-            // Override the default  we should have a server response in most cases
-            ErrorHandler._updateFromApiErrorResponse(error, xhr);
+            // Override the default with a server response when received and CORS allows us to read it
+            ErrorHandler._updateFromApiErrorResponse(error, exception);
         }
 
-        error.statusCode = xhr.status;
+        // Set the HTTP status if received
+        if (exception.status) {
+            error.statusCode = exception.status;
+        }
+
         error.url = url;
         return error;
     }
@@ -131,10 +150,10 @@ export class ErrorHandler {
     /*
      * Try to update the default API error with response details
      */
-    private static _updateFromApiErrorResponse(error: UIError, xhr: any): void {
+    private static _updateFromApiErrorResponse(error: UIError, exception: any): void {
 
         // Attempt to read the API error response
-        const apiError = ErrorHandler._readApiJsonResponse(xhr);
+        const apiError = ErrorHandler._readApiJsonResponse(exception);
         if (apiError) {
 
             // Set the code and message, returned for both 4xx and 5xx errors
@@ -153,17 +172,12 @@ export class ErrorHandler {
     /*
      * If the API response is JSON then attempt to parse it into an object
      */
-    private static _readApiJsonResponse(xhr: any): any {
+    private static _readApiJsonResponse(exception: any): any {
 
         try {
-            const contentLength = xhr.getResponseHeader('content-length');
-            if (contentLength && contentLength > 0) {
-
-                const contentType = xhr.getResponseHeader('content-type');
-                if (contentType && contentType.toLowerCase().indexOf('application/json') !== -1) {
-                    return JSON.parse(xhr.responseText);
-                }
-            }
+            // We have to assume that the response is JSON
+            // We cannot read headers content-length and content-type to verify this
+            return JSON.parse(exception.responseText);
 
         } catch (e) {
             console.log(`Malformed JSON received in an API response: ${e}`);
@@ -173,37 +187,36 @@ export class ErrorHandler {
     /*
      * Get the message from an OAuth exception
      */
-    private static _getOAuthExceptionMessage(e: any): string {
+    private static _getOAuthExceptionMessage(exception: any): string {
 
         let oauthError = '';
-        if (e.error) {
-            oauthError = e.error;
-            const description = e.error_description || e.errorDescription;
-            if (description) {
-                oauthError += ` : ${description}`;
+        if (exception.error) {
+            oauthError = exception.error;
+            if (exception.error_description) {
+                oauthError += ` : ${exception.error_description}`;
             }
         }
 
         if (oauthError) {
             return oauthError;
         } else {
-            return ErrorHandler._getExceptionMessage(e);
+            return ErrorHandler._getExceptionMessage(exception);
         }
     }
 
     /*
      * Get the message from an exception and avoid returning [object Object]
      */
-    private static _getExceptionMessage(e: any): string {
+    private static _getExceptionMessage(exception: any): string {
 
-        if (e.message) {
-            return e.message;
+        if (exception.message) {
+            return exception.message;
         } else {
-            const details = e.toString();
+            const details = exception.toString();
             if (details !== {}.toString()) {
                 return details;
             } else {
-                return 'Unable to read error details from exception';
+                return '';
             }
         }
     }

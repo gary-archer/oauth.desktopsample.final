@@ -1,23 +1,13 @@
+import {compile} from 'handlebars';
 import * as $ from 'jquery';
 import * as moment from 'moment';
-import {AppConfiguration} from '../configuration/appConfiguration';
 import {ErrorHandler} from '../plumbing/errors/errorHandler';
 import {UIError} from '../plumbing/errors/uiError';
-import {HtmlEncoder} from '../plumbing/utilities/htmlEncoder';
 
 /*
  * The error fragment shows within a view to render error details
  */
 export class ErrorFragment {
-
-    private readonly _configuration?: AppConfiguration;
-
-    /*
-     * Receive the configuration, which controls whether to render developer details
-     */
-    public constructor(configuration?: AppConfiguration) {
-        this._configuration = configuration;
-    }
 
     /*
      * Clear existing errors
@@ -36,12 +26,13 @@ export class ErrorFragment {
     }
 
     /*
-     * Do the GUI work of handling an error
+     * Do the error rendering given an exception
      */
     public execute(exception: any): void {
 
         // Get the error into an object
         const error = ErrorHandler.getFromException(exception) as UIError;
+
         if (error.errorCode === 'login_required') {
 
             // The login required case is an excepted error that we handle by moving to the login required view
@@ -105,23 +96,20 @@ export class ErrorFragment {
             errorForm.append(this._getErrorSupportRow('Details', error.details));
         }
 
-        // Additional overly technical details shown during development
-        if (this._configuration && this._configuration.debugErrorDetails) {
-
-            // Show URLs that failed
-            if (error.url.length > 0) {
-                errorForm.append(this._getErrorSupportRow('URL', error.url));
-            }
-
-            // Show stack trace details
-            let stack: string = '';
-            error.stackFrames.forEach((f) => {
-                stack += `${HtmlEncoder.encode(f)}<br/>`;
-            });
-            if (stack.length > 0) {
-                errorForm.append(this._getErrorSupportRow('Stack', stack));
-            }
+        if (error.url.length > 0) {
+            errorForm.append(this._getErrorSupportRow('URL', error.url));
         }
+
+        // Stack details that can be shown during development
+        /*
+        let stack: string = '';
+        error.stackFrames.forEach((f) => {
+            stack += `${f}<br/>`;
+        });
+        if (stack.length > 0) {
+            errorForm.append(this._getErrorSupportRow('Stack', stack));
+        }
+        */
     }
 
     /*
@@ -129,15 +117,23 @@ export class ErrorFragment {
      */
     private _getErrorUserMessageRow(userMessage: string): string {
 
-        return `<div class='panel panel-default'>
-                    <div class='panel-body'>
-                        <div class='row errorUserInfo'>
-                            <div class='col-xs-12'>
-                                ${userMessage}
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
+        // Create a view model
+        const errorViewModel = {
+            message: userMessage,
+        };
+
+        // Use Handlebars to compile the HTML and handle dangerous characters securely
+        const htmlTemplate = `<div class='panel panel-default'>
+                                  <div class='panel-body'>
+                                      <div class='row errorUserInfo'>
+                                          <div class='col-xs-12'>
+                                              {{message}}
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>`;
+        const renderer = compile(htmlTemplate);
+        return renderer(errorViewModel);
     }
 
     /*
@@ -145,22 +141,26 @@ export class ErrorFragment {
      */
     private _getErrorSupportRow(title: string, value: any): string {
 
-        let output = value;
-        if (typeof value === 'string') {
-            output = HtmlEncoder.encode(value);
-        }
+        // Create a view model
+        const errorViewModel = {
+            title,
+            value,
+        };
 
-        return `<div class='panel panel-default'>
-                    <div class='panel-body'>
-                        <div class='row errorSupportInfo'>
-                            <div class='col-xs-2'>
-                                ${title}
-                            </div>
-                            <div class='col-xs-10'>
-                                <b>${output}</b>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
+        // Use Handlebars to compile the HTML and handle dangerous characters securely
+        const htmlTemplate = `<div class='panel panel-default'>
+                                  <div class='panel-body'>
+                                      <div class='row errorSupportInfo'>
+                                          <div class='col-xs-2'>
+                                              {{title}}
+                                          </div>
+                                          <div class='col-xs-10'>
+                                              <b>{{value}}</b>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>`;
+        const renderer = compile(htmlTemplate);
+        return renderer(errorViewModel);
     }
 }

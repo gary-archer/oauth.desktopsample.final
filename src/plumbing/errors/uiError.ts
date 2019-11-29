@@ -13,12 +13,11 @@ export class UIError extends Error {
 
     // Additional details that can be shown during development
     private _url: string;
-    private _stackFrames: string[];
 
     /*
      * All types of error supply at least these fields
      */
-     public constructor(area: string, errorCode: string, userMessage: string) {
+     public constructor(area: string, errorCode: string, userMessage: string, stack?: string | undefined) {
 
         super(userMessage);
 
@@ -29,13 +28,14 @@ export class UIError extends Error {
         this._instanceId = 0;
         this._details = '';
         this._url = '';
-        this._stackFrames = [];
 
         // Ensure that instanceof works
         Object.setPrototypeOf(this, new.target.prototype);
 
-        // Initialise the stack
-        this.addToStackFrames(this.stack);
+        // Store the stack of the original exception if provided
+        if (stack) {
+            this.stack = stack;
+        }
      }
 
     public get area(): string {
@@ -82,18 +82,20 @@ export class UIError extends Error {
         this._url = value;
     }
 
-    public get stackFrames(): string[] {
-        return this._stackFrames;
-    }
-
     /*
-     * Add details to the stack data, from ourself or downstream errors
+     * Output the stack frames in a readable format
      */
-    public addToStackFrames = (stack: any) => {
-        const items = stack.split('\n').map((x: string) => x.trim()) as string[];
-        items.forEach((i) => {
-            this._stackFrames.push(i);
-        });
+    public get stackFrames(): string[] {
+
+        const frames: string[] = [];
+        if (this.stack) {
+            const items = this.stack.split('\n').map((x: string) => x.trim()) as string[];
+            items.forEach((i) => {
+                frames.push(i);
+            });
+        }
+
+        return frames;
     }
 
     /*

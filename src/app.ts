@@ -11,10 +11,6 @@ import {Router} from './views/router';
  */
 class App {
 
-    /*
-     * Global objects
-     */
-
     private _authenticator?: Authenticator;
     private _router?: Router;
     private _configuration?: Configuration;
@@ -178,7 +174,7 @@ class App {
      * Get the error view
      */
     private _getErrorView(): ErrorFragment {
-        return new ErrorFragment(this._configuration ? this._configuration!.app : undefined);
+        return new ErrorFragment();
     }
 
     /*

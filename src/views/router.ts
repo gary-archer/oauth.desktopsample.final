@@ -27,6 +27,8 @@ export class Router {
     public constructor(configuration: AppConfiguration, authenticator: Authenticator) {
         this._configuration = configuration;
         this._authenticator = authenticator;
+
+        // Switch to the loading state on application startup
         this._loadingState = false;
     }
 
@@ -36,17 +38,15 @@ export class Router {
     public async executeView(): Promise<void> {
 
         // Switch to the loading state while loading a view
-        this._updateControlsDuringLoad();
-
-        // Get the old view
-        const oldView = this._currentView;
-
-        // Move to the new view
         const hashData = QueryString.parse(location.hash);
+        this._updateControlsDuringLoad(hashData);
+
+        // Get URL details
+        const oldView = this._currentView;
         if ('loginrequired' in hashData) {
 
             // If the user needs to login then run the login required view
-            this._currentView = new LoginRequiredView(this._authenticator, this._configuration);
+            this._currentView = new LoginRequiredView(this._authenticator);
 
         } else {
 
@@ -77,7 +77,7 @@ export class Router {
         await this._currentView.execute();
 
         // Enable buttons unless logged out
-        this._updateControlsAfterLoad();
+        this._updateControlsAfterLoad(hashData);
 
         // After logging in we need to get and display updated user info
         if (oldView instanceof LoginRequiredView)  {
@@ -110,7 +110,7 @@ export class Router {
     /*
      * Update controls during busy processing and switch to a loading state
      */
-    private _updateControlsDuringLoad(): void {
+    private _updateControlsDuringLoad(hashData: any): void {
 
         // Disable buttons while the view loads
         if (!this._loadingState) {
@@ -119,14 +119,14 @@ export class Router {
         }
 
         // Clear errors from the previous view
-        const errorView = new ErrorFragment(this._configuration);
+        const errorView = new ErrorFragment();
         errorView.clear();
     }
 
     /*
      * Update controls upon completion and remove the loading state
      */
-    private _updateControlsAfterLoad(): void {
+    private _updateControlsAfterLoad(hashData: any): void {
 
         // Enable buttons when the view completes
         if (this._loadingState) {
