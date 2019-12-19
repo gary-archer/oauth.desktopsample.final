@@ -11,7 +11,7 @@
 
 ### Technologies
 
-* Electron with TypeScript is used for the Desktop App, which can be run on Windows, Mac OS or Linux
+* Electron with TypeScript and React is used for the Cross Platform Desktop App
 
 ### Middleware Used
 

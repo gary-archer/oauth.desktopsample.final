@@ -1,91 +1,46 @@
-a
+.row
 {
-    cursor: pointer;
+    margin-top:5px;
 }
-.btn
-{
-    margin-top:10px;
-    width:150px;
-}
-.panel {
-    border: 0;
-}
-.vertical-padding
-{
-    margin-top: 20px;
-}
-.image-padding
-{
-    margin-top: 20px;
-}
-.link
+.valuecolor
 {
     color: blue;
 }
-.amount
+.moneycolor
 {
-    font-weight: bold;
     color:green;
 }
-.logintext
+.largetext
 {
-    text-align:right;
-    font-weight: bold;
-}
-.loggedouttext
-{
-    font-weight: bold;
     font-size: larger;
 }
-.errorUserInfo
+.errorcolor
 {
-    color:darkgreen;
-    font-weight: bold;
-    font-size: larger;
+    color:red;
 }
-.errorSupportInfo
+.errorlinecolor
 {
     color:darkblue;
-    font-size: smaller;
 }
-.trace
+.footer
 {
-    color:blue;
-}
-.hide
-{
-    display:none;
-}
-.signingin
-{
-    color:green;
+    margin-top: 10px;
 }
 
-@media all and (max-width: 1200px) {
-    .image-padding
+/* Reduce browser text size when the view is reduced, so that text fits */
+@media all and (max-width: 992px)
+{
+    body
     {
-        margin-top: 10px;
-    }
-}
-
-@media all and (max-width: 768px) {
-    body {
-        font-size: 0.8em;
-    }
-    .text-heading {
-        font-size: 2.5em;
-    }
-    .btn {
-        margin-top:10px;
-        width:100px;
         font-size: 0.9em;
     }
-    .vertical-padding
+}
+
+/* Mobile views also use a smaller heading size */
+@media all and (max-width: 768px)
+{
+    h2
     {
-        margin-top: 10px;
-    }
-    .image-padding
-    {
-        margin-top: 5px;
+        font-size: 1.5em;
     }
 }

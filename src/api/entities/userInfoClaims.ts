@@ -1,5 +1,5 @@
 /*
- * A holder for the API data points we are interested in caching
+ * User info claims can be returned to the UI or used if the API triggers sending of emails to users
  */
 export interface UserInfoClaims {
     givenName: string;

@@ -1,19 +1,31 @@
-import * as $ from 'jquery';
+/*import * as $ from 'jquery';
 import * as QueryString from 'query-string';
 import {UIError} from '../plumbing/errors/uiError';
 import {Authenticator} from '../plumbing/oauth/authenticator';
-import {ErrorFragment} from './errorFragment';
+import {ErrorFragment} from './errorFragment';*/
 
 /*
  * The login required view takes up the entire screen except for the header
  */
 export class LoginRequiredView {
 
-    private readonly _authenticator: Authenticator;
+    /*private readonly _authenticator: Authenticator;*/
 
-    public constructor(authenticator: Authenticator) {
-        this._authenticator = authenticator;
-        this._setupCallbacks();
+    /*
+    <div class='login row hide'>
+        <div class='col-xs-1'></div>
+        <div class='col-xs-11'>
+            <h3 class='text-subheading'>Please click <a id='btnLogin'>Sign In</a> to securely authenticate via your browser</h3>
+            <br/>
+            <h4 class='signingin text-subheading hide'>Sign In has started ...</h4>
+            <h4 class='signingin text-subheading hide'>If required, please switch to your browser and enter your credentials</h4>
+        </div>
+    </div>
+    */
+
+    public constructor(/*authenticator: Authenticator*/) {
+        /*this._authenticator = authenticator;
+        this._setupCallbacks();*/
     }
 
     /*
@@ -21,6 +33,7 @@ export class LoginRequiredView {
      */
     public async execute(): Promise<void> {
 
+        /*
         // Hide session related button controls
         $('.hideWhenLoggedOut').addClass('hide');
 
@@ -30,6 +43,7 @@ export class LoginRequiredView {
 
         // Login progress is hidden until Sign In has been clicked
         $('.signingin').addClass('hide');
+        */
     }
 
     /*
@@ -37,12 +51,14 @@ export class LoginRequiredView {
      */
     public unload(): void {
 
+        /*
         // Make session related controls visible
         $('.hideWhenLoggedOut').removeClass('hide');
 
         // Hide sign in controls
         $('.login').addClass('hide');
         $('#btnLogin').unbind('click');
+        */
     }
 
     /*
@@ -50,6 +66,7 @@ export class LoginRequiredView {
      */
     private async _onLoginStart(e: any): Promise<void> {
 
+        /*
         try {
             // Show sign in progress
             $('.signingin').removeClass('hide');
@@ -63,14 +80,15 @@ export class LoginRequiredView {
             // Report failures
             const errorView = new ErrorFragment();
             errorView.execute(e);
-        }
+        }*/
     }
 
     /*
      * Update the UI after a login attempt completes
      */
-    private _onLoginCompleted(e: UIError | null): void {
+    private _onLoginCompleted(/*e: UIError | null*/): void {
 
+        /*
         if (!e) {
 
             // Return the user to the pre login location
@@ -90,14 +108,15 @@ export class LoginRequiredView {
             // Then render the error details
             const errorView = new ErrorFragment();
             errorView.execute(e);
-        }
+        }*/
     }
 
     /*
      * Plumbing to ensure that the this parameter is available in async event handlers
      */
+    /*
     private _setupCallbacks(): void {
         this._onLoginStart = this._onLoginStart.bind(this);
         this._onLoginCompleted = this._onLoginCompleted.bind(this);
-    }
+    }*/
 }

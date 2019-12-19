@@ -7,7 +7,7 @@ import {CustomSchemeEvents} from './plumbing/oauth/customSchemeEvents';
 const customSchemeName = 'x-mycompany-desktopapp';
 
 /*
- * The Electron main process, which loads the renderer process app.ts
+ * The Electron main process entry point
  */
 class Main {
 

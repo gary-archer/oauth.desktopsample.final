@@ -1,4 +1,3 @@
-import {ErrorCodes} from './errorCodes';
 import {UIError} from './uiError';
 
 /*
@@ -19,7 +18,7 @@ export class ErrorHandler {
         // Create the error
         const error = new UIError(
             'UI',
-            ErrorCodes.generalUIError,
+            'general_exception',
             'A technical problem was encountered in the UI',
             exception.stack);
 
@@ -34,8 +33,8 @@ export class ErrorHandler {
     public static getFromLoginRequired(): UIError {
 
         return new UIError(
-            'Login',
-            ErrorCodes.loginRequired,
+            'login',
+            'login_required',
             'No access token is available and a login is required');
     }
 
@@ -84,42 +83,14 @@ export class ErrorHandler {
     }
 
     /*
-     * Return an object for Ajax errors
+     * An error if we receive an invalid response state
      */
-    public static getFromWebDownloadError(exception: any, url: string): UIError {
+    public static getFromInvalidLoginResponseState(): UIError {
 
-        // Calculate the status code
-        let statusCode = 0;
-        if (exception.response && exception.response.status) {
-            statusCode = exception.response.status;
-        }
-
-        let error: UIError;
-        if (statusCode >= 200 && statusCode <= 299) {
-
-            // This status is generally a JSON parsing error
-            error = new UIError(
-                'Data',
-                ErrorCodes.webDataError,
-                'A technical problem occurred when the UI received data',
-                exception.stack);
-            error.details = 'Unable to parse data from web server';
-
-        } else {
-
-            // Otherwise there is some kind of network or not found error
-            error = new UIError(
-                'Network',
-                ErrorCodes.webAjaxError,
-                'A problem occurred when the UI called the server',
-                exception.stack);
-            error.details = 'Unable to download a file from the web server';
-
-        }
-
-        error.statusCode = statusCode;
-        error.url = url;
-        return error;
+        return new UIError(
+            'Login',
+            'invalid_state',
+            'The login response state did not match the login request state');
     }
 
     /*
@@ -132,86 +103,57 @@ export class ErrorHandler {
             return exception;
         }
 
-        // Calculate the status code
-        let statusCode = 0;
-        if (exception.response && exception.response.status) {
-            statusCode = exception.response.status;
-        }
-
         let error = null;
-        if (statusCode === 0 ) {
+        if (exception.status === 0 ) {
 
             // This status is generally a CORS or availability problem
             error = new UIError(
                 'Network',
-                ErrorCodes.apiAjaxError,
+                'api_uncontactable',
                 'A network problem occurred when the UI called the server',
                 exception.stack);
             error.details = 'API not available or request was not allowed';
 
-        } else if (statusCode >= 200 && statusCode <= 299) {
+        } else if (exception.status >= 200 && exception.status <= 299) {
 
             // This status is generally a JSON parsing error
             error = new UIError(
                 'Data',
-                ErrorCodes.apiDataError,
+                'api_data_error',
                 'A technical problem occurred when the UI received data',
                 exception.stack);
-            error.details = 'Unable to parse data from an API response';
+            error.details = 'Unable to parse data from API response';
 
         } else {
 
             // Create a default API error
             error = new UIError(
                 'API',
-                ErrorCodes.apiAjaxError,
+                'general_api_error',
                 'A technical problem occurred when the UI called the server',
                 exception.stack);
             error.details = 'API returned an error response';
 
             // Override the default with a server response when received and CORS allows us to read it
-            if (exception.response && exception.response.data && typeof exception.response.data === 'object') {
-                ErrorHandler._updateFromApiErrorResponse(error, exception.response.data);
-            }
+            ErrorHandler._updateFromApiErrorResponse(error, exception);
         }
 
-        error.statusCode = statusCode;
+        // Set the HTTP status if received
+        if (exception.status) {
+            error.statusCode = exception.status;
+        }
+
         error.url = url;
-        return error;
-    }
-
-    /*
-     * Return an error due to rendering the view
-     */
-    public static getFromRenderError(exception: any, componentStack?: string): UIError {
-
-        // Already handled errors
-        if (exception instanceof UIError) {
-            return exception;
-        }
-
-        // Create the error
-        const error = new UIError(
-            'UI',
-            ErrorCodes.renderError,
-            'A technical problem was encountered rendering the UI',
-            exception.stack);
-
-        // Set technical details from the received exception
-        error.details = ErrorHandler._getExceptionMessage(exception);
-        if (componentStack) {
-            error.details += ` : ${componentStack}`;
-        }
-
         return error;
     }
 
     /*
      * Try to update the default API error with response details
      */
-    private static _updateFromApiErrorResponse(error: UIError, apiError: any): void {
+    private static _updateFromApiErrorResponse(error: UIError, exception: any): void {
 
         // Attempt to read the API error response
+        const apiError = ErrorHandler._readApiJsonResponse(exception);
         if (apiError) {
 
             // Set the code and message, returned for both 4xx and 5xx errors
@@ -224,6 +166,21 @@ export class ErrorHandler {
             if (apiError.area && apiError.id && apiError.utcTime) {
                 error.setApiErrorDetails(apiError.area, apiError.id, apiError.utcTime);
             }
+        }
+    }
+
+    /*
+     * If the API response is JSON then attempt to parse it into an object
+     */
+    private static _readApiJsonResponse(exception: any): any {
+
+        try {
+            // We have to assume that the response is JSON
+            // We cannot read headers content-length and content-type to verify this
+            return JSON.parse(exception.responseText);
+
+        } catch (e) {
+            console.log(`Malformed JSON received in an API response: ${e}`);
         }
     }
 
