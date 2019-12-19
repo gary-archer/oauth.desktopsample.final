@@ -142,7 +142,7 @@ class Main {
 
             callback({cancel: false, requestHeaders: details.requestHeaders});
         };
-        session.defaultSession!.webRequest.onBeforeSendHeaders({} as any, headerCallback);
+        session.defaultSession!.webRequest.onBeforeSendHeaders({urls: []} as any, headerCallback);
 
         // Emitted when the window is closed
         Main._window.on('closed', () => {

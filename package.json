@@ -17,29 +17,28 @@
   "author": "Gary Archer",
   "license": "ISC",
   "dependencies": {
-    "@openid/appauth": "^1.2.3",
+    "@openid/appauth": "^1.2.6",
     "electron-default-menu": "^1.0.1",
-    "electron-log": "^3.0.5",
     "handlebars": "^4.5.3",
-    "jquery": "^3.4.0",
-    "keytar": "^4.3.0",
+    "jquery": "^3.4.1",
+    "keytar": "^5.0.0",
     "moment": "^2.24.0",
     "opener": "^1.5.1",
     "query-string": "^6.2.0",
     "username": "^4.0.0"
   },
   "devDependencies": {
-    "@types/core-js": "^2.5.0",
-    "@types/fs-extra": "^5.0.4",
-    "@types/jquery": "^3.3.29",
+    "@types/fs-extra": "^8.0.1",
+    "@types/jquery": "^3.3.31",
+    "@types/node": "^12.12.21",
     "cross-env": "^5.2.0",
-    "electron": "^5.0.1",
-    "electron-packager": "^13.1.1",
-    "electron-rebuild": "^1.8.5",
-    "fs-extra": "^7.0.1",
-    "rimraf": "^2.6.3",
+    "electron": "^7.1.6",
+    "electron-packager": "^14.1.1",
+    "electron-rebuild": "^1.8.8",
+    "fs-extra": "^8.1.0",
+    "rimraf": "^3.0.0",
     "ts-node": "^6.2.0",
-    "tslint": "^5.15.0",
-    "typescript": "^3.4.3"
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.3"
   }
 }
