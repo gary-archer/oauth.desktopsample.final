@@ -56,6 +56,10 @@ a
 {
     display:none;
 }
+.signingin
+{
+    color:green;
+}
 
 @media all and (max-width: 1200px) {
     .image-padding
