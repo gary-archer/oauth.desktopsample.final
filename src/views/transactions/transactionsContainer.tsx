@@ -7,7 +7,6 @@ import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {TransactionsContainerProps} from './transactionsContainerProps';
 import {TransactionsContainerState} from './transactionsContainerState';
 import {TransactionsMainView} from './transactionsMainView';
-import {TransactionsMobileView} from './transactionsMobileView';
 
 /*
  * Render the transactions view to replace the existing view
@@ -68,12 +67,6 @@ export class TransactionsContainer extends React.Component<TransactionsContainer
         const props = {
             data: this.state.data!,
         };
-
-        if (this.props.isMobileSize) {
-            return  (
-                <TransactionsMobileView {...props}/>
-            );
-        }
 
         return  (
             <TransactionsMainView {...props}/>

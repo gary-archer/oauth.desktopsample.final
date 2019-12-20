@@ -1,10 +1,10 @@
 import React from 'react';
-import {LogoutViewProps} from './logoutViewProps';
+import {LoginRequiredViewProps} from './loginRequiredViewProps';
 
 /*
- * Render the simple logout view
+ * Render the simple login required view
  */
-export class LogoutView extends React.Component<LogoutViewProps> {
+export class LoginRequiredView extends React.Component<LoginRequiredViewProps> {
 
     public constructor(props: any) {
         super(props);
@@ -14,7 +14,7 @@ export class LogoutView extends React.Component<LogoutViewProps> {
      * Inform the parent when we are loaded
      */
     public async componentDidMount(): Promise<void> {
-        this.props.onViewLoading('LogoutView');
+        this.props.onViewLoading('LoginRequiredView');
         this.props.onViewLoaded();
     }
 

@@ -2,16 +2,16 @@
   "name": "basicdesktopapp",
   "version": "2.0.0",
   "description": "A Desktop App using the AppAuth-JS security library",
-  "main": "index.ts",
+  "main": "built/main.js",
   "scripts": {
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'",
     "buildnative": "node_modules/.bin/electron-rebuild",
-    "build": "rimraf .build && tsc && ts-node scripts/build.ts",
+    "build": "rimraf built && tsc && ts-node scripts/build.ts",
     "start": "ts-node scripts/start.ts",
     "httpDebug": "cross-env HTTPS_PROXY=http://127.0.0.1:8888 ts-node scripts/start.ts"
   },
   "files": [
-    ".build/**"
+    "built/**"
   ],
   "keywords": [],
   "author": "Gary Archer",

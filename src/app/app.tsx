@@ -8,7 +8,7 @@ import {ErrorHandler} from '../plumbing/errors/errorHandler';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
 import {Authenticator} from '../plumbing/oauth/authenticator';
-import {AuthenticatorFactory} from '../plumbing/oauth/authenticatorFactory';
+import {CustomSchemeNotifier} from '../plumbing/oauth/customSchemeNotifier';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {ErrorBoundary} from '../views/errors/errorBoundary';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
@@ -16,7 +16,7 @@ import {FooterView} from '../views/frame/footerView';
 import {HeadingView} from '../views/frame/headingView';
 import {TitleView} from '../views/frame/titleView';
 import {HeaderButtonsView} from '../views/headerButtons/headerButtonsView';
-import {LogoutView} from '../views/logout/logoutView';
+import {LoginRequiredView} from '../views/logout/loginRequiredView';
 import {TransactionsContainer} from '../views/transactions/transactionsContainer';
 import {ViewManager} from '../views/viewManager';
 import {AppState} from './appState';
@@ -39,7 +39,6 @@ export class App extends React.Component<any, AppState> {
             isLoading: true,
             applicationError: null,
             isLoaded: false,
-            isMobileSize: this._isMobileSize(),
         };
 
         // Make callbacks available
@@ -123,7 +122,6 @@ export class App extends React.Component<any, AppState> {
             onViewLoaded: this._viewManager.onMainViewLoaded,
             onViewLoadFailed: this._viewManager.onMainViewLoadFailed,
             apiClient: this._apiClient,
-            isMobileSize: this.state.isMobileSize,
         };
 
         const logoutProps = {
@@ -136,9 +134,9 @@ export class App extends React.Component<any, AppState> {
         };
 
         // Callbacks to prevent multi line JSX warnings
-        const renderCompaniesView    = () =>             <CompaniesContainer {...mainViewProps} />;
-        const renderTransactionsView = (props: any) =>   <TransactionsContainer {...props} {...mainViewProps} />;
-        const renderLogoutView       = () =>             <LogoutView {...logoutProps} />;
+        const renderCompaniesView     = () =>             <CompaniesContainer {...mainViewProps} />;
+        const renderTransactionsView  = (props: any) =>   <TransactionsContainer {...props} {...mainViewProps} />;
+        const renderLoginRequiredView = () =>             <LoginRequiredView {...logoutProps} />;
 
         // Render the tree view
         return (
@@ -150,7 +148,7 @@ export class App extends React.Component<any, AppState> {
                     <Switch>
                         <Route exact={true} path='/'               render={renderCompaniesView} />
                         <Route exact={true} path='/companies/:id'  render={renderTransactionsView} />
-                        <Route exact={true} path='/loggedout'      render={renderLogoutView} />
+                        <Route exact={true} path='/loginrequired'  render={renderLoginRequiredView} />
                         <Route path='*'                            render={renderCompaniesView} />
                     </Switch>
                 </HashRouter>
@@ -166,17 +164,16 @@ export class App extends React.Component<any, AppState> {
 
         // First download configuration from the browser's web domain
         const configurationClient = new ConfigurationClient();
-        this._configuration = await configurationClient.download('spa.config.json');
+        this._configuration = await configurationClient.download('desktop.config.cloudapi.json');
 
-        // Initialise authentication and handle login responses if applicable
-        this._authenticator = AuthenticatorFactory.createAuthenticator(this._configuration.oauth);
-        await this._authenticator.handleLoginResponse();
+        // Initialise authentication
+        this._authenticator = new Authenticator(this._configuration.oauth);
+        
+        // Initialise listening for login responses
+        await CustomSchemeNotifier.initialize();
 
         // Create a client to reliably call the API
         this._apiClient = new ApiClient(this._configuration.app.apiBaseUrl, this._authenticator);
-
-        // Subscribe to windows events
-        window.onresize = this._onResize;
     }
 
     /*
@@ -224,13 +221,6 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Trigger a login redirect when notified by the view manager
-     */
-    private _onLoginRequired() {
-        this._authenticator.startLoginRedirect();
-    }
-
-    /*
      * Update the load state when notified
      */
     private _onLoadStateChanged(loaded: boolean): void {
@@ -238,34 +228,6 @@ export class App extends React.Component<any, AppState> {
         this.setState((prevState) => {
             return {...prevState, isLoaded: loaded};
         });
-    }
-
-    /*
-     * Handle switching between mobile and main views
-     */
-    private _onResize(): void {
-
-        if (!this.state.isMobileSize && this._isMobileSize()) {
-
-            // Handle changing from a large size to mobile size
-            this.setState((prevState) => {
-                return {...prevState, isMobileSize: true};
-            });
-
-        } else if (this.state.isMobileSize && !this._isMobileSize()) {
-
-        // Handle changing from a mobile size to large size
-            this.setState((prevState) => {
-                return {...prevState, isMobileSize: false};
-            });
-        }
-    }
-
-    /*
-     * Return if the current size is that of a mobile device
-     */
-    private _isMobileSize(): boolean {
-        return window.innerWidth < 768;
     }
 
     /*
@@ -299,35 +261,32 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Start a logout redirect
+     * The view manager notifies the app when a login is required
      */
-    private async _handleLogoutClick(): Promise<void> {
+    private _onLoginRequired(): void {
+    }
 
-        try {
-            await this._authenticator!.startLogout();
+    /*
+     * Do a a simple logout
+     */
+    private _handleLogoutClick(): void {
 
-         } catch (e) {
-
-            this.setState((prevState) => {
-                return {...prevState, applicationError: ErrorHandler.getFromException(e)};
-            });
-         }
+        this._authenticator!.logout();
+        location.hash = `#loginrequired`;
     }
 
     /*
      * Calculate whether logged out from the hash URL
      */
     private _isLoggedOut(): boolean {
-        return location.hash.indexOf('loggedout') >= 0;
+        return location.hash.indexOf('loginrequired') >= 0;
     }
 
     /*
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks(): void {
-        this._onLoginRequired = this._onLoginRequired.bind(this);
         this._onLoadStateChanged = this._onLoadStateChanged.bind(this);
-        this._onResize = this._onResize.bind(this);
         this._handleHomeClick = this._handleHomeClick.bind(this);
         this._handleExpireAccessTokenClick = this._handleExpireAccessTokenClick.bind(this);
         this._handleRefreshDataClick = this._handleRefreshDataClick.bind(this);

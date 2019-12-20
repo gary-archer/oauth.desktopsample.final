@@ -3,7 +3,6 @@ import {Guid} from 'guid-typescript';
 import {ErrorHandler} from '../../plumbing/errors/errorHandler';
 import {Authenticator} from '../../plumbing/oauth/authenticator';
 import {AxiosUtils} from '../../plumbing/utilities/axiosUtils';
-import {SessionManager} from '../../plumbing/utilities/sessionManager';
 import {Company} from '../entities/company';
 import {CompanyTransactions} from '../entities/companyTransactions';
 import {UserInfoClaims} from '../entities/userInfoClaims';
@@ -26,7 +25,7 @@ export class ApiClient {
         }
 
         this._authenticator = authenticator;
-        this._sessionId = SessionManager.initialize();
+        this._sessionId = Guid.create().toString();
     }
 
     /*

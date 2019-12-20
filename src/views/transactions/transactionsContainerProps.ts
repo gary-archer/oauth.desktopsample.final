@@ -21,7 +21,4 @@ export interface TransactionsContainerProps extends RouteComponentProps<{id: str
 
     // Path parameters
     params?: {id: string};
-
-    // Whether to render the mobile view
-    isMobileSize: boolean;
 }

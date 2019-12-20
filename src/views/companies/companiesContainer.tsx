@@ -7,7 +7,6 @@ import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {CompaniesContainerProps} from './companiesContainerProps';
 import {CompaniesContainerState} from './companiesContainerState';
 import {CompaniesMainView} from './companiesMainView';
-import {CompaniesMobileView} from './companiesMobileView';
 
 /*
  * Render the companies view to replace the existing view
@@ -47,12 +46,6 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
         const props = {
             companies: this.state.companies,
         };
-
-        if (this.props.isMobileSize) {
-            return  (
-                <CompaniesMobileView {...props}/>
-            );
-        }
 
         return  (
             <CompaniesMainView {...props}/>

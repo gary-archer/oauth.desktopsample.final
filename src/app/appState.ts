@@ -13,7 +13,4 @@ export interface AppState {
 
     // Some controls are hidden during loading and shown afterwards
     isLoaded: boolean;
-
-    // Record when the size changes to that of a mobile phone
-    isMobileSize: boolean;
 }

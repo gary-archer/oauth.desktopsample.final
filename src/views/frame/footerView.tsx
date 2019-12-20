@@ -1,5 +1,4 @@
 import React from 'react';
-import {SessionManager} from '../../plumbing/utilities/sessionManager';
 import {FooterViewProps} from './footerViewProps';
 
 /*
@@ -11,7 +10,7 @@ export class FooterView extends React.Component<FooterViewProps> {
 
     public constructor(props: FooterViewProps) {
         super(props);
-        this._sessionId = SessionManager.initialize();
+        this._sessionId = 'xxx';
     }
 
     /*

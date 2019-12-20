@@ -1,6 +1,5 @@
 import {ErrorCodes} from '../plumbing/errors/errorCodes';
 import {UIError} from '../plumbing/errors/uiError';
-import {LogoutView} from './logout/logoutView';
 
 /*
  * A helper class to coordinate multiple views
@@ -53,7 +52,7 @@ export class ViewManager {
         this._mainViewLoadError = null;
 
         // Session buttons are not enabled when logged out
-        if (this._mainViewName !== 'LogoutView') {
+        if (this._mainViewName !== 'LoginRequiredView') {
             this.onLoadStateChanged(true);
         }
     }

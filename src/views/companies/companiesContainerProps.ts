@@ -17,7 +17,4 @@ export interface CompaniesContainerProps {
 
     // A callback when the view loads successfully
     onViewLoadFailed: (error: UIError) => void;
-
-    // Whether to render the mobile view
-    isMobileSize: boolean;
 }

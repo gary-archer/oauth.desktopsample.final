@@ -1,7 +1,7 @@
 /*
- * Input to the logout view
+ * Input to the login required view
  */
-export interface LogoutViewProps {
+export interface LoginRequiredViewProps {
 
     // A callback when the view is loading
     onViewLoading: (viewType: string) => void;
