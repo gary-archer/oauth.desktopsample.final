@@ -1,4 +1,4 @@
-import * as ChildProcess from 'child_process';
+import ChildProcess from 'child_process';
 
 /*
  * A class to start the app in an OS specific manner

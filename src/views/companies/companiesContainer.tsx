@@ -21,6 +21,7 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
             error: null,
         };
 
+        console.log('companies container');
         this._setupCallbacks();
     }
 

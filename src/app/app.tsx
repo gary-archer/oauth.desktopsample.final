@@ -168,7 +168,7 @@ export class App extends React.Component<any, AppState> {
 
         // Initialise authentication
         this._authenticator = new Authenticator(this._configuration.oauth);
-        
+
         // Initialise listening for login responses
         await CustomSchemeNotifier.initialize();
 

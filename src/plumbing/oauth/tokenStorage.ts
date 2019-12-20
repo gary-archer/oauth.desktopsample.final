@@ -1,6 +1,6 @@
-import * as AppAuth from '@openid/appauth';
-import * as KeyTar from 'keytar';
-import * as OperatingSystemUserName from 'username';
+import {TokenResponse, TokenResponseJson} from '@openid/appauth';
+import KeyTar from 'keytar';
+import OperatingSystemUserName from 'username';
 
 /*
  * The key under which we store auth state
@@ -15,7 +15,7 @@ export class TokenStorage {
     /*
      * Load token data or return null
      */
-    public static async load(): Promise<AppAuth.TokenResponse|null> {
+    public static async load(): Promise<TokenResponse|null> {
 
         // Get the operating system user name on the first call
         if (!TokenStorage._userName) {
@@ -29,18 +29,18 @@ export class TokenStorage {
         }
 
         // Convert to the AppAuth object
-        const tokenJson = JSON.parse(authState) as AppAuth.TokenResponseJson;
-        return new AppAuth.TokenResponse(tokenJson);
+        const tokenJson = JSON.parse(authState) as TokenResponseJson;
+        return new TokenResponse(tokenJson);
     }
 
     /*
      * Save token data after login
      */
-    public static async save(data: AppAuth.TokenResponse): Promise<void> {
+    public static async save(data: TokenResponse): Promise<void> {
 
          // Work around the Windows limitation below by shortening the data to prevent a 'Stub received bad data' error
         // https://github.com/atom/node-keytar/issues/112
-        const clone = new AppAuth.TokenResponse(data.toJson());
+        const clone = new TokenResponse(data.toJson());
         clone.accessToken = '';
         clone.idToken = '';
 

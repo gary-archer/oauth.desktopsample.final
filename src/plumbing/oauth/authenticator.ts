@@ -1,4 +1,17 @@
-import * as AppAuth from '@openid/appauth';
+import {AuthorizationError,
+        AuthorizationNotifier,
+        AuthorizationRequest,
+        AuthorizationRequestJson,
+        AuthorizationResponse,
+        AuthorizationServiceConfiguration,
+        BaseTokenRequestHandler,
+        DefaultCrypto,
+        GRANT_TYPE_AUTHORIZATION_CODE,
+        GRANT_TYPE_REFRESH_TOKEN,
+        StringMap,
+        TokenRequest,
+        TokenRequestJson,
+        TokenResponse} from '@openid/appauth';
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorHandler} from '../errors/errorHandler';
 import {UIError} from '../errors/uiError';
@@ -23,7 +36,7 @@ export class Authenticator {
      * The authenticator deals with logins and tokens and stores them in the auth state
      */
     private readonly _oauthConfig: OAuthConfiguration;
-    private _authState: AppAuth.TokenResponse | null;
+    private _authState: TokenResponse | null;
 
     /*
      * Class setup
@@ -104,26 +117,26 @@ export class Authenticator {
 
         // Download metadata from the Authorization server if required
         if (!Authenticator._metadata) {
-            Authenticator._metadata = await AppAuth.AuthorizationServiceConfiguration.fetchFromIssuer(
+            Authenticator._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
                 this._oauthConfig.authority);
         }
 
         // Supply PKCE parameters for the redirect, which avoids native app vulnerabilities
         const verifier = new CodeVerifier();
-        const extras: AppAuth.StringMap = {
+        const extras: StringMap = {
             code_challenge: verifier.challenge,
             code_challenge_method: verifier.method,
         };
 
         // Create the authorization request
         const requestJson = {
-            response_type: AppAuth.AuthorizationRequest.RESPONSE_TYPE_CODE,
+            response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
             client_id: this._oauthConfig.clientId,
             redirect_uri: this._oauthConfig.redirectUri,
             scope: this._oauthConfig.scope,
             extras,
-        } as AppAuth.AuthorizationRequestJson;
-        const authorizationRequest = new AppAuth.AuthorizationRequest(requestJson, new AppAuth.DefaultCrypto(), true);
+        } as AuthorizationRequestJson;
+        const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
 
         // Create events for this login attempt
         const loginEvents = new LoginEvents();
@@ -135,12 +148,12 @@ export class Authenticator {
         const authorizationRequestHandler = new BrowserAuthorizationRequestHandler(loginEvents);
 
         // Use the AppAuth mechanism of a notifier to receive the login result
-        const notifier = new AppAuth.AuthorizationNotifier();
+        const notifier = new AuthorizationNotifier();
         authorizationRequestHandler.setAuthorizationNotifier(notifier);
         notifier.setAuthorizationListener(async (
-            request: AppAuth.AuthorizationRequest,
-            response: AppAuth.AuthorizationResponse | null,
-            error: AppAuth.AuthorizationError | null) => {
+            request: AuthorizationRequest,
+            response: AuthorizationResponse | null,
+            error: AuthorizationError | null) => {
 
                 // Now that we've finished with login events, remove the item for this login attempt
                 CustomSchemeNotifier.removeCorrelationState(request.state);
@@ -169,9 +182,9 @@ export class Authenticator {
      * Handle login response objects
      */
     private async _handleLoginResponse(
-        request: AppAuth.AuthorizationRequest,
-        response: AppAuth.AuthorizationResponse | null,
-        error: AppAuth.AuthorizationError | null,
+        request: AuthorizationRequest,
+        response: AuthorizationResponse | null,
+        error: AuthorizationError | null,
         codeVerifier: string): Promise<UIError | null> {
 
         // Phase 1 of login has completed
@@ -199,23 +212,23 @@ export class Authenticator {
     private async _swapAuthorizationCodeForTokens(authorizationCode: string, codeVerifier: string): Promise<void> {
 
         // Supply PKCE parameters for the code exchange and the scope for tokens
-        const extras: AppAuth.StringMap = {
+        const extras: StringMap = {
             code_verifier: codeVerifier,
         };
 
         // Create the token request
         const requestJson = {
-            grant_type: AppAuth.GRANT_TYPE_AUTHORIZATION_CODE,
+            grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
             code: authorizationCode,
             redirect_uri: this._oauthConfig.redirectUri,
             client_id: this._oauthConfig.clientId,
             extras,
-        } as AppAuth.TokenRequestJson;
-        const tokenRequest = new AppAuth.TokenRequest(requestJson);
+        } as TokenRequestJson;
+        const tokenRequest = new TokenRequest(requestJson);
 
         // Execute the request to swap the code for tokens
         const requestor = new TokenRequestor();
-        const tokenHandler = new AppAuth.BaseTokenRequestHandler(requestor);
+        const tokenHandler = new BaseTokenRequestHandler(requestor);
 
         // Perform the authorization code grant exchange
         this._authState = await tokenHandler.performTokenRequest(Authenticator._metadata, tokenRequest);
@@ -231,28 +244,29 @@ export class Authenticator {
 
         // Download metadata from the Authorization server if required
         if (!Authenticator._metadata) {
-            Authenticator._metadata = await AppAuth.AuthorizationServiceConfiguration.fetchFromIssuer(
+            Authenticator._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
                 this._oauthConfig.authority);
         }
 
         // Supply the scope for access tokens
-        const extras: AppAuth.StringMap = {
+        const extras: StringMap = {
             scope: this._oauthConfig.scope,
         };
 
         // Create the token request
         const requestJson = {
-            grant_type: AppAuth.GRANT_TYPE_REFRESH_TOKEN,
+            grant_type: GRANT_TYPE_REFRESH_TOKEN,
             client_id: this._oauthConfig.clientId,
             refresh_token: this._authState!.refreshToken,
             extras,
-        } as AppAuth.TokenRequestJson;
-        const tokenRequest = new AppAuth.TokenRequest(requestJson);
+        } as TokenRequestJson;
+        const tokenRequest = new TokenRequest(requestJson);
 
         try {
+
             // Execute the request to send the refresh token and get new tokens
             const requestor = new TokenRequestor();
-            const tokenHandler = new AppAuth.BaseTokenRequestHandler(requestor);
+            const tokenHandler = new BaseTokenRequestHandler(requestor);
             const newTokenData = await tokenHandler.performTokenRequest(Authenticator._metadata, tokenRequest);
 
             // Maintain the refresh token if we did not receive a new 'rolling' refresh token

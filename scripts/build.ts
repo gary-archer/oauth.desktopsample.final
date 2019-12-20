@@ -1,6 +1,6 @@
-import * as Packager from 'electron-packager';
-import * as FileSystem from 'fs-extra';
-import * as Path from 'path';
+import Packager from 'electron-packager';
+import FileSystem from 'fs-extra';
+import Path from 'path';
 
 /*
  * A class to do the build work

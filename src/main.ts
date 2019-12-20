@@ -1,7 +1,5 @@
 import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
-import * as DefaultMenu from 'electron-default-menu';
-import * as Path from 'path';
-import * as Url from 'url';
+import DefaultMenu from 'electron-default-menu';
 import {CustomSchemeEvents} from './plumbing/oauth/customSchemeEvents';
 
 const customSchemeName = 'x-mycompany-desktopapp';
@@ -123,14 +121,10 @@ class Main {
         Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 
         // Load the index.html of the app from the file system
-        Main._window.loadURL(Url.format({
-            pathname: Path.join(__dirname, '../index.html'),
-            protocol: 'file:',
-            slashes: true,
-        }));
+        Main._window.loadFile('./index.html');
 
         // Open the developer tools at startup if required
-        // Main._window.webContents.openDevTools();
+        Main._window.webContents.openDevTools();
 
         // Remove the 'Origin: file://' deault header which Okta rejected for security reasons with this message:
         // 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'

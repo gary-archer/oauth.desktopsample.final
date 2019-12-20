@@ -5,7 +5,7 @@
  * https://gist.github.com/stupiduglyfool/3a5bd9e121330013c78fbfe0697cf76d#file-codeverifier-ts
  */
 
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 
 /*
  * PKCE code verifier

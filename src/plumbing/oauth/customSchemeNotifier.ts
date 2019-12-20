@@ -1,5 +1,5 @@
 import {ipcRenderer} from 'electron';
-import * as Url from 'url';
+import Url from 'url';
 import {CustomSchemeEvents} from './customSchemeEvents';
 import {LoginEvents} from './loginEvents';
 import {LoginState} from './loginState';

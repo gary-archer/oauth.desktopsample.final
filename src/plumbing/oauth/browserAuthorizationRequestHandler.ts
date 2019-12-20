@@ -1,24 +1,33 @@
-import * as AppAuth from '@openid/appauth';
-import * as Opener from 'opener';
+import {AuthorizationError,
+        AuthorizationErrorJson,
+        AuthorizationRequest,
+        AuthorizationRequestHandler,
+        AuthorizationRequestResponse,
+        AuthorizationResponse,
+        AuthorizationResponseJson,
+        AuthorizationServiceConfiguration,
+        BasicQueryStringUtils,
+        DefaultCrypto} from '@openid/appauth';
+import Opener from 'opener';
 import {LoginEvents} from './loginEvents';
 
 /*
  * An override of the default authorization handler
  */
-export class BrowserAuthorizationRequestHandler extends AppAuth.AuthorizationRequestHandler {
+export class BrowserAuthorizationRequestHandler extends AuthorizationRequestHandler {
 
     /*
      * Inputs and outputs
      */
     private readonly _loginEvents: LoginEvents;
-    private _authorizationPromise: Promise<AppAuth.AuthorizationRequestResponse> | null;
+    private _authorizationPromise: Promise<AuthorizationRequestResponse> | null;
 
     /*
      * Set up the base class
      */
     public constructor(loginEvents: LoginEvents) {
 
-        super(new AppAuth.BasicQueryStringUtils(), new AppAuth.DefaultCrypto());
+        super(new BasicQueryStringUtils(), new DefaultCrypto());
         this._loginEvents = loginEvents;
         this._authorizationPromise = null;
     }
@@ -27,14 +36,14 @@ export class BrowserAuthorizationRequestHandler extends AppAuth.AuthorizationReq
      * Use the AppAuth class to form the OAuth URL, then make the login request on the system browser
      */
     public performAuthorizationRequest(
-        metadata: AppAuth.AuthorizationServiceConfiguration,
-        request: AppAuth.AuthorizationRequest): void {
+        metadata: AuthorizationServiceConfiguration,
+        request: AuthorizationRequest): void {
 
         // Form the OAuth request
         const oauthUrl = this.buildRequestUrl(metadata, request);
 
         // Create a promise to handle the response from the browser
-        this._authorizationPromise = new Promise<AppAuth.AuthorizationRequestResponse>((resolve, reject) => {
+        this._authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
 
             // Wait for a response event from the loopback web server
             this._loginEvents.once(LoginEvents.ON_AUTHORIZATION_RESPONSE, (queryParams: any) => {
@@ -55,7 +64,7 @@ export class BrowserAuthorizationRequestHandler extends AppAuth.AuthorizationReq
     /*
      * Return data back to the authenticator's notifier
      */
-    protected async completeAuthorizationRequest(): Promise<AppAuth.AuthorizationRequestResponse | null> {
+    protected async completeAuthorizationRequest(): Promise<AuthorizationRequestResponse | null> {
 
         return this._authorizationPromise;
     }
@@ -65,14 +74,14 @@ export class BrowserAuthorizationRequestHandler extends AppAuth.AuthorizationReq
      */
     private _handleBrowserLoginResponse(
         queryParams: any,
-        request: AppAuth.AuthorizationRequest): AppAuth.AuthorizationRequestResponse {
+        request: AuthorizationRequest): AuthorizationRequestResponse {
 
         // Get strongly typed fields
-        const authFields = queryParams as (AppAuth.AuthorizationResponseJson & AppAuth.AuthorizationErrorJson);
+        const authFields = queryParams as (AuthorizationResponseJson & AuthorizationErrorJson);
 
         // Initialize the result
-        let authorizationResponse: AppAuth.AuthorizationResponse | null = null;
-        let authorizationError: AppAuth.AuthorizationError | null = null;
+        let authorizationResponse: AuthorizationResponse | null = null;
+        let authorizationError: AuthorizationError | null = null;
 
         // Process the login response message
         const state = authFields.state;
@@ -90,8 +99,8 @@ export class BrowserAuthorizationRequestHandler extends AppAuth.AuthorizationReq
                 error_description: errorDescription,
                 error_uri: errorUri,
                 state,
-            } as AppAuth.AuthorizationErrorJson;
-            authorizationError = new AppAuth.AuthorizationError(errorJson);
+            } as AuthorizationErrorJson;
+            authorizationError = new AuthorizationError(errorJson);
         } else {
 
             // Create a success response containing the code, which we will next swap for tokens
@@ -99,7 +108,7 @@ export class BrowserAuthorizationRequestHandler extends AppAuth.AuthorizationReq
                 code,
                 state,
             };
-            authorizationResponse = new AppAuth.AuthorizationResponse(responseJson);
+            authorizationResponse = new AuthorizationResponse(responseJson);
         }
 
         // Return the full authorization response data
@@ -107,6 +116,6 @@ export class BrowserAuthorizationRequestHandler extends AppAuth.AuthorizationReq
             request,
             response: authorizationResponse,
             error: authorizationError,
-        } as AppAuth.AuthorizationRequestResponse;
+        } as AuthorizationRequestResponse;
     }
 }
