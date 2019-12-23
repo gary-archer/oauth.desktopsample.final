@@ -1,29 +1,27 @@
-import axios from 'axios';
+import fs from 'fs-extra';
 import {Configuration} from '../../configuration/configuration';
 import {ErrorHandler} from '../../plumbing/errors/errorHandler';
-import {AxiosUtils} from '../../plumbing/utilities/axiosUtils';
 
 /*
- * Logic related to making HTTP calls
+ * Logic related to loading the configuration file
  */
 export class ConfigurationClient {
 
     /*
-     * Download JSON data from the app config file
+     * Laod the JSON data from the configuration file
      */
-    public async download(url: string): Promise<Configuration> {
+    public async load(url: string): Promise<Configuration> {
 
         try {
 
             // Make the remote call
-            const response = await axios.get<Configuration>(url);
-            AxiosUtils.checkJson(response.data);
-            return response.data;
+            const configBuffer = await fs.readFile('desktop.config.cloudapi.json');
+            return JSON.parse(configBuffer.toString()) as Configuration;
 
-        } catch (xhr) {
+        } catch (e) {
 
             // Capture error details
-            throw ErrorHandler.getFromWebDownloadError(xhr, url);
+            throw ErrorHandler.getFromFileReadError(e, url);
         }
     }
 }

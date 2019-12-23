@@ -6,11 +6,8 @@ import {FooterViewProps} from './footerViewProps';
  */
 export class FooterView extends React.Component<FooterViewProps> {
 
-    private readonly _sessionId: string;
-
     public constructor(props: FooterViewProps) {
         super(props);
-        this._sessionId = 'xxx';
     }
 
     /*
@@ -27,7 +24,7 @@ export class FooterView extends React.Component<FooterViewProps> {
 
         return  (
                     <div className='footer text-right mx-auto'>
-                        <small>{`API Session Id: ${this._sessionId}`}</small>
+                        <small>{`API Session Id: ${this.props.apiClient.sessionId}`}</small>
                     </div>
                 );
     }

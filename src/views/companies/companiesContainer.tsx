@@ -21,7 +21,6 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
             error: null,
         };
 
-        console.log('companies container');
         this._setupCallbacks();
     }
 
@@ -80,7 +79,6 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
                 causeError,
             };
 
-            this.props.onViewLoading('CompaniesContainer');
             const companies = await this.props.apiClient.getCompanyList(options);
 
             this.setState((prevState) => {

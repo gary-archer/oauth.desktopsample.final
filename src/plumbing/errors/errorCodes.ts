@@ -25,11 +25,8 @@ export class ErrorCodes {
     // A general exception in the UI
     public static readonly generalUIError = 'ui_error';
 
-    // An error making an Ajax call to get the configuration data
-    public static readonly webAjaxError = 'web_ajax_error';
-
-    // An error receiving configuration data downloaded as static content
-    public static readonly webDataError = 'web_data_error';
+    // An error reading a local file
+    public static readonly fileReadError = 'file_read_error';
 
     // An error making an Ajax call to get API data
     public static readonly apiAjaxError = 'api_ajax_error';

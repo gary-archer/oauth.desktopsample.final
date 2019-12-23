@@ -22,6 +22,8 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
      */
     public render(): React.ReactNode {
 
+        // TODO: 5 buttons and add Expire Refresh Token
+        // TODO: When login completes activate session buttons
         const disabled = !this.props.sessionButtonsEnabled;
         return  (
                 <div className='row'>

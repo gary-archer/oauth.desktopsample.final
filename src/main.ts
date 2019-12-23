@@ -2,12 +2,12 @@ import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import {CustomSchemeEvents} from './plumbing/oauth/customSchemeEvents';
 
-const customSchemeName = 'x-mycompany-desktopapp';
-
 /*
  * The Electron main process entry point
  */
 class Main {
+
+    private static readonly customSchemeName = 'x-mycompany-desktopapp';
 
     /*
      * The entry point function
@@ -27,7 +27,7 @@ class Main {
             // See if we have a custom scheme notification, and note that Chromium may add its own parameters
             for (const arg of argv) {
                 const value = arg as string;
-                if (value.indexOf(customSchemeName) !== -1) {
+                if (value.indexOf(Main.customSchemeName) !== -1) {
                     Main._receiveCustomSchemeNotificationInRunningInstance(value);
                     break;
                 }
@@ -58,7 +58,7 @@ class Main {
         app.on('window-all-closed', () => {
 
             // For convenience, to allow us to run from multiple locations, we unregister here
-            app.removeAsDefaultProtocolClient(customSchemeName);
+            app.removeAsDefaultProtocolClient(Main.customSchemeName);
 
             // On macOS, applications and their menu barstay active until the user quits explicitly with Cmd + Q
             if (process.platform !== 'darwin') {
@@ -76,7 +76,7 @@ class Main {
         });
 
         // Register our private URI scheme for the current user when we run for the first time
-        app.setAsDefaultProtocolClient(customSchemeName);
+        app.setAsDefaultProtocolClient(Main.customSchemeName);
 
         // Handle login responses or deep linking requests against the running app on Mac OS
         app.on('open-url', (event: any, customSchemeData: string) => {
@@ -109,7 +109,7 @@ class Main {
         Main._window = new BrowserWindow({
             width: 1024,
             height: 768,
-            minWidth: 480,
+            minWidth: 800,
             minHeight: 600,
             webPreferences: {
                 nodeIntegration: true,
@@ -124,7 +124,7 @@ class Main {
         Main._window.loadFile('./index.html');
 
         // Open the developer tools at startup if required
-        Main._window.webContents.openDevTools();
+        // Main._window.webContents.openDevTools();
 
         // Remove the 'Origin: file://' deault header which Okta rejected for security reasons with this message:
         // 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
@@ -140,6 +140,7 @@ class Main {
 
         // Emitted when the window is closed
         Main._window.on('closed', () => {
+
             // Dereference the window object, usually you would store windows
             // in an array if your app supports multi windows, this is the time
             // when you should delete the corresponding element
@@ -148,7 +149,7 @@ class Main {
 
         // The new instance of the app could have been started via deep linking
         // In this case the Electron side of the app can send us a message to get the URL
-        ipcMain.on(CustomSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, (event: any, result: any) => {
+        ipcMain.on(CustomSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, () => {
             Main._window.webContents.send(CustomSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, Main._startupUrl);
         });
     }

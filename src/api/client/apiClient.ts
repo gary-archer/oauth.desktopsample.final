@@ -29,6 +29,13 @@ export class ApiClient {
     }
 
     /*
+     * Return the session id for display
+     */
+    public get sessionId(): string {
+        return this._sessionId;
+    }
+
+    /*
      * We download user info from the API so that we can get any data we need
      */
     public async getUserInfo(): Promise<UserInfoClaims> {

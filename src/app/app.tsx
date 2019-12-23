@@ -16,7 +16,7 @@ import {FooterView} from '../views/frame/footerView';
 import {HeadingView} from '../views/frame/headingView';
 import {TitleView} from '../views/frame/titleView';
 import {HeaderButtonsView} from '../views/headerButtons/headerButtonsView';
-import {LoginRequiredView} from '../views/logout/loginRequiredView';
+import {LoginRequiredView} from '../views/loginRequired/loginRequiredView';
 import {TransactionsContainer} from '../views/transactions/transactionsContainer';
 import {ViewManager} from '../views/viewManager';
 import {AppState} from './appState';
@@ -124,19 +124,21 @@ export class App extends React.Component<any, AppState> {
             apiClient: this._apiClient,
         };
 
-        const logoutProps = {
+        const loginRequiredProps = {
+            authenticator: this._authenticator,
             onViewLoading: this._viewManager.onMainViewLoading,
             onViewLoaded: this._viewManager.onMainViewLoaded,
         };
 
         const footerProps = {
             isVisible: this.state.isLoaded,
+            apiClient: this._apiClient,
         };
 
         // Callbacks to prevent multi line JSX warnings
         const renderCompaniesView     = () =>             <CompaniesContainer {...mainViewProps} />;
         const renderTransactionsView  = (props: any) =>   <TransactionsContainer {...props} {...mainViewProps} />;
-        const renderLoginRequiredView = () =>             <LoginRequiredView {...logoutProps} />;
+        const renderLoginRequiredView = () =>             <LoginRequiredView {...loginRequiredProps} />;
 
         // Render the tree view
         return (
@@ -148,7 +150,7 @@ export class App extends React.Component<any, AppState> {
                     <Switch>
                         <Route exact={true} path='/'               render={renderCompaniesView} />
                         <Route exact={true} path='/companies/:id'  render={renderTransactionsView} />
-                        <Route exact={true} path='/loginrequired'  render={renderLoginRequiredView} />
+                        <Route exact={true} path='/loginrequired*' render={renderLoginRequiredView} />
                         <Route path='*'                            render={renderCompaniesView} />
                     </Switch>
                 </HashRouter>
@@ -162,9 +164,9 @@ export class App extends React.Component<any, AppState> {
      */
     private async _loadApp(): Promise<void> {
 
-        // First download configuration from the browser's web domain
+        // First read configuration
         const configurationClient = new ConfigurationClient();
-        this._configuration = await configurationClient.download('desktop.config.cloudapi.json');
+        this._configuration = await configurationClient.load('desktop.config.cloudapi.json');
 
         // Initialise authentication
         this._authenticator = new Authenticator(this._configuration.oauth);
@@ -261,9 +263,11 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * The view manager notifies the app when a login is required
+     * The view manager notifies the app when a login is required and we move to the login required view
      */
     private _onLoginRequired(): void {
+
+        LoginRequiredView.navigate();
     }
 
     /*
@@ -272,7 +276,7 @@ export class App extends React.Component<any, AppState> {
     private _handleLogoutClick(): void {
 
         this._authenticator!.logout();
-        location.hash = `#loginrequired`;
+        location.hash = `#/loginrequired`;
     }
 
     /*

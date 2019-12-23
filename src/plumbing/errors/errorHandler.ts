@@ -97,40 +97,13 @@ export class ErrorHandler {
     /*
      * Return an object for Ajax errors
      */
-    public static getFromWebDownloadError(exception: any, url: string): UIError {
+    public static getFromFileReadError(exception: any, url: string): UIError {
 
-        // Calculate the status code
-        let statusCode = 0;
-        if (exception.response && exception.response.status) {
-            statusCode = exception.response.status;
-        }
-
-        let error: UIError;
-        if (statusCode >= 200 && statusCode <= 299) {
-
-            // This status is generally a JSON parsing error
-            error = new UIError(
-                'Data',
-                ErrorCodes.webDataError,
-                'A technical problem occurred when the UI received data',
-                exception.stack);
-            error.details = 'Unable to parse data from web server';
-
-        } else {
-
-            // Otherwise there is some kind of network or not found error
-            error = new UIError(
-                'Network',
-                ErrorCodes.webAjaxError,
-                'A problem occurred when the UI called the server',
-                exception.stack);
-            error.details = 'Unable to download a file from the web server';
-
-        }
-
-        error.statusCode = statusCode;
-        error.url = url;
-        return error;
+        return new UIError(
+            'Data Access',
+            ErrorCodes.fileReadError,
+            'A problem was encountered reading a file',
+            exception.stack);
     }
 
     /*

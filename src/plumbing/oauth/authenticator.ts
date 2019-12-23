@@ -6,6 +6,7 @@ import {AuthorizationError,
         AuthorizationServiceConfiguration,
         BaseTokenRequestHandler,
         DefaultCrypto,
+        FetchRequestor,
         GRANT_TYPE_AUTHORIZATION_CODE,
         GRANT_TYPE_REFRESH_TOKEN,
         StringMap,
@@ -19,7 +20,6 @@ import {BrowserAuthorizationRequestHandler} from './browserAuthorizationRequestH
 import {CodeVerifier} from './codeVerifier';
 import {CustomSchemeNotifier} from './customSchemeNotifier';
 import {LoginEvents} from './loginEvents';
-import {TokenRequestor} from './tokenRequestor';
 import {TokenStorage} from './tokenStorage';
 
 /*
@@ -118,7 +118,8 @@ export class Authenticator {
         // Download metadata from the Authorization server if required
         if (!Authenticator._metadata) {
             Authenticator._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                this._oauthConfig.authority);
+                this._oauthConfig.authority,
+                new FetchRequestor());
         }
 
         // Supply PKCE parameters for the redirect, which avoids native app vulnerabilities
@@ -227,7 +228,7 @@ export class Authenticator {
         const tokenRequest = new TokenRequest(requestJson);
 
         // Execute the request to swap the code for tokens
-        const requestor = new TokenRequestor();
+        const requestor = new FetchRequestor();
         const tokenHandler = new BaseTokenRequestHandler(requestor);
 
         // Perform the authorization code grant exchange
@@ -245,7 +246,8 @@ export class Authenticator {
         // Download metadata from the Authorization server if required
         if (!Authenticator._metadata) {
             Authenticator._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                this._oauthConfig.authority);
+                this._oauthConfig.authority,
+                new FetchRequestor());
         }
 
         // Supply the scope for access tokens
@@ -265,7 +267,7 @@ export class Authenticator {
         try {
 
             // Execute the request to send the refresh token and get new tokens
-            const requestor = new TokenRequestor();
+            const requestor = new FetchRequestor();
             const tokenHandler = new BaseTokenRequestHandler(requestor);
             const newTokenData = await tokenHandler.performTokenRequest(Authenticator._metadata, tokenRequest);
 
