@@ -79,6 +79,7 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
                 causeError,
             };
 
+            this.props.onViewLoading('CompaniesContainer');
             const companies = await this.props.apiClient.getCompanyList(options);
 
             this.setState((prevState) => {

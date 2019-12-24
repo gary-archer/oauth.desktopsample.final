@@ -271,11 +271,11 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Do a a simple logout
+     * Start the logout redirect
      */
-    private _handleLogoutClick(): void {
+    private async _handleLogoutClick(): Promise<void> {
 
-        this._authenticator!.logout();
+        await this._authenticator!.startLogout();
         location.hash = `#/loginrequired`;
     }
 

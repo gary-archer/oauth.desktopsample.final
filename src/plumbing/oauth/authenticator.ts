@@ -16,10 +16,11 @@ import {AuthorizationError,
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorHandler} from '../errors/errorHandler';
 import {UIError} from '../errors/uiError';
-import {BrowserAuthorizationRequestHandler} from './browserAuthorizationRequestHandler';
 import {CodeVerifier} from './codeVerifier';
 import {CustomSchemeNotifier} from './customSchemeNotifier';
 import {LoginEvents} from './loginEvents';
+import {LoginRequestHandler} from './loginRequestHandler';
+import {Logout} from './logout/logout';
 import {TokenStorage} from './tokenStorage';
 
 /*
@@ -28,18 +29,14 @@ import {TokenStorage} from './tokenStorage';
 export class Authenticator {
 
     /*
-     * Static class members
-     */
-    private static _metadata: any = null;
-
-    /*
-     * The authenticator deals with logins and tokens and stores them in the auth state
+     * Store configuration and tokens globally
      */
     private readonly _oauthConfig: OAuthConfiguration;
     private _authState: TokenResponse | null;
+    private _metadata: any = null;
 
     /*
-     * Class setup
+     * Construct at startup from configuration
      */
     public constructor(oauthConfig: OAuthConfiguration) {
         this._oauthConfig = oauthConfig;
@@ -116,8 +113,8 @@ export class Authenticator {
     public async startLogin(onCompleted: (error: UIError | null) => void): Promise<void> {
 
         // Download metadata from the Authorization server if required
-        if (!Authenticator._metadata) {
-            Authenticator._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
+        if (!this._metadata) {
+            this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
                 this._oauthConfig.authority,
                 new FetchRequestor());
         }
@@ -146,7 +143,7 @@ export class Authenticator {
         CustomSchemeNotifier.addCorrelationState(authorizationRequest.state, loginEvents);
 
         // Create an authorization handler that uses the browser
-        const authorizationRequestHandler = new BrowserAuthorizationRequestHandler(loginEvents);
+        const authorizationRequestHandler = new LoginRequestHandler(loginEvents);
 
         // Use the AppAuth mechanism of a notifier to receive the login result
         const notifier = new AuthorizationNotifier();
@@ -167,16 +164,27 @@ export class Authenticator {
         });
 
         // Start the login
-        authorizationRequestHandler.performAuthorizationRequest(Authenticator._metadata, authorizationRequest);
+        authorizationRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
     }
 
     /*
-     * Our 'basic logout' implementation just clears token data
+     * Implement logout in a custom manner
      */
-    public async logout(): Promise<void> {
+    public async startLogout(): Promise<void> {
 
-        this._authState = null;
-        await TokenStorage.delete();
+        const logout = new Logout(this._oauthConfig, this._metadata, this._onLogoutComplete);
+        await logout.start();
+    }
+
+    /*
+     * Handle the response from logging out
+     */
+    private async _onLogoutComplete(error: UIError | null) {
+
+        if (!error) {
+            this._authState = null;
+            await TokenStorage.delete();
+        }
     }
 
     /*
@@ -232,7 +240,7 @@ export class Authenticator {
         const tokenHandler = new BaseTokenRequestHandler(requestor);
 
         // Perform the authorization code grant exchange
-        this._authState = await tokenHandler.performTokenRequest(Authenticator._metadata, tokenRequest);
+        this._authState = await tokenHandler.performTokenRequest(this._metadata, tokenRequest);
 
         // Save to secure storage
         await TokenStorage.save(this._authState);
@@ -244,8 +252,8 @@ export class Authenticator {
     private async _refreshAccessToken(): Promise<void> {
 
         // Download metadata from the Authorization server if required
-        if (!Authenticator._metadata) {
-            Authenticator._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
+        if (!this._metadata) {
+            this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
                 this._oauthConfig.authority,
                 new FetchRequestor());
         }
@@ -269,7 +277,7 @@ export class Authenticator {
             // Execute the request to send the refresh token and get new tokens
             const requestor = new FetchRequestor();
             const tokenHandler = new BaseTokenRequestHandler(requestor);
-            const newTokenData = await tokenHandler.performTokenRequest(Authenticator._metadata, tokenRequest);
+            const newTokenData = await tokenHandler.performTokenRequest(this._metadata, tokenRequest);
 
             // Maintain the refresh token if we did not receive a new 'rolling' refresh token
             if (!newTokenData.refreshToken) {

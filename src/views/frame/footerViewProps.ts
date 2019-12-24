@@ -1,4 +1,4 @@
-import {ApiClient} from "../../api/client/apiClient";
+import {ApiClient} from '../../api/client/apiClient';
 
 /*
  * Input to the footer view

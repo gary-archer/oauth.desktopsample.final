@@ -12,9 +12,9 @@ import Opener from 'opener';
 import {LoginEvents} from './loginEvents';
 
 /*
- * An override of the default authorization handler
+ * An override of the default authorization handler to perform a login
  */
-export class BrowserAuthorizationRequestHandler extends AuthorizationRequestHandler {
+export class LoginRequestHandler extends AuthorizationRequestHandler {
 
     /*
      * Inputs and outputs

@@ -66,8 +66,7 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
         return (
             <>
                 <p className='signingincolor'>
-                    Sign In has started ...
-                    If required, please switch to your browser and enter your credentials
+                    Sign In has started. If required, please switch to your browser and enter your credentials ...
                 </p>
             </>
         );

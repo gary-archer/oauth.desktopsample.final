@@ -47,8 +47,24 @@ export class TokenStorage {
         // Convert the object to text
         const authState = JSON.stringify(clone.toJson());
 
-        // Save token data to secure storage
-        await KeyTar.setPassword(APP_STORAGE_ID, this._userName, authState);
+        try {
+            // Save token data to secure storage
+            await KeyTar.setPassword(APP_STORAGE_ID, this._userName, authState);
+
+        } catch (e) {
+
+            // https://github.com/atom/node-keytar/issues/127
+            console.log(typeof e);
+            console.log(e);
+            console.log(e.message);
+            if (e.message && e.message.indexOf && e.message.indexOf('already exists') !== -1) {
+
+                console.log('retrying');
+                await KeyTar.deletePassword(APP_STORAGE_ID, this._userName);
+                await KeyTar.setPassword(APP_STORAGE_ID, this._userName, authState);
+                console.log('retry worked');
+            }
+        }
     }
 
     /*
