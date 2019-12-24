@@ -105,8 +105,9 @@ export class LoginManager {
             return ErrorHandler.getFromInvalidLoginResponseState();
         }
 
-        // Phase 2 of login is to swap the authorization code for tokens
         try {
+
+            // Phase 2 of login is to swap the authorization code for tokens
             await this._onCodeReceived(response!.code, codeVerifier);
             return null;
 

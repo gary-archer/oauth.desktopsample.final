@@ -45,7 +45,7 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
         // Create a promise to handle the response from the browser
         this._authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
 
-            // Wait for a response event from the loopback web server
+            // Wait for a response event from the system
             this._loginEvents.once(RedirectEvents.ON_AUTHORIZATION_RESPONSE, (queryParams: any) => {
 
                 // Package up data into an object and then resolve our promise

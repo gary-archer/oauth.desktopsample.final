@@ -138,7 +138,7 @@ export class Authenticator {
      */
     private async _swapAuthorizationCodeForTokens(authorizationCode: string, codeVerifier: string): Promise<void> {
 
-        // Supply PKCE parameters for the code exchange and the scope for tokens
+        // Supply PKCE parameters for the code exchange
         const extras: StringMap = {
             code_verifier: codeVerifier,
         };

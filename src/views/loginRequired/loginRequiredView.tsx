@@ -1,6 +1,7 @@
 import React from 'react';
 import urlparse from 'url-parse';
 import {UIError} from '../../plumbing/errors/uiError';
+import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {LoginRequiredViewProps} from './loginRequiredViewProps';
 import {LoginRequiredViewState} from './loginRequiredViewState';
 
@@ -47,6 +48,24 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
      */
     public render(): React.ReactNode {
 
+        if (this.state.signInError) {
+
+            // If there has been a sign in error then render it
+            const errorProps = {
+                hyperlinkMessage: 'Login Problem Encountered',
+                dialogTitle: 'Login Error',
+                error: this.state.signInError,
+            };
+            return (
+                <div className='row'>
+                    <div className='col-6 text-center mx-auto'>
+                        <ErrorSummaryView {...errorProps}/>
+                    </div>
+                </div>
+            );
+        }
+
+        // Otherwise render that the user needs to sign in
         return  (
             <div className='card border-0'>
                 <h5>
@@ -98,11 +117,9 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
 
         // Store error state if required
         if (e) {
-
             this.setState((prevState) => {
                 return {...prevState, signInError: e};
             });
-
             return;
         }
 

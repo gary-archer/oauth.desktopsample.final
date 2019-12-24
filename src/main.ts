@@ -1,6 +1,6 @@
 import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
-/* import log from 'electron-log'; */
+import log from 'electron-log';
 import {CustomSchemeEvents} from './plumbing/utilities/customSchemeEvents';
 
 /*
@@ -91,7 +91,7 @@ class Main {
         this._window.loadFile('./index.html');
 
         // Open the developer tools at startup if required
-        this._window.webContents.openDevTools();
+        // this._window.webContents.openDevTools();
 
         // Remove the 'Origin: file://' deault header which Okta rejected for security reasons with this message:
         // 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
@@ -143,6 +143,7 @@ class Main {
      */
     private _onOpenUrl(event: any, customSchemeData: string) {
 
+        console.log('*** OPEN URL: ' + customSchemeData);
         event.preventDefault();
 
         if (this._window) {

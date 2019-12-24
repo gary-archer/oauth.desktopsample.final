@@ -12,13 +12,20 @@ class Starter {
 
         const path = this._getBuiltAppPath();
 
-        const args = [];
+        // In some environments force use of a proxy server via Chromium parameters
+        const args: string[] = [];
         if (process.env.HTTPS_PROXY) {
             args.push(`--proxy-server=${process.env.HTTPS_PROXY as string}`);
         }
 
-        console.log(`Starting app with command ${path} and arguments ${args}`);
-        const app = ChildProcess.execFile(path, args);
+        // Indicate the command to run
+        console.log(`START: Running command ${path}`);
+
+        // Run the Electron main process and capture its stdout for debugging
+        const child = ChildProcess.spawn(path, args);
+        child.stdout.on('data', (data) => {
+            console.log(`*** MAIN: ${data.toString()}`);
+        })
     }
 
     /*
