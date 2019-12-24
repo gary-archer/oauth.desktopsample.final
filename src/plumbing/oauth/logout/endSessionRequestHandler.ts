@@ -1,5 +1,5 @@
 import {AuthorizationServiceConfiguration} from '@openid/appauth';
-import {LoginEvents} from '../loginEvents';
+import {RedirectEvents} from '../utilities/redirectEvents';
 import {EndSessionNotifier} from './endSessionNotifier';
 import {EndSessionRequest} from './endSessionRequest';
 import {EndSessionRequestResponse} from './endSessionRequestResponse';
@@ -9,9 +9,9 @@ import {EndSessionRequestResponse} from './endSessionRequestResponse';
  */
 export class EndSessionRequestHandler {
 
-    private readonly _logoutEvents: LoginEvents;
+    private readonly _logoutEvents: RedirectEvents;
 
-    public constructor(logoutEvents: LoginEvents) {
+    public constructor(logoutEvents: RedirectEvents) {
         this._logoutEvents = logoutEvents;
     }
 

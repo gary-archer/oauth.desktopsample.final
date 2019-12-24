@@ -8,7 +8,7 @@ import {ErrorHandler} from '../plumbing/errors/errorHandler';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
 import {Authenticator} from '../plumbing/oauth/authenticator';
-import {CustomSchemeNotifier} from '../plumbing/oauth/customSchemeNotifier';
+import {CustomSchemeNotifier} from '../plumbing/utilities/customSchemeNotifier';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {ErrorBoundary} from '../views/errors/errorBoundary';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';

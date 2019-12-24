@@ -1,0 +1,20 @@
+1. Get login errors rendering - start by throwing in swapAuthCodeForTokens
+
+2. Get logins stable - currently second attempt does not do a Chrome custom scheme popup
+   I have to completely quit Chrome and retry
+
+3. Run child process with capture stdout since otherwise I lose electron-log output
+
+4. Avoid creating my own codeVerifier
+
+5. keytar already exists problems
+
+6. Are there typings for any of these?
+   * electron-default-menu
+   * electron-packager
+   * opener
+   * username'
+
+7. Reduce static members further
+
+8. Get logout working

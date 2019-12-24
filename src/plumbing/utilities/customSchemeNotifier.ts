@@ -1,8 +1,8 @@
 import {ipcRenderer} from 'electron';
 import Url from 'url';
+import {RedirectEvents} from '../oauth/utilities/redirectEvents';
+import {RedirectState} from '../oauth/utilities/redirectState';
 import {CustomSchemeEvents} from './customSchemeEvents';
-import {LoginEvents} from './loginEvents';
-import {LoginState} from './loginState';
 
 /*
  * A class to handle custom scheme responses from the operating system, and correlating to earlier login requests
@@ -26,7 +26,7 @@ export class CustomSchemeNotifier {
     /*
      * During logins, add to the login state so that the correct response data is used for each request
      */
-    public static addCorrelationState(state: string, loginEvents: LoginEvents): void {
+    public static addCorrelationState(state: string, loginEvents: RedirectEvents): void {
         return CustomSchemeNotifier._loginState.addState(state, loginEvents);
     }
 
@@ -40,7 +40,7 @@ export class CustomSchemeNotifier {
     /*
      * Store login state across all attempts
      */
-    private static _loginState: LoginState = new LoginState();
+    private static _loginState = new RedirectState();
 
     /*
      * This asks the main side of the app for the startup deep linking path
@@ -100,7 +100,7 @@ export class CustomSchemeNotifier {
         if (loginEvents) {
 
             // Raise the response event to complete login processing
-            loginEvents.emit(LoginEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
+            loginEvents.emit(RedirectEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
         }
     }
 

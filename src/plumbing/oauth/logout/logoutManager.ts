@@ -1,8 +1,8 @@
 import {AuthorizationServiceConfiguration} from '@openid/appauth';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {UIError} from '../../errors/uiError';
-import {CustomSchemeNotifier} from '../customSchemeNotifier';
-import {LoginEvents} from '../loginEvents';
+import {CustomSchemeNotifier} from '../../utilities/customSchemeNotifier';
+import {RedirectEvents} from '../utilities/redirectEvents';
 import {EndSessionError} from './endSessionError';
 import {EndSessionNotifier} from './endSessionNotifier';
 import {EndSessionRequest} from './endSessionRequest';
@@ -10,9 +10,9 @@ import {EndSessionRequestHandler} from './endSessionRequestHandler';
 import {EndSessionResponse} from './endSessionResponse';
 
 /*
- * The entry point class for logout operations, which follows the AppAuth pattern
+ * A class to handle the plumbind of logout redirects via the system browser
  */
-export class Logout {
+export class LogoutManager {
 
     private readonly _configuration: OAuthConfiguration;
     private readonly _metadata: AuthorizationServiceConfiguration;
@@ -43,7 +43,7 @@ export class Logout {
         const logoutRequest = new EndSessionRequest();
 
         // Create events for this logout attempt
-        const logoutEvents = new LoginEvents();
+        const logoutEvents = new RedirectEvents();
 
         // Ensure that completion callbacks are correlated to the correct authorization request
         CustomSchemeNotifier.addCorrelationState(logoutRequest.state, logoutEvents);

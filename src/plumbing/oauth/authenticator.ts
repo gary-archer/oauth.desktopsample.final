@@ -1,11 +1,5 @@
-import {AuthorizationError,
-        AuthorizationNotifier,
-        AuthorizationRequest,
-        AuthorizationRequestJson,
-        AuthorizationResponse,
-        AuthorizationServiceConfiguration,
+import {AuthorizationServiceConfiguration,
         BaseTokenRequestHandler,
-        DefaultCrypto,
         FetchRequestor,
         GRANT_TYPE_AUTHORIZATION_CODE,
         GRANT_TYPE_REFRESH_TOKEN,
@@ -16,15 +10,12 @@ import {AuthorizationError,
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorHandler} from '../errors/errorHandler';
 import {UIError} from '../errors/uiError';
-import {CodeVerifier} from './codeVerifier';
-import {CustomSchemeNotifier} from './customSchemeNotifier';
-import {LoginEvents} from './loginEvents';
-import {LoginRequestHandler} from './loginRequestHandler';
-import {Logout} from './logout/logout';
-import {TokenStorage} from './tokenStorage';
+import {LoginManager} from './login/loginManager';
+import {LogoutManager} from './logout/logoutManager';
+import {TokenStorage} from './utilities/tokenStorage';
 
 /*
- * The entry point class for login and token requests
+ * The entry point class for login and token related requests
  */
 export class Authenticator {
 
@@ -41,6 +32,7 @@ export class Authenticator {
     public constructor(oauthConfig: OAuthConfiguration) {
         this._oauthConfig = oauthConfig;
         this._authState = null;
+        this._setupCallbacks();
     }
 
     /*
@@ -119,52 +111,13 @@ export class Authenticator {
                 new FetchRequestor());
         }
 
-        // Supply PKCE parameters for the redirect, which avoids native app vulnerabilities
-        const verifier = new CodeVerifier();
-        const extras: StringMap = {
-            code_challenge: verifier.challenge,
-            code_challenge_method: verifier.method,
-        };
-
-        // Create the authorization request
-        const requestJson = {
-            response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
-            client_id: this._oauthConfig.clientId,
-            redirect_uri: this._oauthConfig.redirectUri,
-            scope: this._oauthConfig.scope,
-            extras,
-        } as AuthorizationRequestJson;
-        const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
-
-        // Create events for this login attempt
-        const loginEvents = new LoginEvents();
-
-        // Ensure that completion callbacks are correlated to the correct authorization request
-        CustomSchemeNotifier.addCorrelationState(authorizationRequest.state, loginEvents);
-
-        // Create an authorization handler that uses the browser
-        const authorizationRequestHandler = new LoginRequestHandler(loginEvents);
-
-        // Use the AppAuth mechanism of a notifier to receive the login result
-        const notifier = new AuthorizationNotifier();
-        authorizationRequestHandler.setAuthorizationNotifier(notifier);
-        notifier.setAuthorizationListener(async (
-            request: AuthorizationRequest,
-            response: AuthorizationResponse | null,
-            error: AuthorizationError | null) => {
-
-                // Now that we've finished with login events, remove the item for this login attempt
-                CustomSchemeNotifier.removeCorrelationState(request.state);
-
-                // Try to complete login processing
-                const result = await this._handleLoginResponse(request, response, error, verifier.verifier);
-
-                // Call back the desktop UI so that it can navigate or show error details
-                onCompleted(result);
-        });
-
-        // Start the login
-        authorizationRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
+        // Start the login process
+        const login = new LoginManager(
+            this._oauthConfig,
+            this._metadata,
+            this._swapAuthorizationCodeForTokens,
+            onCompleted);
+        await login.start();
     }
 
     /*
@@ -172,47 +125,12 @@ export class Authenticator {
      */
     public async startLogout(): Promise<void> {
 
-        const logout = new Logout(this._oauthConfig, this._metadata, this._onLogoutComplete);
+        // Start the logout process
+        const logout = new LogoutManager(
+            this._oauthConfig,
+            this._metadata,
+            this._onLogoutComplete);
         await logout.start();
-    }
-
-    /*
-     * Handle the response from logging out
-     */
-    private async _onLogoutComplete(error: UIError | null) {
-
-        if (!error) {
-            this._authState = null;
-            await TokenStorage.delete();
-        }
-    }
-
-    /*
-     * Handle login response objects
-     */
-    private async _handleLoginResponse(
-        request: AuthorizationRequest,
-        response: AuthorizationResponse | null,
-        error: AuthorizationError | null,
-        codeVerifier: string): Promise<UIError | null> {
-
-        // Phase 1 of login has completed
-        if (error) {
-            return ErrorHandler.getFromOAuthResponse(error, 'authorization_failed');
-        }
-
-        // Check that the response state matches the request state
-        if (request.state !== response!.state) {
-            return ErrorHandler.getFromInvalidLoginResponseState();
-        }
-
-        // Phase 2 of login is to swap the authorization code for tokens
-        try {
-            await this._swapAuthorizationCodeForTokens(response!.code, codeVerifier);
-            return null;
-        } catch (e) {
-            return ErrorHandler.getFromOAuthResponse(e, 'authorization_code_failed');
-        }
     }
 
     /*
@@ -300,5 +218,23 @@ export class Authenticator {
                 throw ErrorHandler.getFromOAuthResponse(e, 'refresh_token_failed');
             }
         }
+    }
+
+    /*
+     * Handle the response from logging out
+     */
+    private async _onLogoutComplete(error: UIError | null) {
+
+        if (!error) {
+            this._authState = null;
+            await TokenStorage.delete();
+        }
+    }
+
+    /*
+     * Ensure that the this parameter is available in async callbacks
+     */
+    private _setupCallbacks() {
+        this._swapAuthorizationCodeForTokens = this._swapAuthorizationCodeForTokens.bind(this);
     }
 }
