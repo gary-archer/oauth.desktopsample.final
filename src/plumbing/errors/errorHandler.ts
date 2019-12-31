@@ -90,7 +90,7 @@ export class ErrorHandler {
 
         return new UIError(
             'Login',
-            'invalid_state',
+            ErrorCodes.loginStateMismatch,
             'The login response state did not match the login request state');
     }
 

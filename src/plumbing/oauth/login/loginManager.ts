@@ -4,14 +4,12 @@ import {AuthorizationError,
         AuthorizationRequestJson,
         AuthorizationResponse,
         AuthorizationServiceConfiguration,
-        DefaultCrypto,
-        StringMap} from '@openid/appauth';
+        DefaultCrypto} from '@openid/appauth';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {ErrorHandler} from '../../errors/errorHandler';
 import {UIError} from '../../errors/uiError';
 import {CustomSchemeNotifier} from '../../utilities/customSchemeNotifier';
 import {RedirectEvents} from '../utilities/redirectEvents';
-import {CodeVerifier} from './codeVerifier';
 import {LoginRequestHandler} from './loginRequestHandler';
 
 /*
@@ -38,22 +36,17 @@ export class LoginManager {
 
     public async start(): Promise<void> {
 
-        // Supply PKCE parameters for the redirect, which avoids native app vulnerabilities
-        const verifier = new CodeVerifier();
-        const extras: StringMap = {
-            code_challenge: verifier.challenge,
-            code_challenge_method: verifier.method,
-        };
-
         // Create the authorization request
         const requestJson = {
             response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
             client_id: this._configuration.clientId,
             redirect_uri: this._configuration.redirectUri,
             scope: this._configuration.scope,
-            extras,
         } as AuthorizationRequestJson;
         const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
+
+        // Set up PKCE for the redirect, which avoids native app vulnerabilities
+        await authorizationRequest.setupCodeVerifier();
 
         // Create events for this login attempt
         const loginEvents = new RedirectEvents();
@@ -76,7 +69,7 @@ export class LoginManager {
                 CustomSchemeNotifier.removeCorrelationState(request.state);
 
                 // Try to complete login processing
-                const result = await this._handleLoginResponse(request, response, error, verifier.verifier);
+                const result = await this._handleLoginResponse(request, response, error);
 
                 // Call back the desktop UI so that it can navigate or show error details
                 this._onComplete(result);
@@ -87,13 +80,12 @@ export class LoginManager {
     }
 
     /*
-     * Handle login response objects
+     * Start the second phase of login, to swap the authorization code for tokens
      */
     private async _handleLoginResponse(
         request: AuthorizationRequest,
         response: AuthorizationResponse | null,
-        error: AuthorizationError | null,
-        codeVerifier: string): Promise<UIError | null> {
+        error: AuthorizationError | null): Promise<UIError | null> {
 
         // Phase 1 of login has completed
         if (error) {
@@ -107,7 +99,11 @@ export class LoginManager {
 
         try {
 
-            // Phase 2 of login is to swap the authorization code for tokens
+            // Get the PKCE verifier
+            const codeVerifierKey = 'code_verifier';
+            const codeVerifier = request.internal[codeVerifierKey];
+
+            // Swap the authorization code for tokens
             await this._onCodeReceived(response!.code, codeVerifier);
             return null;
 

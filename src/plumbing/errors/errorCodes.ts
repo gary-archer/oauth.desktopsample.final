@@ -13,6 +13,9 @@ export class ErrorCodes {
     // A technical error processing the login response containing the authorization code
     public static readonly loginResponseFailed = 'login_response_failed';
 
+    // The login request and response states did not match
+    public static readonly loginStateMismatch = 'login_state_mismatch';
+
     // A technical problem during silent token renewal on an iframe
     public static readonly tokenRenewalIframeError = 'token_renewal_iframe_error';
 
@@ -26,7 +29,7 @@ export class ErrorCodes {
     public static readonly logoutRequestFailed = 'logout_request_failed';
 
     // A general exception in the UI
-    public static readonly generalUIError = 'ui_error';
+    public static readonly generalUIError = 'general_ui_error';
 
     // An error reading a local file
     public static readonly fileReadError = 'file_read_error';
