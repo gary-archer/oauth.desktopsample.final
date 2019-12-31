@@ -1,2 +1,0 @@
-1. Get logout working + merge
-2. Get latest tweaks to websample.final

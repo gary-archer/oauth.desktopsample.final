@@ -12,7 +12,6 @@ import {ErrorHandler} from '../errors/errorHandler';
 import {UIError} from '../errors/uiError';
 import {CustomRequestor} from './customRequestor';
 import {LoginManager} from './login/loginManager';
-import {LogoutManager} from './logout/logoutManager';
 import {TokenStorage} from './utilities/tokenStorage';
 
 /*
@@ -122,16 +121,11 @@ export class Authenticator {
     }
 
     /*
-     * Implement logout in a custom manner
+     * Implement a basic logout by simply clearing tokens
      */
     public async startLogout(): Promise<void> {
-
-        // Start the logout process
-        const logout = new LogoutManager(
-            this._oauthConfig,
-            this._metadata,
-            this._onLogoutComplete);
-        await logout.start();
+        this._authState = null;
+        await TokenStorage.delete();
     }
 
     /*
@@ -222,21 +216,9 @@ export class Authenticator {
     }
 
     /*
-     * Handle the response from logging out
-     */
-    private async _onLogoutComplete(error: UIError | null) {
-
-        if (!error) {
-            this._authState = null;
-            await TokenStorage.delete();
-        }
-    }
-
-    /*
      * Ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks() {
         this._swapAuthorizationCodeForTokens = this._swapAuthorizationCodeForTokens.bind(this);
-        this._onLogoutComplete = this._onLogoutComplete.bind(this);
     }
 }

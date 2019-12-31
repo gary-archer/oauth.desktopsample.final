@@ -150,7 +150,7 @@ export class App extends React.Component<any, AppState> {
                 <HashRouter>
                     <Switch>
                         <Route exact={true} path='/'               render={renderCompaniesView} />
-                        <Route exact={true} path='/companies/:id'  render={renderTransactionsView} />
+                        <Route exact={true} path='/company=:id'    render={renderTransactionsView} />
                         <Route exact={true} path='/loginrequired*' render={renderLoginRequiredView} />
                         <Route path='*'                            render={renderCompaniesView} />
                     </Switch>
@@ -281,7 +281,7 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Start the logout redirect
+     * Do the logout then move to the login required page
      */
     private async _handleLogoutClick(): Promise<void> {
 

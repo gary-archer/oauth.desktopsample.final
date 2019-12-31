@@ -47,7 +47,7 @@ export class CompaniesMainView extends React.Component<CompaniesViewProps> {
                         {company.name}
                     </div>
                     <div className='col-3 my-auto'>
-                        <a href={`#/companies/${company.id}`}>
+                        <a href={`#/company=${company.id}`}>
                             View Transactions
                         </a>
                     </div>
