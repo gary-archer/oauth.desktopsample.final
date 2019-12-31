@@ -106,8 +106,9 @@ export class App extends React.Component<any, AppState> {
         const headerButtonProps = {
             sessionButtonsEnabled: this.state.isLoaded,
             handleHomeClick: this._handleHomeClick,
-            handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
             handleRefreshDataClick: this._handleRefreshDataClick,
+            handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
+            handleExpireRefreshTokenClick: this._handleExpireRefreshTokenClick,
             handleLogoutClick: this._handleLogoutClick,
         };
 
@@ -202,8 +203,9 @@ export class App extends React.Component<any, AppState> {
         const headerButtonProps = {
             sessionButtonsEnabled: this.state.isLoaded,
             handleHomeClick: this._handleHomeClick,
-            handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
             handleRefreshDataClick: this._handleRefreshDataClick,
+            handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
+            handleExpireRefreshTokenClick: this._handleExpireRefreshTokenClick,
             handleLogoutClick: this._handleLogoutClick,
         };
 
@@ -254,6 +256,14 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
+     * For test purposes this makes the refresh token act expired
+     */
+    private async _handleExpireRefreshTokenClick(): Promise<void> {
+
+        await this._authenticator.expireRefreshToken();
+    }
+
+    /*
      * Get updated data and re-render when refresh is clicked
      * When refresh is long pressed we will intentionally cause an API 500 error
      */
@@ -292,8 +302,9 @@ export class App extends React.Component<any, AppState> {
     private _setupCallbacks(): void {
         this._onLoadStateChanged = this._onLoadStateChanged.bind(this);
         this._handleHomeClick = this._handleHomeClick.bind(this);
-        this._handleExpireAccessTokenClick = this._handleExpireAccessTokenClick.bind(this);
         this._handleRefreshDataClick = this._handleRefreshDataClick.bind(this);
+        this._handleExpireAccessTokenClick = this._handleExpireAccessTokenClick.bind(this);
+        this._handleExpireRefreshTokenClick = this._handleExpireRefreshTokenClick.bind(this);
         this._handleLogoutClick = this._handleLogoutClick.bind(this);
     }
 }

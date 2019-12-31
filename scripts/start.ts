@@ -24,7 +24,7 @@ class Starter {
         // Run the Electron main process and capture its stdout for debugging
         const child = ChildProcess.spawn(path, args);
         child.stdout.on('data', (data) => {
-            console.log(`*** MAIN: ${data.toString()}`);
+            console.log(`*** BASICDESKTOPAPP: ${data.toString()}`);
         })
     }
 

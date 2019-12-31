@@ -67,9 +67,9 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
 
         // Otherwise render that the user needs to sign in
         return  (
-            <div className='card border-0'>
+            <div className='card border-0 loginRequired'>
                 <h5>
-                    Click <a href='#' onClick={this._onLoginStart}>Sign In</a> to securely login via your browser ...
+                    You are logged out - click <a href='#' onClick={this._onLoginStart}>here</a> to log in ...
                 </h5>
                 <br/>
                 {this.state.signingIn && this._renderSigningIn()}

@@ -22,12 +22,10 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
      */
     public render(): React.ReactNode {
 
-        // TODO: 5 buttons and add Expire Refresh Token
-        // TODO: When login completes activate session buttons
         const disabled = !this.props.sessionButtonsEnabled;
         return  (
                 <div className='row'>
-                    <div className='col-3 my-2 d-flex'>
+                    <div className='col-4 my-2 d-flex'>
                         <button
                             onClick={this.props.handleHomeClick}
                             className='btn btn-primary btn-block p-1'
@@ -35,17 +33,8 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
                             Home
                         </button>
                     </div>
-                    <div className='col-3 my-2 d-flex'>
-                        <button
-                            onClick={this.props.handleExpireAccessTokenClick}
-                            className='btn btn-primary btn-block p-1'
-                            disabled={disabled}
-                        >
-                            Expire Token
-                        </button>
-                    </div>
                     <div
-                        className='col-3 my-2 d-flex'
+                        className='col-4 my-2 d-flex'
                         onTouchStart={this._handleRefreshPress}
                         onTouchEnd={this._handleRefreshRelease}
                         onMouseDown={this._handleRefreshPress}
@@ -58,7 +47,25 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
                             Refresh Data
                         </button>
                     </div>
-                    <div className='col-3 my-2 d-flex'>
+                    <div className='col-4 my-2 d-flex'>
+                        <button
+                            onClick={this.props.handleExpireAccessTokenClick}
+                            className='btn btn-primary btn-block p-1'
+                            disabled={disabled}
+                        >
+                            Expire Access Token
+                        </button>
+                    </div>
+                    <div className='col-4 my-2 d-flex'>
+                        <button
+                            onClick={this.props.handleExpireRefreshTokenClick}
+                            className='btn btn-primary btn-block p-1'
+                            disabled={disabled}
+                        >
+                            Expire Refresh Token
+                        </button>
+                    </div>
+                    <div className='col-4 my-2 d-flex'>
                         <button
                             onClick={this.props.handleLogoutClick}
                             className='btn btn-primary btn-block p-1'

@@ -34,31 +34,35 @@ export class TokenStorage {
     }
 
     /*
-     * Save token data after login
+     * Save token data after login and prevent concurrency problems
      */
     public static async save(data: TokenResponse): Promise<void> {
 
-         // Work around the Windows limitation below by shortening the data to prevent a 'Stub received bad data' error
-        // https://github.com/atom/node-keytar/issues/112
-        const clone = new TokenResponse(data.toJson());
-        clone.accessToken = '';
-        clone.idToken = '';
+        // If two UI fragments try to update storage at the same time then only the first one wins
+        if (!TokenStorage._isSaving) {
 
-        // Convert the object to text
-        const authState = JSON.stringify(clone.toJson());
+            // Prevent re-entrancy
+            TokenStorage._isSaving = true;
+            try {
 
-        // Save token data to secure storage
-        await KeyTar.setPassword(APP_STORAGE_ID, this._userName, authState);
+                // Work around the Windows limitation that causes a 'Stub received bad data' error
+                // https://github.com/atom/node-keytar/issues/112
+                const clone = new TokenResponse(data.toJson());
+                clone.accessToken = '';
+                clone.idToken = '';
 
-        /* catch(e)
+                // Convert the object to text
+                const authState = JSON.stringify(clone.toJson());
 
-            // https://github.com/atom/node-keytar/issues/127
-            if (e.message && e.message.indexOf && e.message.indexOf('already exists') !== -1) {
-
-                await KeyTar.deletePassword(APP_STORAGE_ID, this._userName);
+                // Save token data to secure storage
                 await KeyTar.setPassword(APP_STORAGE_ID, this._userName, authState);
+
+            } finally {
+
+                // Reset once complete
+                TokenStorage._isSaving = false;
             }
-        }*/
+        }
     }
 
     /*
@@ -71,7 +75,8 @@ export class TokenStorage {
     }
 
     /*
-     * Cached user name
+     * Internal fields
      */
     private static _userName: string;
+    private static _isSaving = false;
 }

@@ -19,6 +19,9 @@ export class ErrorCodes {
     // The OAuth error when a refresh token expires
     public static readonly refreshTokenExpired = 'invalid_grant';
 
+    // The OAuth error when a refresh token expires due to a technical problem
+    public static readonly tokenRefreshFailed = 'token_refresh_failed';
+
     // An error starting a logout request, such as contacting the metadata endpoint
     public static readonly logoutRequestFailed = 'logout_request_failed';
 

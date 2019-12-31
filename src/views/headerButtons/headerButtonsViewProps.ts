@@ -6,9 +6,10 @@ export interface HeaderButtonsViewProps {
     // Whether to enable session related operations
     sessionButtonsEnabled: boolean;
 
-    // Callbacks when they are clicked
+    // Callbacks
     handleHomeClick: () => void;
-    handleExpireAccessTokenClick: () => void;
     handleRefreshDataClick: (causeApiError: boolean) => void;
+    handleExpireAccessTokenClick: () => void;
+    handleExpireRefreshTokenClick: () => void;
     handleLogoutClick: () => void;
 }

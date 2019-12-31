@@ -43,9 +43,8 @@ class Main {
      */
     private _initializeApplication(): void {
 
-        // This method will be called when Electron has finished
-        // initialization and is ready to create browser windows.
-        // Some APIs can only be used after this event occurs.
+        // This method will be called when Electron has finished initialization and is ready to create browser windows
+        // Some APIs can only be used after this event occurs
         app.on('ready', this._createMainWindow);
 
         // Quit when all windows are closed
@@ -143,7 +142,6 @@ class Main {
      */
     private _onOpenUrl(event: any, customSchemeData: string) {
 
-        console.log('*** OPEN URL: ' + customSchemeData);
         event.preventDefault();
 
         if (this._window) {
@@ -209,7 +207,7 @@ class Main {
         // For convenience, to allow us to run from multiple locations, we unregister here
         app.removeAsDefaultProtocolClient(this._customSchemeName);
 
-        // On macOS, applications and their menu barstay active until the user quits explicitly with Cmd + Q
+        // On macOS, applications and their menu bar stay active until the user quits explicitly with Cmd + Q
         if (process.platform !== 'darwin') {
             app.quit();
         }

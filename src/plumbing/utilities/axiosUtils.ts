@@ -1,8 +1,7 @@
 export class AxiosUtils {
 
     /*
-     * Axios has a known issue where it swallows parse errors
-     * We therefore throw an error in the way Axios should
+     * Axios has a known issue where it swallows parse errors, so we throw an error in the way Axios should
      * https://github.com/axios/axios/issues/61
      */
     public static checkJson(data: any): void {

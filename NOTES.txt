@@ -1,20 +1,13 @@
-1. Get logins stable - currently second attempt does not do a Chrome custom scheme popup
-   I have to completely quit Chrome and retry
-   Compare with previous version to understand why
+1. Get logout working + merge
 
-2. keytar problems: already exists / An invalid record was encountered
-   Causes user info problems - is it trying to update concurrently?
-
-3. Avoid creating my own codeVerifier
+2. Avoid creating my own codeVerifier
    Check response state is handled
 
-4. Are there typings for any of these?
+3. Are there typings for any of these?
    * electron-default-menu
    * electron-packager
    * opener
    * username'
 
-5. Reduce static members and refine code further
+4. Reduce static members and refine code further
    Get latest tweaks to websample.final
-
-6. Get logout working

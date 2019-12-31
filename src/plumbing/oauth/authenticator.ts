@@ -1,6 +1,5 @@
 import {AuthorizationServiceConfiguration,
         BaseTokenRequestHandler,
-        FetchRequestor,
         GRANT_TYPE_AUTHORIZATION_CODE,
         GRANT_TYPE_REFRESH_TOKEN,
         StringMap,
@@ -8,8 +7,10 @@ import {AuthorizationServiceConfiguration,
         TokenRequestJson,
         TokenResponse} from '@openid/appauth';
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
+import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorHandler} from '../errors/errorHandler';
 import {UIError} from '../errors/uiError';
+import {CustomRequestor} from './customRequestor';
 import {LoginManager} from './login/loginManager';
 import {LogoutManager} from './logout/logoutManager';
 import {TokenStorage} from './utilities/tokenStorage';
@@ -108,7 +109,7 @@ export class Authenticator {
         if (!this._metadata) {
             this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
                 this._oauthConfig.authority,
-                new FetchRequestor());
+                new CustomRequestor());
         }
 
         // Start the login process
@@ -154,7 +155,7 @@ export class Authenticator {
         const tokenRequest = new TokenRequest(requestJson);
 
         // Execute the request to swap the code for tokens
-        const requestor = new FetchRequestor();
+        const requestor = new CustomRequestor();
         const tokenHandler = new BaseTokenRequestHandler(requestor);
 
         // Perform the authorization code grant exchange
@@ -173,7 +174,7 @@ export class Authenticator {
         if (!this._metadata) {
             this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
                 this._oauthConfig.authority,
-                new FetchRequestor());
+                new CustomRequestor());
         }
 
         // Supply the scope for access tokens
@@ -193,7 +194,7 @@ export class Authenticator {
         try {
 
             // Execute the request to send the refresh token and get new tokens
-            const requestor = new FetchRequestor();
+            const requestor = new CustomRequestor();
             const tokenHandler = new BaseTokenRequestHandler(requestor);
             const newTokenData = await tokenHandler.performTokenRequest(this._metadata, tokenRequest);
 
@@ -208,14 +209,14 @@ export class Authenticator {
 
         } catch (e) {
 
-            if (e.error && e.error === 'invalid_grant') {
+            if (e.error && e.error === ErrorCodes.refreshTokenExpired) {
 
                 // Handle refresh token expired errors by clearing all token data
                 this._authState = null;
             } else {
 
                 // Report unexpected errors
-                throw ErrorHandler.getFromOAuthResponse(e, 'refresh_token_failed');
+                throw ErrorHandler.getFromOAuthResponse(e, ErrorCodes.tokenRefreshFailed);
             }
         }
     }
@@ -236,5 +237,6 @@ export class Authenticator {
      */
     private _setupCallbacks() {
         this._swapAuthorizationCodeForTokens = this._swapAuthorizationCodeForTokens.bind(this);
+        this._onLogoutComplete = this._onLogoutComplete.bind(this);
     }
 }
