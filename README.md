@@ -3,7 +3,7 @@
 ### Overview
 
 * The completed desktop code sample using OAuth 2.0 and Open Id Connect, referenced in my blog at https://authguidance.com
-* The SPA connects (by default) to AWS Cognito and an AWS secured API
+* **The goal of this sample is to implement Open Id Connect desktop logins with best usability and reliability**
 
 ### Details
 
