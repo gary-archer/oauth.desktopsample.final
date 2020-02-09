@@ -17,6 +17,7 @@
 
 * The [AppAuth-JS Library](https://github.com/openid/AppAuth-JS/blob/master/README.md) is used to implement the Authorization Code Flow (PKCE)
 * The [keytar](https://github.com/atom/node-keytar) library is used by the Desktop App for secure storage of OAuth tokens
+* A Private URI Scheme is used by the system browser to return to the app after login
 
 ### Hosting
 * AWS API Gateway is used to host the Desktop App's OAuth 2.0 Secured API
