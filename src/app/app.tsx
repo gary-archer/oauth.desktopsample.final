@@ -5,6 +5,7 @@ import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
 import {ErrorHandler} from '../plumbing/errors/errorHandler';
+import {UIError} from '../plumbing/errors/uiError';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
 import {Authenticator} from '../plumbing/oauth/authenticator';
@@ -320,12 +321,24 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Initiate logout processing
+     * Trigger the logout redirect on the system browser
      */
     private async _handleLogoutClick(): Promise<void> {
 
-        // Do the logout
-        await this._authenticator!.startLogout();
+        await this._authenticator!.startLogout(this._onLogoutCompleted);
+    }
+
+    /*
+     * Complete logout processing
+     */
+    private _onLogoutCompleted(error: UIError | null): void {
+
+        if (error) {
+            this.setState((prevState) => {
+                return {...prevState, applicationError: error};
+            });
+            return;
+        }
 
         // Update state to indicate that we are logged out
         this.setState((prevState) => {
@@ -347,6 +360,7 @@ export class App extends React.Component<any, AppState> {
         this._handleExpireRefreshTokenClick = this._handleExpireRefreshTokenClick.bind(this);
         this._onLoginCompleted = this._onLoginCompleted.bind(this);
         this._onLoginRequired = this._onLoginRequired.bind(this);
+        this._onLogoutCompleted = this._onLogoutCompleted.bind(this);
         this._handleLogoutClick = this._handleLogoutClick.bind(this);
     }
 }

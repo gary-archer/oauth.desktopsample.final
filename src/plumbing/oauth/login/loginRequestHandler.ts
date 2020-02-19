@@ -16,15 +16,9 @@ import {RedirectEvents} from '../utilities/redirectEvents';
  */
 export class LoginRequestHandler extends AuthorizationRequestHandler {
 
-    /*
-     * Inputs and outputs
-     */
     private readonly _loginEvents: RedirectEvents;
     private _authorizationPromise: Promise<AuthorizationRequestResponse> | null;
 
-    /*
-     * Set up the base class
-     */
     public constructor(loginEvents: RedirectEvents) {
 
         super(new BasicQueryStringUtils(), new DefaultCrypto());

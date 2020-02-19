@@ -1,8 +1,10 @@
 import {AuthorizationServiceConfiguration} from '@openid/appauth';
+import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {UIError} from '../../errors/uiError';
 import {CustomSchemeNotifier} from '../../utilities/customSchemeNotifier';
 import {RedirectEvents} from '../utilities/redirectEvents';
+import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {EndSessionError} from './endSessionError';
 import {EndSessionNotifier} from './endSessionNotifier';
 import {EndSessionRequest} from './endSessionRequest';
@@ -10,7 +12,7 @@ import {EndSessionRequestHandler} from './endSessionRequestHandler';
 import {EndSessionResponse} from './endSessionResponse';
 
 /*
- * A class to handle the plumbind of logout redirects via the system browser
+ * A class to handle the plumbing of logout redirects via the system browser
  */
 export class LogoutManager {
 
@@ -29,24 +31,26 @@ export class LogoutManager {
     }
 
     /*
-     * The stub method just removes tokens
+     * Invoke the system browser
      */
     public async start(): Promise<void> {
-        this._onComplete(null);
-    }
 
-    /*
-     * The future method will do a proper logout redirect
-     */
-    public async start2(): Promise<void> {
+        // First build the logout URL
+        const builder = new CognitoLogoutUrlBuilder(this._configuration);
+        const logoutUrl = builder.buildUrl();
+        console.log('*** LOGOUT URL');
 
+        // Invoke the browser
+        Opener(logoutUrl);
+        
+        /*
         const logoutRequest = new EndSessionRequest();
 
         // Create events for this logout attempt
         const logoutEvents = new RedirectEvents();
 
         // Ensure that completion callbacks are correlated to the correct authorization request
-        CustomSchemeNotifier.addCorrelationState(logoutRequest.state, logoutEvents);
+        // CustomSchemeNotifier.addCorrelationState(logoutRequest.state, logoutEvents);
 
         // Create a logout handler that uses the browser
         const logoutRequestHandler = new EndSessionRequestHandler(logoutEvents);
@@ -69,6 +73,7 @@ export class LogoutManager {
         });
 
         logoutRequestHandler.performEndSessionRequest(this._metadata, logoutRequest);
+        */
     }
 
     private async _handleLogoutResponse(

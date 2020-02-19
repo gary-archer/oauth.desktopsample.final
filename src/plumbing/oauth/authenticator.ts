@@ -12,6 +12,7 @@ import {ErrorHandler} from '../errors/errorHandler';
 import {UIError} from '../errors/uiError';
 import {CustomRequestor} from './customRequestor';
 import {LoginManager} from './login/loginManager';
+import {LogoutManager} from './logout/logoutManager';
 import {TokenStorage} from './utilities/tokenStorage';
 
 /*
@@ -19,9 +20,6 @@ import {TokenStorage} from './utilities/tokenStorage';
  */
 export class Authenticator {
 
-    /*
-     * Store configuration and tokens globally
-     */
     private readonly _oauthConfig: OAuthConfiguration;
     private _authState: TokenResponse | null;
     private _metadata: any = null;
@@ -121,11 +119,20 @@ export class Authenticator {
     }
 
     /*
-     * Implement a basic logout by simply clearing tokens
+     * Implement full logout by clearing tokens and also redirecting to remove the Authorization Server session cookie
      */
-    public async startLogout(): Promise<void> {
+    public async startLogout(onCompleted: (error: UIError | null) => void): Promise<void> {
+
+        // First clear tokens
         this._authState = null;
         await TokenStorage.delete();
+
+        // Start the logout process
+        const logout = new LogoutManager(
+            this._oauthConfig,
+            this._metadata,
+            onCompleted);
+        await logout.start();
     }
 
     /*
