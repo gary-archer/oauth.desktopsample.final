@@ -1,0 +1,12 @@
+1. Get changed token storage working
+   Current problem giving id token to logout manager
+
+2. Get Okta working
+
+3. CustomSchemeNotifier as a global object is poor
+
+4. Home button is not intuitive in login required view
+
+5. Understand why Opener closes the browser tab for logout
+
+6. Too much code such as tokenData.idToken! - reduce the not null assertions

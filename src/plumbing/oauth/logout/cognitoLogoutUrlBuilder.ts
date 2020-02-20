@@ -1,4 +1,5 @@
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
+import {LogoutUrlBuilder} from './logoutUrlBuilder';
 
 /*
  * The Cognito implementation of building a logout URL

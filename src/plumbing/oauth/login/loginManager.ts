@@ -53,13 +53,13 @@ export class LoginManager {
         await authorizationRequest.setupCodeVerifier();
 
         // Create events for this login attempt
-        const loginEvents = new RedirectEvents();
+        const redirectEvents = new RedirectEvents();
 
         // Ensure that completion callbacks are correlated to the correct authorization request
-        CustomSchemeNotifier.addCorrelationState(authorizationRequest.state, loginEvents);
+        CustomSchemeNotifier.addCorrelationState(authorizationRequest.state, redirectEvents);
 
         // Create an authorization handler that uses the browser
-        const authorizationRequestHandler = new LoginRequestHandler(loginEvents);
+        const authorizationRequestHandler = new LoginRequestHandler(redirectEvents);
 
         // Use the AppAuth mechanism of a notifier to receive the login result
         const notifier = new AuthorizationNotifier();

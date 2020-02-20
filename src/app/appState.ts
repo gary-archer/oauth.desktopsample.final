@@ -11,7 +11,7 @@ export interface AppState {
     // Some controls are hidden during view loading and shown afterwards
     isMainViewLoaded: boolean;
 
-    // Some UI behaviour is governed by the login state
+    // Whether currently logged out
     isLoggedOut: boolean;
 
     // Populated when there is an application startup error

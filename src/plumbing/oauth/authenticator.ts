@@ -4,8 +4,7 @@ import {AuthorizationServiceConfiguration,
         GRANT_TYPE_REFRESH_TOKEN,
         StringMap,
         TokenRequest,
-        TokenRequestJson,
-        TokenResponse} from '@openid/appauth';
+        TokenRequestJson} from '@openid/appauth';
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorHandler} from '../errors/errorHandler';
@@ -13,7 +12,8 @@ import {UIError} from '../errors/uiError';
 import {CustomRequestor} from './customRequestor';
 import {LoginManager} from './login/loginManager';
 import {LogoutManager} from './logout/logoutManager';
-import {TokenStorage} from './utilities/tokenStorage';
+import {TokenData} from './tokenData';
+import {TokenStorage} from './tokenStorage';
 
 /*
  * The entry point class for login and token related requests
@@ -21,7 +21,7 @@ import {TokenStorage} from './utilities/tokenStorage';
 export class Authenticator {
 
     private readonly _oauthConfig: OAuthConfiguration;
-    private _authState: TokenResponse | null;
+    private _tokens: TokenData | null;
     private _metadata: any = null;
 
     /*
@@ -29,17 +29,17 @@ export class Authenticator {
      */
     public constructor(oauthConfig: OAuthConfiguration) {
         this._oauthConfig = oauthConfig;
-        this._authState = null;
+        this._tokens = null;
         this._setupCallbacks();
     }
 
     /*
-     * Clear the current access token from storage when an API call fails, to force getting a new one
+     * Clear the current access token when an API call fails, to force getting a new one
      */
     public async clearAccessToken(): Promise<void> {
 
-        if (this._authState) {
-            (this._authState.accessToken as any) = null;
+        if (this._tokens) {
+            this._tokens.accessToken = '';
         }
     }
 
@@ -49,9 +49,9 @@ export class Authenticator {
      */
     public async expireAccessToken(): Promise<void> {
 
-        if (this._authState) {
-            this._authState.accessToken = 'x' + this._authState.accessToken + 'x';
-            await TokenStorage.save(this._authState);
+        if (this._tokens) {
+            this._tokens.accessToken = 'x' + this._tokens.accessToken + 'x';
+            await TokenStorage.save(this._tokens);
         }
     }
 
@@ -61,10 +61,10 @@ export class Authenticator {
      */
     public async expireRefreshToken(): Promise<void> {
 
-        if (this._authState) {
-            this._authState.refreshToken = 'x' + this._authState.refreshToken + 'x';
-            this._authState.accessToken = '';
-            await TokenStorage.save(this._authState);
+        if (this._tokens) {
+            this._tokens.refreshToken = 'x' + this._tokens.refreshToken + 'x';
+            this._tokens.accessToken = '';
+            await TokenStorage.save(this._tokens);
         }
     }
 
@@ -74,23 +74,23 @@ export class Authenticator {
     public async getAccessToken(): Promise<string> {
 
         // First load auth state from secure storage if it exists
-        if (!this._authState) {
-            this._authState = await TokenStorage.load();
+        if (!this._tokens) {
+            this._tokens = await TokenStorage.load();
         }
 
         // Return the existing token if present
-        if (this._authState && this._authState.accessToken) {
-            return this._authState.accessToken;
+        if (this._tokens && this._tokens.accessToken) {
+            return this._tokens.accessToken;
         }
 
         // Try to use the refresh token to get a new access token
-        if (this._authState && this._authState.refreshToken) {
+        if (this._tokens && this._tokens.refreshToken) {
             await this._refreshAccessToken();
         }
 
         // Return the new token if present
-        if (this._authState && this._authState.accessToken) {
-            return this._authState.accessToken;
+        if (this._tokens && this._tokens.accessToken) {
+            return this._tokens.accessToken;
         }
 
         // Ensure that API calls without a token are short circuited
@@ -123,14 +123,14 @@ export class Authenticator {
      */
     public async startLogout(onCompleted: (error: UIError | null) => void): Promise<void> {
 
-        // First clear tokens
-        this._authState = null;
+        // First clear tokens from memory and storage
+        this._tokens = null;
         await TokenStorage.delete();
 
         // Start the logout process
         const logout = new LogoutManager(
             this._oauthConfig,
-            this._metadata,
+            this._tokens!.idToken!,
             onCompleted);
         await logout.start();
     }
@@ -160,10 +160,18 @@ export class Authenticator {
         const tokenHandler = new BaseTokenRequestHandler(requestor);
 
         // Perform the authorization code grant exchange
-        this._authState = await tokenHandler.performTokenRequest(this._metadata, tokenRequest);
+        const tokenResponse = await tokenHandler.performTokenRequest(this._metadata, tokenRequest);
 
-        // Save to secure storage
-        await TokenStorage.save(this._authState);
+        // Set values from the response
+        const newTokenData = {
+            accessToken: tokenResponse.accessToken,
+            idToken: tokenResponse.idToken,
+            refreshToken: tokenResponse.refreshToken,
+        } as TokenData;
+
+        // Update tokens in memory and secure storage
+        this._tokens = newTokenData;
+        await TokenStorage.save(this._tokens);
     }
 
     /*
@@ -187,7 +195,7 @@ export class Authenticator {
         const requestJson = {
             grant_type: GRANT_TYPE_REFRESH_TOKEN,
             client_id: this._oauthConfig.clientId,
-            refresh_token: this._authState!.refreshToken,
+            refresh_token: this._tokens!.refreshToken,
             extras,
         } as TokenRequestJson;
         const tokenRequest = new TokenRequest(requestJson);
@@ -197,23 +205,33 @@ export class Authenticator {
             // Execute the request to send the refresh token and get new tokens
             const requestor = new CustomRequestor();
             const tokenHandler = new BaseTokenRequestHandler(requestor);
-            const newTokenData = await tokenHandler.performTokenRequest(this._metadata, tokenRequest);
+            const tokenResponse = await tokenHandler.performTokenRequest(this._metadata, tokenRequest);
 
-            // Maintain the refresh token if we did not receive a new 'rolling' refresh token
+            // Set values from the response
+            const newTokenData = {
+                accessToken: tokenResponse.accessToken,
+                idToken: tokenResponse.idToken,
+                refreshToken: tokenResponse.refreshToken,
+            } as TokenData;
+
+            // Maintain existing details if required
             if (!newTokenData.refreshToken) {
-                newTokenData.refreshToken = this._authState!.refreshToken;
+                newTokenData.refreshToken = this._tokens!.refreshToken;
+            }
+            if (!newTokenData.idToken) {
+                newTokenData.idToken = this._tokens!.idToken;
             }
 
             // Update tokens in memory and secure storage
-            this._authState = newTokenData;
-            await TokenStorage.save(this._authState);
+            this._tokens = newTokenData;
+            await TokenStorage.save(this._tokens);
 
         } catch (e) {
 
             if (e.error && e.error === ErrorCodes.refreshTokenExpired) {
 
                 // Handle refresh token expired errors by clearing all token data
-                this._authState = null;
+                this._tokens = null;
 
             } else {
 
