@@ -4,9 +4,11 @@
 2. Get Okta working
 
 3. CustomSchemeNotifier as a global object is poor
+   Redirect events related code needs improving
+   Think about a folder for custom scheme notifications and events
 
 4. Home button is not intuitive in login required view
 
-5. Understand why Opener closes the browser tab for logout
+5. Understand why Opener closes the browser tab for logout - can I use this for login?
 
 6. Too much code such as tokenData.idToken! - reduce the not null assertions
