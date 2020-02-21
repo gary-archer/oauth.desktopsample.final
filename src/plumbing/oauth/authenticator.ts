@@ -34,41 +34,6 @@ export class Authenticator {
     }
 
     /*
-     * Clear the current access token when an API call fails, to force getting a new one
-     */
-    public async clearAccessToken(): Promise<void> {
-
-        if (this._tokens) {
-            this._tokens.accessToken = '';
-        }
-    }
-
-    /*
-     * This method is for testing only, to make the access token fail and act like it has expired
-     * The corrupted access token will be sent to the API but rejected when introspected
-     */
-    public async expireAccessToken(): Promise<void> {
-
-        if (this._tokens) {
-            this._tokens.accessToken = 'x' + this._tokens.accessToken + 'x';
-            await TokenStorage.save(this._tokens);
-        }
-    }
-
-    /*
-     * This method is for testing only, to make the refresh token fail and act like it has expired
-     * The corrupted refresh token will be sent to the Authorization Server but rejected
-     */
-    public async expireRefreshToken(): Promise<void> {
-
-        if (this._tokens) {
-            this._tokens.refreshToken = 'x' + this._tokens.refreshToken + 'x';
-            this._tokens.accessToken = '';
-            await TokenStorage.save(this._tokens);
-        }
-    }
-
-    /*
      * Get an access token and login if required
      */
     public async getAccessToken(): Promise<string> {
@@ -124,15 +89,49 @@ export class Authenticator {
     public async startLogout(onCompleted: (error: UIError | null) => void): Promise<void> {
 
         // First clear tokens from memory and storage
+        const idToken = this._tokens!.idToken;
         this._tokens = null;
         await TokenStorage.delete();
 
-        // Start the logout process
-        const logout = new LogoutManager(
-            this._oauthConfig,
-            this._tokens!.idToken!,
-            onCompleted);
+        // Start the logout redirect
+        const logout = new LogoutManager(this._oauthConfig, idToken, onCompleted);
         await logout.start();
+    }
+
+    /*
+     * Clear the current access token when an API call fails, to force getting a new one
+     */
+    public async clearAccessToken(): Promise<void> {
+
+        if (this._tokens) {
+            this._tokens.accessToken = '';
+            await TokenStorage.save(this._tokens);
+        }
+    }
+
+    /*
+     * This method is for testing only, to make the access token fail and act like it has expired
+     * The corrupted access token will be sent to the API but rejected when introspected
+     */
+    public async expireAccessToken(): Promise<void> {
+
+        if (this._tokens) {
+            this._tokens.accessToken = 'x' + this._tokens.accessToken + 'x';
+            await TokenStorage.save(this._tokens);
+        }
+    }
+
+    /*
+     * This method is for testing only, to make the refresh token fail and act like it has expired
+     * The corrupted refresh token will be sent to the Authorization Server but rejected
+     */
+    public async expireRefreshToken(): Promise<void> {
+
+        if (this._tokens) {
+            this._tokens.refreshToken = 'x' + this._tokens.refreshToken + 'x';
+            this._tokens.accessToken = '';
+            await TokenStorage.save(this._tokens);
+        }
     }
 
     /*
@@ -207,7 +206,7 @@ export class Authenticator {
             const tokenHandler = new BaseTokenRequestHandler(requestor);
             const tokenResponse = await tokenHandler.performTokenRequest(this._metadata, tokenRequest);
 
-            // Set values from the response
+            // Set values from the response, which may include a new rolling refresh token
             const newTokenData = {
                 accessToken: tokenResponse.accessToken,
                 idToken: tokenResponse.idToken,

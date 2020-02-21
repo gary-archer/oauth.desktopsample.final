@@ -3,8 +3,8 @@ import OperatingSystemUserName from 'username';
 import {TokenData} from './tokenData';
 
 /*
- * The keys under which we store auth state
- * We use separate keys due to the below Windows size limitation that causes a 'Stub received bad data' error
+ * Token storage keys, and we use separate entries due to long Cognito tokens and Windows size limitations
+ * The below link describes the Windows limitation that otherwise leads to a 'Stub received bad data' error
  * https://github.com/atom/node-keytar/issues/112
  */
 const APP_STORAGE_ID_TOKEN = 'MyCompany.DesktopSample.IdToken';
