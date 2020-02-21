@@ -119,10 +119,7 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
      */
     private async _onLoginStart(): Promise<void> {
 
-        this.setState((prevState) => {
-            return {...prevState, signingIn: true};
-        });
-
+        this.setState({signingIn: true});
         await this.props.authenticator.startLogin(this._onLoginCompleted);
     }
 
@@ -132,15 +129,11 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
     private _onLoginCompleted(e: UIError | null): void {
 
         // Reset the signing in state
-        this.setState((prevState) => {
-            return {...prevState, signingIn: false};
-        });
+        this.setState({signingIn: false});
 
         // Store error state if required
         if (e) {
-            this.setState((prevState) => {
-                return {...prevState, signInError: e};
-            });
+            this.setState({signInError: e});
             return;
         }
 

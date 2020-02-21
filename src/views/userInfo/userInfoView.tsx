@@ -61,7 +61,7 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
             );
         }
 
-        // Render nothing when logged out
+        // Render nothing if required
         if (!this.state.shouldLoad || !this.state.claims) {
             return (
                 <>
@@ -112,17 +112,13 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
             const claims = await this.props.apiClient.getUserInfo();
 
             // Update state with claims in order to render the logged in user info
-            this.setState((prevState) => {
-                return {...prevState, error: null, claims};
-            });
+            this.setState({error: null, claims});
             this.props.onViewLoaded();
 
         } catch (e) {
 
             const error = ErrorHandler.getFromException(e);
-            this.setState((prevState) => {
-                return {...prevState, error};
-            });
+            this.setState({error});
             this.props.onViewLoadFailed(error);
         }
     }

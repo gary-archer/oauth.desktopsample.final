@@ -32,7 +32,6 @@ export class LogoutManager {
     public async start(): Promise<void> {
 
         // First build the logout URL
-        const builder = new CognitoLogoutUrlBuilder(this._configuration);
         const logoutUrl = this._getLogoutUrlBuilder().buildUrl();
 
         // Create the events object that will notify us of completion

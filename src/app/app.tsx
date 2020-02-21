@@ -5,6 +5,7 @@ import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
 import {ErrorHandler} from '../plumbing/errors/errorHandler';
+import {UIError} from '../plumbing/errors/uiError';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
 import {Authenticator} from '../plumbing/oauth/authenticator';
@@ -43,7 +44,7 @@ export class App extends React.Component<any, AppState> {
             isLoggedIn: false,
             loadUserInfo: true,
             sessionButtonsEnabled: false,
-            startupError: null,
+            appError: null,
         };
 
         // Make callbacks available
@@ -61,8 +62,8 @@ export class App extends React.Component<any, AppState> {
 
         if (this.state.isStarting) {
 
-            if (this.state.startupError) {
-                return this._renderStartUpError();
+            if (this.state.appError) {
+                return this._renderAppError();
             } else {
                 return this._renderInitialScreen();
             }
@@ -88,20 +89,25 @@ export class App extends React.Component<any, AppState> {
 
         try {
 
+            // Reset state during load
+            this.setState({
+                isStarting: true,
+                isLoggedIn: false,
+                loadUserInfo: true,
+                sessionButtonsEnabled: false,
+                appError: null,
+            });
+
             // Do the work to load the app
             await this._loadApp();
 
             // Update the load state to force a rerender of the full view
-            this.setState((prevState) => {
-                return {...prevState, isStarting: false, startupError: null};
-            });
+            this.setState({isStarting: false, appError: null});
 
         } catch (e) {
 
             // Move to an error state, which allows the user to retry via the home button
-            this.setState((prevState) => {
-                return {...prevState, startupError: ErrorHandler.getFromException(e)};
-            });
+            this.setState({appError: ErrorHandler.getFromException(e)});
         }
     }
 
@@ -128,9 +134,7 @@ export class App extends React.Component<any, AppState> {
 
         // If there are stored tokens, the initial state is logged in
         const isLoggedIn = await this._authenticator.isLoggedIn();
-        this.setState((prevState) => {
-            return {...prevState, isLoggedIn, sessionButtonsEnabled: isLoggedIn};
-        });
+        this.setState({isLoggedIn, sessionButtonsEnabled: isLoggedIn});
     }
 
     /*
@@ -159,7 +163,7 @@ export class App extends React.Component<any, AppState> {
         const errorProps = {
             hyperlinkMessage: 'Problem Encountered in Application',
             dialogTitle: 'Application Error',
-            error: this.state.startupError,
+            error: this.state.appError,
         };
 
         const sessionProps = {
@@ -222,7 +226,7 @@ export class App extends React.Component<any, AppState> {
     /*
      * Render startup errors
      */
-    private _renderStartUpError(): React.ReactNode {
+    private _renderAppError(): React.ReactNode {
 
         const headerButtonProps = {
             sessionButtonsEnabled: this.state.sessionButtonsEnabled,
@@ -236,7 +240,7 @@ export class App extends React.Component<any, AppState> {
         const errorProps = {
             hyperlinkMessage: 'Problem Encountered during Application Startup',
             dialogTitle: 'Application Startup Error',
-            error: this.state.startupError,
+            error: this.state.appError,
         };
 
         return (
@@ -253,9 +257,7 @@ export class App extends React.Component<any, AppState> {
      */
     private _onLoadStateChanged(loaded: boolean): void {
 
-        this.setState((prevState) => {
-            return {...prevState, sessionButtonsEnabled: loaded};
-        });
+        this.setState({sessionButtonsEnabled: loaded});
     }
 
     /*
@@ -263,18 +265,18 @@ export class App extends React.Component<any, AppState> {
      */
     private async _handleHomeClick(): Promise<void> {
 
+        // Update the hash location
+        location.hash = '#';
+
         if (!this.state.isLoggedIn) {
 
-            // Force a login if in the login required screen and home is clicked
+            // Force a login if in the login required screen
             EventEmitter.dispatch(EventNames.signin, {});
 
         } else {
 
-            // Otherwise first update the location
-            location.hash = '#';
-
             // Force a full application restart after an application / startup error
-            if (this.state.startupError || this._viewManager.hasError()) {
+            if (this.state.appError || this._viewManager.hasError()) {
                 await this._startApp();
             }
         }
@@ -311,10 +313,7 @@ export class App extends React.Component<any, AppState> {
      */
     private _onLoginRequired(): void {
 
-        this.setState((prevState) => {
-            return {...prevState, isLoggedIn: false, sessionButtonsEnabled: false};
-        });
-
+        this.setState({isLoggedIn: false, sessionButtonsEnabled: false});
         LoginRequiredView.navigate();
     }
 
@@ -323,9 +322,7 @@ export class App extends React.Component<any, AppState> {
      */
     private _onLoginCompleted(): void {
 
-        this.setState((prevState) => {
-            return {...prevState, isLoggedIn: true, loadUserInfo: true, sessionButtonsEnabled: true};
-        });
+        this.setState({isLoggedIn: true, loadUserInfo: true, sessionButtonsEnabled: true});
     }
 
     /*
@@ -333,18 +330,21 @@ export class App extends React.Component<any, AppState> {
      */
     private async _handleLogoutClick(): Promise<void> {
 
-        await this._authenticator!.startLogout(this._onLogoutCompleted);
+        try {
+            await this._authenticator!.startLogout(this._onLogoutCompleted);
+
+        } catch (e) {
+            this.setState({appError: ErrorHandler.getFromException(e)});
+        }
     }
 
     /*
      * Complete logout processing
      */
-    private _onLogoutCompleted(): void {
+    private _onLogoutCompleted(e: UIError | null): void {
 
         // Update state to indicate that we are logged out
-        this.setState((prevState) => {
-            return {...prevState, isLoggedIn: false, loadUserInfo: false, sessionButtonsEnabled: false};
-        });
+        this.setState({isLoggedIn: false, loadUserInfo: false, sessionButtonsEnabled: false});
 
         // Move to the login required page
         location.hash = `#/loginrequired`;

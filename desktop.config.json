@@ -2,7 +2,7 @@
     "app": {
         "apiBaseUrl":               "https://api.authguidance-examples.com/api",
         "proxyUrl":                 "http://127.0.0.1:8888",
-        "useProxy":                 false
+        "useProxy":                 true
     },
     "oauth": {
         "authority":                "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_mZ3NBYpTo",

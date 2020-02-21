@@ -8,6 +8,9 @@ export interface AppState {
     // True while startup configuration is being processed
     isStarting: boolean;
 
+    // Populated when there is an application level error
+    appError: UIError | null;
+
     // Whether currently logged in
     isLoggedIn: boolean;
 
@@ -16,7 +19,4 @@ export interface AppState {
 
     // After login, session buttons are disabled during view loading and shown afterwards
     sessionButtonsEnabled: boolean;
-
-    // Populated when there is an application startup error
-    startupError: UIError | null;
 }
