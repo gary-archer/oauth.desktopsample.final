@@ -25,7 +25,7 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
         const disabled = !this.props.sessionButtonsEnabled;
         return  (
                 <div className='row'>
-                    <div className='col-1 my-2 d-flex'></div>
+                    <div className='col-1 my-2 d-flex' />
                     <div className='col-2 my-2 d-flex'>
                         <button
                             onClick={this.props.handleHomeClick}
@@ -73,7 +73,7 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
                             Logout
                         </button>
                     </div>
-                    <div className='col-1 my-2 d-flex'></div>
+                    <div className='col-1 my-2 d-flex' />
                 </div>
         );
     }

@@ -1,14 +1,12 @@
-1. Fix re-rendering and make flags clearer:
-   isStarting
-   isLoggedIn
-   isSessionButtonsActive
+1. Home button behaviour is not intuitive in login required view
 
-2. Home button behaviour is not intuitive in login required view
+2. Fix Desktop Sample 1 and React SPA
 
-3. Fix Desktop Sample 1 and React SPA
+3. Update Android to use LogoutUrlBuilder
 
-4. Update Android to use LogoutUrlBuilder
-
-5. CustomSchemeNotifier as a global object is poor
+4. CustomSchemeNotifier as a global object is poor
+   Use of hard coded logout also
    Redirect events related code needs improving
    Think about a folder for custom scheme notifications and events
+
+5. Deep link testing including startup

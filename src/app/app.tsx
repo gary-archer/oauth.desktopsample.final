@@ -9,6 +9,7 @@ import {UIError} from '../plumbing/errors/uiError';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
 import {Authenticator} from '../plumbing/oauth/authenticator';
+import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {CustomSchemeNotifier} from '../plumbing/utilities/customSchemeNotifier';
 import {DebugProxyAgent} from '../plumbing/utilities/debugProxyAgent';
 import {SslHelper} from '../plumbing/utilities/sslHelper';
@@ -40,8 +41,8 @@ export class App extends React.Component<any, AppState> {
         // Track application state
         this.state = {
             isStarting: true,
-            isMainViewLoaded: false,
-            isLoggedOut: false,
+            isLoggedIn: false,
+            sessionButtonsEnabled: false,
             applicationError: null,
         };
 
@@ -92,7 +93,8 @@ export class App extends React.Component<any, AppState> {
                 return {
                     ...prevState,
                     isStarting: true,
-                    isMainViewLoaded: false,
+                    isLoggedIn: false,
+                    sessionButtonsEnabled: false,
                     applicationError: null};
             });
 
@@ -105,6 +107,8 @@ export class App extends React.Component<any, AppState> {
             });
 
         } catch (e) {
+
+            // Move to an error state, which allows the user to retry via the home button
             this.setState((prevState) => {
                 return {...prevState, applicationError: ErrorHandler.getFromException(e)};
             });
@@ -124,13 +128,19 @@ export class App extends React.Component<any, AppState> {
         DebugProxyAgent.initialize(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
 
         // Initialise authentication
-        this._authenticator = new Authenticator(this._configuration.oauth);
+        this._authenticator = new AuthenticatorImpl(this._configuration.oauth);
 
         // Initialise listening for login responses
         await CustomSchemeNotifier.initialize();
 
         // Create a client to reliably call the API
         this._apiClient = new ApiClient(this._configuration.app.apiBaseUrl, this._authenticator);
+
+        // If there are stored tokens, the initial state is logged in
+        const isLoggedIn = await this._authenticator.isLoggedIn();
+        this.setState((prevState) => {
+            return {...prevState, isLoggedIn, sessionButtonsEnabled: isLoggedIn};
+        });
     }
 
     /*
@@ -141,14 +151,14 @@ export class App extends React.Component<any, AppState> {
         const titleProps = {
             userInfo: {
                 apiClient: this._apiClient,
-                isLoggedOut: this.state.isLoggedOut,
+                isLoggedOut: !this.state.isLoggedIn,
                 onViewLoaded: this._viewManager.onUserInfoLoaded,
                 onViewLoadFailed: this._viewManager.onUserInfoLoadFailed,
             },
         };
 
         const headerButtonProps = {
-            sessionButtonsEnabled: this.state.isMainViewLoaded,
+            sessionButtonsEnabled: this.state.sessionButtonsEnabled,
             handleHomeClick: this._handleHomeClick,
             handleRefreshDataClick: this._handleRefreshDataClick,
             handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
@@ -163,7 +173,7 @@ export class App extends React.Component<any, AppState> {
         };
 
         const sessionProps = {
-            isVisible: this.state.isMainViewLoaded && !this.state.isLoggedOut,
+            isVisible: this.state.isLoggedIn,
             apiClient: this._apiClient,
         };
 
@@ -225,7 +235,7 @@ export class App extends React.Component<any, AppState> {
     private _renderStartUpError(): React.ReactNode {
 
         const headerButtonProps = {
-            sessionButtonsEnabled: this.state.isMainViewLoaded,
+            sessionButtonsEnabled: this.state.sessionButtonsEnabled,
             handleHomeClick: this._handleHomeClick,
             handleRefreshDataClick: this._handleRefreshDataClick,
             handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
@@ -254,7 +264,7 @@ export class App extends React.Component<any, AppState> {
     private _onLoadStateChanged(loaded: boolean): void {
 
         this.setState((prevState) => {
-            return {...prevState, isMainViewLoaded: loaded};
+            return {...prevState, sessionButtonsEnabled: loaded};
         });
     }
 
@@ -304,7 +314,7 @@ export class App extends React.Component<any, AppState> {
     private _onLoginRequired(): void {
 
         this.setState((prevState) => {
-            return {...prevState, isLoggedOut: true, isMainViewLoaded: false};
+            return {...prevState, isLoggedIn: false, sessionButtonsEnabled: false};
         });
 
         LoginRequiredView.navigate();
@@ -316,7 +326,7 @@ export class App extends React.Component<any, AppState> {
     private _onLoginCompleted(): void {
 
         this.setState((prevState) => {
-            return {...prevState, isLoggedOut: false};
+            return {...prevState, isLoggedIn: true, sessionButtonsEnabled: true};
         });
     }
 
@@ -342,7 +352,7 @@ export class App extends React.Component<any, AppState> {
 
         // Update state to indicate that we are logged out
         this.setState((prevState) => {
-            return {...prevState, isLoggedOut: true, isMainViewLoaded: false};
+            return {...prevState, isLoggedIn: false, sessionButtonsEnabled: false};
         });
 
         // Move to the login required page
