@@ -25,7 +25,8 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
         const disabled = !this.props.sessionButtonsEnabled;
         return  (
                 <div className='row'>
-                    <div className='col-4 my-2 d-flex'>
+                    <div className='col-1 my-2 d-flex'></div>
+                    <div className='col-2 my-2 d-flex'>
                         <button
                             onClick={this.props.handleHomeClick}
                             className='btn btn-primary btn-block p-1'
@@ -34,7 +35,7 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
                         </button>
                     </div>
                     <div
-                        className='col-4 my-2 d-flex'
+                        className='col-2 my-2 d-flex'
                         onMouseDown={this._handleRefreshPress}
                         onMouseUp={this._handleRefreshRelease}
                     >
@@ -45,7 +46,7 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
                             Refresh Data
                         </button>
                     </div>
-                    <div className='col-4 my-2 d-flex'>
+                    <div className='col-2 my-2 d-flex'>
                         <button
                             onClick={this.props.handleExpireAccessTokenClick}
                             className='btn btn-primary btn-block p-1'
@@ -54,7 +55,7 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
                             Expire Access Token
                         </button>
                     </div>
-                    <div className='col-4 my-2 d-flex'>
+                    <div className='col-2 my-2 d-flex'>
                         <button
                             onClick={this.props.handleExpireRefreshTokenClick}
                             className='btn btn-primary btn-block p-1'
@@ -63,7 +64,7 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
                             Expire Refresh Token
                         </button>
                     </div>
-                    <div className='col-4 my-2 d-flex'>
+                    <div className='col-2 my-2 d-flex'>
                         <button
                             onClick={this.props.handleLogoutClick}
                             className='btn btn-primary btn-block p-1'
@@ -72,6 +73,7 @@ export class HeaderButtonsView extends React.Component<HeaderButtonsViewProps> {
                             Logout
                         </button>
                     </div>
+                    <div className='col-1 my-2 d-flex'></div>
                 </div>
         );
     }

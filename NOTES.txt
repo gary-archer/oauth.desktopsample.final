@@ -1,12 +1,14 @@
-1. Get Okta working
+1. Fix re-rendering and make flags clearer:
+   isStarting
+   isLoggedIn
+   isSessionButtonsActive
 
-2. Five equal size buttons on one row
-   Home button behaviour is not intuitive in login required view
+2. Home button behaviour is not intuitive in login required view
 
-3. CustomSchemeNotifier as a global object is poor
+3. Fix Desktop Sample 1 and React SPA
+
+4. Update Android to use LogoutUrlBuilder
+
+5. CustomSchemeNotifier as a global object is poor
    Redirect events related code needs improving
    Think about a folder for custom scheme notifications and events
-
-4. Understand why Opener closes the browser tab for logout - can I use this for login?
-
-5. Update Android to use LogoutUrlBuilder

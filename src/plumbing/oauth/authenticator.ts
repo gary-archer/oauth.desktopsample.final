@@ -38,7 +38,7 @@ export class Authenticator {
      */
     public async getAccessToken(): Promise<string> {
 
-        // First load auth state from secure storage if it exists
+        // First load tokens from secure storage if required
         if (!this._tokens) {
             this._tokens = await TokenStorage.load();
         }
@@ -53,7 +53,7 @@ export class Authenticator {
             await this._refreshAccessToken();
         }
 
-        // Return the new token if present
+        // Return the new access token if we succeeded
         if (this._tokens && this._tokens.accessToken) {
             return this._tokens.accessToken;
         }

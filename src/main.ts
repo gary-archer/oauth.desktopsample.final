@@ -93,7 +93,7 @@ class Main {
         this._window.loadFile('./index.html');
 
         // Open the developer tools at startup if required
-        this._window.webContents.openDevTools();
+        // this._window.webContents.openDevTools();
 
         // Remove the 'Origin: file://' deault header which Okta rejected for security reasons with this message:
         // 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'

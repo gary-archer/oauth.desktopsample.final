@@ -163,7 +163,7 @@ export class App extends React.Component<any, AppState> {
         };
 
         const sessionProps = {
-            isVisible: !(this.state.isMainViewLoaded || this.state.isLoggedOut),
+            isVisible: this.state.isMainViewLoaded && !this.state.isLoggedOut,
             apiClient: this._apiClient,
         };
 
