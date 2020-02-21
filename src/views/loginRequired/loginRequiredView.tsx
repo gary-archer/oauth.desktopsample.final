@@ -1,6 +1,8 @@
 import React from 'react';
 import urlparse from 'url-parse';
 import {UIError} from '../../plumbing/errors/uiError';
+import {EventEmitter} from '../../plumbing/events/eventEmitter';
+import {EventNames} from '../../plumbing/events/eventNames';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {LoginRequiredViewProps} from './loginRequiredViewProps';
 import {LoginRequiredViewState} from './loginRequiredViewState';
@@ -66,11 +68,27 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
         return  (
             <div className='card border-0 loginrequired'>
                 <h5>
-                    You are logged out - click <a href='#' onClick={this._onLoginStart}>here</a> to log in ...
+                    You are logged out - click <a href='#' onClick={this._onLoginClick}>here</a> to log in ...
                 </h5>
                 {this.state.signingIn && this._renderSigningIn()}
             </div>
         );
+    }
+
+    /*
+     * Subscribe to events during load
+     */
+    public async componentDidMount(): Promise<void> {
+
+        EventEmitter.subscribe(EventNames.signin, this._onLoginStart);
+    }
+
+    /*
+     * Unsubscribe when we unload
+     */
+    public async componentWillUnmount(): Promise<void> {
+
+        EventEmitter.unsubscribe(EventNames.signin, this._onLoginStart);
     }
 
     /*
@@ -90,15 +108,22 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
     /*
      * Trigger the login redirect when login is clicked
      */
-    private async _onLoginStart(event: React.MouseEvent<HTMLAnchorElement>): Promise<void> {
+    private async _onLoginClick(event: React.MouseEvent<HTMLAnchorElement>): Promise<void> {
 
         event.preventDefault();
+        await this._onLoginStart();
+    }
+
+     /*
+     * Trigger the login redirect in a shared routine
+     */
+    private async _onLoginStart(): Promise<void> {
 
         this.setState((prevState) => {
             return {...prevState, signingIn: true};
         });
 
-        await this.props.authenticator!.startLogin(this._onLoginCompleted);
+        await this.props.authenticator.startLogin(this._onLoginCompleted);
     }
 
     /*
@@ -152,6 +177,7 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
      * Ensure that the this parameter is available in callbacks
      */
     private _setupCallbacks() {
+        this._onLoginClick = this._onLoginClick.bind(this);
         this._onLoginStart = this._onLoginStart.bind(this);
         this._onLoginCompleted = this._onLoginCompleted.bind(this);
     }

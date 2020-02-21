@@ -18,8 +18,8 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
         prevState: UserInfoViewState): UserInfoViewState | null {
 
         // Return updated state
-        if (nextProps.isLoggedOut !== prevState.isLoggedOut) {
-            return {...prevState, isLoggedOut: nextProps.isLoggedOut};
+        if (nextProps.initialShouldLoad !== prevState.shouldLoad) {
+            return {...prevState, shouldLoad: nextProps.initialShouldLoad};
         }
 
         // Indicate no changes to state
@@ -33,7 +33,7 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
         super(props);
 
         this.state = {
-            isLoggedOut: props.isLoggedOut,
+            shouldLoad: props.initialShouldLoad,
             claims: null,
             error: null,
         };
@@ -62,7 +62,7 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
         }
 
         // Render nothing when logged out
-        if (this.state.isLoggedOut || !this.state.claims) {
+        if (!this.state.shouldLoad || !this.state.claims) {
             return (
                 <>
                 </>
@@ -84,7 +84,7 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
      */
     public async componentDidMount(): Promise<void> {
 
-        if (!this.state.isLoggedOut) {
+        if (this.state.shouldLoad) {
             await this._loadData();
         }
     }
@@ -96,7 +96,7 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
         prevProps: UserInfoViewProps,
         prevState: UserInfoViewState): Promise<void> {
 
-        if (prevState.isLoggedOut && !this.state.isLoggedOut) {
+        if (!prevState.shouldLoad && this.state.shouldLoad) {
             await this._loadData();
         }
     }

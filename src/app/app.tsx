@@ -5,7 +5,6 @@ import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
 import {ErrorHandler} from '../plumbing/errors/errorHandler';
-import {UIError} from '../plumbing/errors/uiError';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
 import {Authenticator} from '../plumbing/oauth/authenticator';
@@ -38,12 +37,13 @@ export class App extends React.Component<any, AppState> {
     public constructor(props: any) {
         super(props);
 
-        // Track application state
+        // Set initial state, which will be used on the first render
         this.state = {
             isStarting: true,
             isLoggedIn: false,
+            loadUserInfo: true,
             sessionButtonsEnabled: false,
-            applicationError: null,
+            startupError: null,
         };
 
         // Make callbacks available
@@ -61,7 +61,7 @@ export class App extends React.Component<any, AppState> {
 
         if (this.state.isStarting) {
 
-            if (this.state.applicationError) {
+            if (this.state.startupError) {
                 return this._renderStartUpError();
             } else {
                 return this._renderInitialScreen();
@@ -88,29 +88,19 @@ export class App extends React.Component<any, AppState> {
 
         try {
 
-            // Reset state during load
-            this.setState((prevState) => {
-                return {
-                    ...prevState,
-                    isStarting: true,
-                    isLoggedIn: false,
-                    sessionButtonsEnabled: false,
-                    applicationError: null};
-            });
-
             // Do the work to load the app
             await this._loadApp();
 
             // Update the load state to force a rerender of the full view
             this.setState((prevState) => {
-                return {...prevState, isStarting: false};
+                return {...prevState, isStarting: false, startupError: null};
             });
 
         } catch (e) {
 
             // Move to an error state, which allows the user to retry via the home button
             this.setState((prevState) => {
-                return {...prevState, applicationError: ErrorHandler.getFromException(e)};
+                return {...prevState, startupError: ErrorHandler.getFromException(e)};
             });
         }
     }
@@ -151,7 +141,7 @@ export class App extends React.Component<any, AppState> {
         const titleProps = {
             userInfo: {
                 apiClient: this._apiClient,
-                isLoggedOut: !this.state.isLoggedIn,
+                initialShouldLoad: this.state.loadUserInfo,
                 onViewLoaded: this._viewManager.onUserInfoLoaded,
                 onViewLoadFailed: this._viewManager.onUserInfoLoadFailed,
             },
@@ -169,7 +159,7 @@ export class App extends React.Component<any, AppState> {
         const errorProps = {
             hyperlinkMessage: 'Problem Encountered in Application',
             dialogTitle: 'Application Error',
-            error: this.state.applicationError,
+            error: this.state.startupError,
         };
 
         const sessionProps = {
@@ -246,7 +236,7 @@ export class App extends React.Component<any, AppState> {
         const errorProps = {
             hyperlinkMessage: 'Problem Encountered during Application Startup',
             dialogTitle: 'Application Startup Error',
-            error: this.state.applicationError,
+            error: this.state.startupError,
         };
 
         return (
@@ -273,12 +263,20 @@ export class App extends React.Component<any, AppState> {
      */
     private async _handleHomeClick(): Promise<void> {
 
-        // Update the location
-        location.hash = '#';
+        if (!this.state.isLoggedIn) {
 
-        // Force a full application restart after an error
-        if (this.state.applicationError || this._viewManager.hasError()) {
-            await this._startApp();
+            // Force a login if in the login required screen and home is clicked
+            EventEmitter.dispatch(EventNames.signin, {});
+
+        } else {
+
+            // Otherwise first update the location
+            location.hash = '#';
+
+            // Force a full application restart after an application / startup error
+            if (this.state.startupError || this._viewManager.hasError()) {
+                await this._startApp();
+            }
         }
     }
 
@@ -326,7 +324,7 @@ export class App extends React.Component<any, AppState> {
     private _onLoginCompleted(): void {
 
         this.setState((prevState) => {
-            return {...prevState, isLoggedIn: true, sessionButtonsEnabled: true};
+            return {...prevState, isLoggedIn: true, loadUserInfo: true, sessionButtonsEnabled: true};
         });
     }
 
@@ -341,18 +339,11 @@ export class App extends React.Component<any, AppState> {
     /*
      * Complete logout processing
      */
-    private _onLogoutCompleted(error: UIError | null): void {
-
-        if (error) {
-            this.setState((prevState) => {
-                return {...prevState, applicationError: error};
-            });
-            return;
-        }
+    private _onLogoutCompleted(): void {
 
         // Update state to indicate that we are logged out
         this.setState((prevState) => {
-            return {...prevState, isLoggedIn: false, sessionButtonsEnabled: false};
+            return {...prevState, isLoggedIn: false, loadUserInfo: false, sessionButtonsEnabled: false};
         });
 
         // Move to the login required page

@@ -29,6 +29,8 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
      */
     public render(): React.ReactNode {
 
+        console.log('COMPANIES');
+
         // Render an error on failure
         if (this.state.error) {
             return this._renderError();
@@ -93,6 +95,8 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
             this.setState((prevState) => {
                 return {...prevState, error};
             });
+
+            console.log('REPORTING LOAD ERROR ' + error.errorCode);
             this.props.onViewLoadFailed(error);
         }
     }

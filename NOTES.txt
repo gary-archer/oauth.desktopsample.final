@@ -1,6 +1,7 @@
 1. Home button behaviour is not intuitive in login required view
 
 2. Fix Desktop Sample 1 and React SPA
+   Flags are poor and use isLoggedIn rather than isLoggedOut in App and UserInfoView
 
 3. Update Android to use LogoutUrlBuilder
 

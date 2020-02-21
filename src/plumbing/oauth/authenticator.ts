@@ -11,7 +11,7 @@ export interface Authenticator {
 
     startLogin(onCompleted: (error: UIError | null) => void): Promise<void>;
 
-    startLogout(onCompleted: (error: UIError | null) => void): Promise<void>;
+    startLogout(onCompleted: () => void): Promise<void>;
 
     clearAccessToken(): Promise<void>;
 
