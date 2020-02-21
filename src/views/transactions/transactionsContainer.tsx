@@ -112,11 +112,11 @@ export class TransactionsContainer extends React.Component<TransactionsContainer
                 causeError,
             };
 
-            // Get data from the API
-            this.props.onViewLoading('TransactionsContainer');
+            // Do the load
+            this.props.onViewLoading();
             const data = await this.props.apiClient.getCompanyTransactions(this.state.companyId, options);
 
-            // Update UI state
+            // Update success state
             this.setState({error: null, data});
             this.props.onViewLoaded();
 

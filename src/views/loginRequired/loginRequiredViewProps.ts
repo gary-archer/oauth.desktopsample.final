@@ -1,13 +1,8 @@
-import {Authenticator} from '../../plumbing/oauth/authenticator';
-
 /*
  * Input to the login required view
  */
 export interface LoginRequiredViewProps {
 
-    // The authenticator object triggers the login
-    authenticator: Authenticator;
-
-    // Called when login completes successfully
-    onLoginCompleted: () => void;
+    // A callback to trigger the login redirect from the app view
+    onLoginRedirect: () => Promise<void>;
 }
