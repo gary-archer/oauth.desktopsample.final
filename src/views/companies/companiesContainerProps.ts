@@ -10,7 +10,7 @@ export interface CompaniesContainerProps {
     apiClient: ApiClient;
 
     // A callback before the view loads
-    onViewLoading: (viewType: string) => void;
+    onViewLoading: () => void;
 
     // A callback when the view loads successfully
     onViewLoaded: () => void;

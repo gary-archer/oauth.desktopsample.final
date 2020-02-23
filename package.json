@@ -22,7 +22,7 @@
     "fs-extra": "^8.1.0",
     "got": "^9.6.0",
     "guid-typescript": "^1.0.9",
-    "keytar": "^5.0.0",
+    "keytar": "^5.2.0",
     "moment": "^2.24.0",
     "opener": "^1.5.1",
     "react": "^16.11.0",

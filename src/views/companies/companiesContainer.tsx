@@ -79,20 +79,19 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
                 causeError,
             };
 
-            this.props.onViewLoading('CompaniesContainer');
+            // Do the load
+            this.props.onViewLoading();
             const companies = await this.props.apiClient.getCompanyList(options);
 
-            this.setState((prevState) => {
-                return {...prevState, error: null, companies};
-            });
+            // Update success state
+            this.setState({error: null, companies});
             this.props.onViewLoaded();
 
         } catch (e) {
 
+            // Update error state
             const error = ErrorHandler.getFromException(e);
-            this.setState((prevState) => {
-                return {...prevState, error};
-            });
+            this.setState({error});
             this.props.onViewLoadFailed(error);
         }
     }

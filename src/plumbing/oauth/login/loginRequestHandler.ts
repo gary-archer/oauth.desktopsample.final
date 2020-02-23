@@ -16,19 +16,13 @@ import {RedirectEvents} from '../utilities/redirectEvents';
  */
 export class LoginRequestHandler extends AuthorizationRequestHandler {
 
-    /*
-     * Inputs and outputs
-     */
-    private readonly _loginEvents: RedirectEvents;
+    private readonly _redirectEvents: RedirectEvents;
     private _authorizationPromise: Promise<AuthorizationRequestResponse> | null;
 
-    /*
-     * Set up the base class
-     */
-    public constructor(loginEvents: RedirectEvents) {
+    public constructor(redirectEvents: RedirectEvents) {
 
         super(new BasicQueryStringUtils(), new DefaultCrypto());
-        this._loginEvents = loginEvents;
+        this._redirectEvents = redirectEvents;
         this._authorizationPromise = null;
     }
 
@@ -46,7 +40,7 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
         this._authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
 
             // Wait for a response event from the system
-            this._loginEvents.once(RedirectEvents.ON_AUTHORIZATION_RESPONSE, (queryParams: any) => {
+            this._redirectEvents.once(RedirectEvents.ON_AUTHORIZATION_RESPONSE, (queryParams: any) => {
 
                 // Package up data into an object and then resolve our promise
                 const completeResponse = this._handleBrowserLoginResponse(queryParams, request);

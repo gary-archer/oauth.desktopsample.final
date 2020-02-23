@@ -7,7 +7,6 @@ import {UIError} from '../plumbing/errors/uiError';
 export class ViewManager {
 
     // Load state
-    private _mainViewName: string;
     private _mainViewLoaded: boolean;
     private _userInfoLoaded: boolean;
 
@@ -17,16 +16,15 @@ export class ViewManager {
 
     // Application callbacks
     private readonly _onLoginRequired: () => void;
-    private readonly onLoadStateChanged: (enabled: boolean) => void;
+    private readonly _onLoadStateChanged: (enabled: boolean) => void;
 
     public constructor(loginRequired: () => void, onLoadStateChanged: (enabled: boolean) => void) {
 
         // Store callbacks
         this._onLoginRequired = loginRequired;
-        this.onLoadStateChanged = onLoadStateChanged;
+        this._onLoadStateChanged = onLoadStateChanged;
 
         // Initially we wait for both views to load
-        this._mainViewName = '';
         this._mainViewLoaded = false;
         this._userInfoLoaded = false;
 
@@ -39,9 +37,8 @@ export class ViewManager {
     /*
      * Session buttons are disabled while the main view loads
      */
-    public onMainViewLoading(mainViewName: string) {
-        this._mainViewName = mainViewName;
-        this.onLoadStateChanged(false);
+    public onMainViewLoading() {
+        this._onLoadStateChanged(false);
     }
 
     /*
@@ -50,11 +47,7 @@ export class ViewManager {
     public onMainViewLoaded() {
         this._mainViewLoaded = true;
         this._mainViewLoadError = null;
-
-        // Session buttons are not enabled when logged out
-        if (this._mainViewName !== 'LoginRequiredView') {
-            this.onLoadStateChanged(true);
-        }
+        this._onLoadStateChanged(true);
     }
 
     /*

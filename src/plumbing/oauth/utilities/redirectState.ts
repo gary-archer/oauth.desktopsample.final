@@ -18,9 +18,11 @@ export class RedirectState {
     /*
      * Add an entry to our collection
      */
-    public addState(state: string, loginEvents: RedirectEvents): void {
+    public addState(state: string, redirectEvents: RedirectEvents): void {
 
-        RedirectState._stateEventsMap.push([state, loginEvents]);
+        if (!this.getEvents(state)) {
+            RedirectState._stateEventsMap.push([state, redirectEvents]);
+        }
     }
 
     /*

@@ -24,23 +24,23 @@ export class CustomSchemeNotifier {
     }
 
     /*
-     * During logins, add to the login state so that the correct response data is used for each request
+     * During logins, add to the redirect state so that the correct response data is used for each request
      */
-    public static addCorrelationState(state: string, loginEvents: RedirectEvents): void {
-        return CustomSchemeNotifier._loginState.addState(state, loginEvents);
+    public static addCorrelationState(state: string, redirectEvents: RedirectEvents): void {
+        return CustomSchemeNotifier._redirectState.addState(state, redirectEvents);
     }
 
     /*
-     * After logins, clear login state
+     * After logins, clear redirect state
      */
     public static removeCorrelationState(state: string): void {
-        return CustomSchemeNotifier._loginState.removeState(state);
+        return CustomSchemeNotifier._redirectState.removeState(state);
     }
 
     /*
-     * Store login state across all attempts
+     * Store redirect state across all attempts
      */
-    private static _loginState = new RedirectState();
+    private static _redirectState = new RedirectState();
 
     /*
      * This asks the main side of the app for the startup deep linking path
@@ -77,11 +77,16 @@ export class CustomSchemeNotifier {
 
         const parsedUrl = CustomSchemeNotifier._tryParseUrl(url);
         if (parsedUrl) {
-
             if (parsedUrl.query.state) {
 
                 // If there is a state parameter we will classify this as a login request
                 CustomSchemeNotifier._handleLoginResponseNotification(parsedUrl.query);
+
+            } else if (parsedUrl.path === '/logoutCallback') {
+
+                // Handle logout requests
+                CustomSchemeNotifier._handleLogoutResponseNotification();
+
             } else {
 
                 // Otherwise we will treat it a deep linking request
@@ -96,11 +101,22 @@ export class CustomSchemeNotifier {
     private static _handleLoginResponseNotification(queryParams: any): void {
 
         // Get login events for the login attempt so that we use the correct data for the authorization code grant
-        const loginEvents = CustomSchemeNotifier._loginState.getEvents(queryParams.state);
-        if (loginEvents) {
+        const redirectEvents = CustomSchemeNotifier._redirectState.getEvents(queryParams.state);
+        if (redirectEvents) {
 
             // Raise the response event to complete login processing
-            loginEvents.emit(RedirectEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
+            redirectEvents.emit(RedirectEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
+        }
+    }
+
+    /*
+     * Receive logout response data and resume the logout flow
+     */
+    private static _handleLogoutResponseNotification(): void {
+
+        const redirectEvents = CustomSchemeNotifier._redirectState.getEvents('logout');
+        if (redirectEvents) {
+            redirectEvents.emit(RedirectEvents.ON_END_SESSION_RESPONSE, null);
         }
     }
 

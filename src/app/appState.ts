@@ -1,5 +1,3 @@
-import {UIError} from '../plumbing/errors/uiError';
-
 /*
  * Application level state used for rendering
  */
@@ -8,12 +6,12 @@ export interface AppState {
     // True while startup configuration is being processed
     isStarting: boolean;
 
-    // Some controls are hidden during view loading and shown afterwards
-    isMainViewLoaded: boolean;
+    // Whether currently logged in
+    isLoggedIn: boolean;
 
-    // Some UI behaviour is governed by the login state
-    isLoggedOut: boolean;
+    // Whether to load user info, which occurs initially but not when in the logged out view
+    loadUserInfo: boolean;
 
-    // Populated when there is an application startup error
-    applicationError: UIError | null;
+    // After login, session buttons are disabled during view loading and shown afterwards
+    sessionButtonsEnabled: boolean;
 }

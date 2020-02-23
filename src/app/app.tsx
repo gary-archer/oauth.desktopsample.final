@@ -4,17 +4,18 @@ import {HashRouter, Route, Switch} from 'react-router-dom';
 import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
-import {ErrorHandler} from '../plumbing/errors/errorHandler';
+import {UIError} from '../plumbing/errors/uiError';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
 import {Authenticator} from '../plumbing/oauth/authenticator';
+import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {CustomSchemeNotifier} from '../plumbing/utilities/customSchemeNotifier';
 import {DebugProxyAgent} from '../plumbing/utilities/debugProxyAgent';
+import {ExpiryNavigation} from '../plumbing/utilities/expiryNavigation';
 import {SslHelper} from '../plumbing/utilities/sslHelper';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
+import {AppErrorView} from '../views/errors/appErrorView';
 import {ErrorBoundary} from '../views/errors/errorBoundary';
-import {ErrorSummaryView} from '../views/errors/errorSummaryView';
-import {HeadingView} from '../views/frame/headingView';
 import {SessionView} from '../views/frame/sessionView';
 import {TitleView} from '../views/frame/titleView';
 import {HeaderButtonsView} from '../views/headerButtons/headerButtonsView';
@@ -36,12 +37,12 @@ export class App extends React.Component<any, AppState> {
     public constructor(props: any) {
         super(props);
 
-        // Track application state
+        // Set initial state, which will be used on the first render
         this.state = {
             isStarting: true,
-            isMainViewLoaded: false,
-            isLoggedOut: false,
-            applicationError: null,
+            isLoggedIn: false,
+            loadUserInfo: true,
+            sessionButtonsEnabled: false,
         };
 
         // Make callbacks available
@@ -58,15 +59,8 @@ export class App extends React.Component<any, AppState> {
     public render(): React.ReactNode {
 
         if (this.state.isStarting) {
-
-            if (this.state.applicationError) {
-                return this._renderStartUpError();
-            } else {
-                return this._renderInitialScreen();
-            }
-
+            return this._renderInitialScreen();
         } else {
-
             return this._renderMain();
         }
     }
@@ -87,49 +81,69 @@ export class App extends React.Component<any, AppState> {
         try {
 
             // Reset state during load
-            this.setState((prevState) => {
-                return {
-                    ...prevState,
-                    isStarting: true,
-                    isMainViewLoaded: false,
-                    applicationError: null};
+            this.setState({
+                isStarting: true,
+                isLoggedIn: false,
+                loadUserInfo: true,
+                sessionButtonsEnabled: false,
             });
 
-            // Do the work to load the app
-            await this._loadApp();
+            // First read configuration
+            this._configuration = await ConfigurationLoader.load('desktop.config.json');
 
-            // Update the load state to force a rerender of the full view
-            this.setState((prevState) => {
-                return {...prevState, isStarting: false};
+            // Set up SSL Trust and HTTP debugging
+            await SslHelper.configureTrust();
+            DebugProxyAgent.initialize(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
+
+            // Initialise authentication
+            this._authenticator = new AuthenticatorImpl(this._configuration.oauth);
+
+            // Initialise listening for login responses
+            await CustomSchemeNotifier.initialize();
+
+            // Create a client to reliably call the API
+            this._apiClient = new ApiClient(this._configuration.app.apiBaseUrl, this._authenticator);
+
+            // If there are stored tokens, the initial state is logged in
+            const isLoggedIn = await this._authenticator.isLoggedIn();
+
+            // Update the UI state
+            this.setState({
+                isStarting: false,
+                isLoggedIn,
+                sessionButtonsEnabled: isLoggedIn,
             });
 
         } catch (e) {
-            this.setState((prevState) => {
-                return {...prevState, applicationError: ErrorHandler.getFromException(e)};
-            });
+            EventEmitter.dispatch(EventNames.error, {area: 'Startup', error: e});
         }
     }
 
     /*
-     * Do the initial creation of global objects before attempting to render the whole view
+     * Render basic details before the app has initialised
      */
-    private async _loadApp(): Promise<void> {
+    private _renderInitialScreen(): React.ReactNode {
 
-        // First read configuration
-        this._configuration = await ConfigurationLoader.load('desktop.config.json');
+        const titleProps = {
+            userInfo: null,
+        };
 
-        // Set up SSL Trust and HTTP debugging
-        await SslHelper.configureTrust();
-        DebugProxyAgent.initialize(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
+        const headerButtonProps = {
+            sessionButtonsEnabled: this.state.sessionButtonsEnabled,
+            handleHomeClick: this._handleHomeClick,
+            handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
+            handleExpireRefreshTokenClick: this._handleExpireRefreshTokenClick,
+            handleRefreshDataClick: this._handleRefreshDataClick,
+            handleLogoutClick: this._handleLogoutClick,
+        };
 
-        // Initialise authentication
-        this._authenticator = new Authenticator(this._configuration.oauth);
-
-        // Initialise listening for login responses
-        await CustomSchemeNotifier.initialize();
-
-        // Create a client to reliably call the API
-        this._apiClient = new ApiClient(this._configuration.app.apiBaseUrl, this._authenticator);
+        return (
+            <ErrorBoundary>
+                <TitleView {...titleProps}/>
+                <HeaderButtonsView {...headerButtonProps}/>
+                <AppErrorView />
+            </ErrorBoundary>
+        );
     }
 
     /*
@@ -140,14 +154,14 @@ export class App extends React.Component<any, AppState> {
         const titleProps = {
             userInfo: {
                 apiClient: this._apiClient,
-                isLoggedOut: this.state.isLoggedOut,
+                initialShouldLoad: this.state.loadUserInfo,
                 onViewLoaded: this._viewManager.onUserInfoLoaded,
                 onViewLoadFailed: this._viewManager.onUserInfoLoadFailed,
             },
         };
 
         const headerButtonProps = {
-            sessionButtonsEnabled: this.state.isMainViewLoaded,
+            sessionButtonsEnabled: this.state.sessionButtonsEnabled,
             handleHomeClick: this._handleHomeClick,
             handleRefreshDataClick: this._handleRefreshDataClick,
             handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
@@ -155,14 +169,8 @@ export class App extends React.Component<any, AppState> {
             handleLogoutClick: this._handleLogoutClick,
         };
 
-        const errorProps = {
-            hyperlinkMessage: 'Problem Encountered in Application',
-            dialogTitle: 'Application Error',
-            error: this.state.applicationError,
-        };
-
         const sessionProps = {
-            isVisible: !(this.state.isMainViewLoaded || this.state.isLoggedOut),
+            isVisible: this.state.isLoggedIn,
             apiClient: this._apiClient,
         };
 
@@ -174,8 +182,7 @@ export class App extends React.Component<any, AppState> {
         };
 
         const loginRequiredProps = {
-            authenticator: this._authenticator,
-            onLoginCompleted: this._onLoginCompleted,
+            onLoginRedirect: this._onLoginRedirect,
         };
 
         // Callbacks to prevent multi line JSX warnings
@@ -188,7 +195,7 @@ export class App extends React.Component<any, AppState> {
             <ErrorBoundary>
                 <TitleView {...titleProps} />
                 <HeaderButtonsView {...headerButtonProps} />
-                <ErrorSummaryView {...errorProps} />
+                <AppErrorView />
                 <SessionView {...sessionProps}/>
                 <HashRouter>
                     <Switch>
@@ -203,72 +210,32 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Render basic details before the app has initialised
-     */
-    private _renderInitialScreen(): React.ReactNode {
-
-        const titleProps = {
-            userInfo: null,
-        };
-
-        return (
-            <ErrorBoundary>
-                <TitleView {...titleProps}/>
-            </ErrorBoundary>
-        );
-    }
-
-    /*
-     * Render startup errors
-     */
-    private _renderStartUpError(): React.ReactNode {
-
-        const headerButtonProps = {
-            sessionButtonsEnabled: this.state.isMainViewLoaded,
-            handleHomeClick: this._handleHomeClick,
-            handleRefreshDataClick: this._handleRefreshDataClick,
-            handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
-            handleExpireRefreshTokenClick: this._handleExpireRefreshTokenClick,
-            handleLogoutClick: this._handleLogoutClick,
-        };
-
-        const errorProps = {
-            hyperlinkMessage: 'Problem Encountered during Application Startup',
-            dialogTitle: 'Application Startup Error',
-            error: this.state.applicationError,
-        };
-
-        return (
-            <ErrorBoundary>
-                <HeadingView />
-                <HeaderButtonsView {...headerButtonProps}/>
-                <ErrorSummaryView {...errorProps}/>
-            </ErrorBoundary>
-        );
-    }
-
-    /*
      * Update the load state when notified
      */
     private _onLoadStateChanged(loaded: boolean): void {
 
-        this.setState((prevState) => {
-            return {...prevState, isMainViewLoaded: loaded};
-        });
+        this.setState({sessionButtonsEnabled: loaded});
     }
 
     /*
-     * Ensure we return to the home location and support retries after errors
+     * Return to the home location and also support retries after errors
      */
     private async _handleHomeClick(): Promise<void> {
 
-        // Update the location
-        location.hash = '#';
-
-        // Force a full application restart after an error
-        if (this.state.applicationError || this._viewManager.hasError()) {
+        // Force a full app reload after an error to ensure that all data is retried
+        if (this.state.isStarting || this._viewManager.hasError()) {
             await this._startApp();
+            return;
         }
+        
+        // When logged out and home is clicked, force a login redirect and return home
+        if (!this.state.isLoggedIn) {
+            await this._onLoginRedirect();
+            return;
+        }
+
+        // Otherwise navigate home
+        location.hash = '#';
     }
 
     /*
@@ -297,16 +264,26 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * The view manager coordinartes views and notifies the app when a login is required
+     * The view manager coordinates views and notifies the app when a login is required
      * We then move to the login required view and wait for the system browser login response
      */
     private _onLoginRequired(): void {
 
-        this.setState((prevState) => {
-            return {...prevState, isLoggedOut: true, isMainViewLoaded: false};
-        });
+        this.setState({isLoggedIn: false, sessionButtonsEnabled: false});
+        ExpiryNavigation.navigateToLoginRequired();
+    }
 
-        LoginRequiredView.navigate();
+    /*
+     * The login required view calls us back to begin the login process
+     */
+    private async _onLoginRedirect(): Promise<void> {
+
+        try {
+            await this._authenticator!.startLogin(this._onLoginCompleted);
+
+        } catch (e) {
+            EventEmitter.dispatch(EventNames.error, {area: 'Login', error: e});
+        }
     }
 
     /*
@@ -314,23 +291,33 @@ export class App extends React.Component<any, AppState> {
      */
     private _onLoginCompleted(): void {
 
-        this.setState((prevState) => {
-            return {...prevState, isLoggedOut: false};
-        });
+        // Update state
+        this.setState({isLoggedIn: true, loadUserInfo: true, sessionButtonsEnabled: true});
+
+        // Restore the hash location
+        ExpiryNavigation.restorePreLoginLocation();
     }
 
     /*
-     * Initiate logout processing
+     * Trigger the logout redirect on the system browser
      */
     private async _handleLogoutClick(): Promise<void> {
 
-        // Do the logout
-        await this._authenticator!.startLogout();
+        try {
+            await this._authenticator!.startLogout(this._onLogoutCompleted);
+
+        } catch (e) {
+            EventEmitter.dispatch(EventNames.error, {area: 'Logout', error: e});
+        }
+    }
+
+    /*
+     * Complete logout processing
+     */
+    private _onLogoutCompleted(e: UIError | null): void {
 
         // Update state to indicate that we are logged out
-        this.setState((prevState) => {
-            return {...prevState, isLoggedOut: true, isMainViewLoaded: false};
-        });
+        this.setState({isLoggedIn: false, loadUserInfo: false, sessionButtonsEnabled: false});
 
         // Move to the login required page
         location.hash = `#/loginrequired`;
@@ -347,6 +334,8 @@ export class App extends React.Component<any, AppState> {
         this._handleExpireRefreshTokenClick = this._handleExpireRefreshTokenClick.bind(this);
         this._onLoginCompleted = this._onLoginCompleted.bind(this);
         this._onLoginRequired = this._onLoginRequired.bind(this);
+        this._onLoginRedirect = this._onLoginRedirect.bind(this);
+        this._onLogoutCompleted = this._onLogoutCompleted.bind(this);
         this._handleLogoutClick = this._handleLogoutClick.bind(this);
     }
 }

@@ -1,13 +1,15 @@
 {
     "app": {
-        "apiBaseUrl":        "https://api.mycompany.com/api",
-        "proxyUrl":          "http://127.0.0.1:8888",
-        "useProxy":          false
+        "apiBaseUrl":               "https://api.mycompany.com/api",
+        "proxyUrl":                 "http://127.0.0.1:8888",
+        "useProxy":                 false
     },
     "oauth": {
-        "authority":         "https://dev-843469.oktapreview.com/oauth2/default",
-        "clientId":          "0oad9rqa0ryU4ROtx0h7",
-        "scope":             "openid profile email offline_access",
-        "redirectUri":       "x-mycompany-desktopapp:/callback"
+        "authority":                "https://dev-843469.oktapreview.com/oauth2/default",
+        "clientId":                 "0oad9rqa0ryU4ROtx0h7",
+        "redirectUri":              "x-mycompany-desktopapp:/callback",
+        "logoutEndpoint":           "v1/logout",
+        "postLogoutRedirectUri":    "x-mycompany-desktopapp:/logoutCallback",
+        "scope":                    "openid profile email offline_access"
     }
 }
