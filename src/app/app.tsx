@@ -120,6 +120,33 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
+     * Render basic details before the app has initialised
+     */
+    private _renderInitialScreen(): React.ReactNode {
+
+        const titleProps = {
+            userInfo: null,
+        };
+
+        const headerButtonProps = {
+            sessionButtonsEnabled: this.state.sessionButtonsEnabled,
+            handleHomeClick: this._handleHomeClick,
+            handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
+            handleExpireRefreshTokenClick: this._handleExpireRefreshTokenClick,
+            handleRefreshDataClick: this._handleRefreshDataClick,
+            handleLogoutClick: this._handleLogoutClick,
+        };
+
+        return (
+            <ErrorBoundary>
+                <TitleView {...titleProps}/>
+                <HeaderButtonsView {...headerButtonProps}/>
+                <AppErrorView />
+            </ErrorBoundary>
+        );
+    }
+
+    /*
      * Attempt to render the entire layout
      */
     private _renderMain(): React.ReactNode {
@@ -183,33 +210,6 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Render basic details before the app has initialised
-     */
-    private _renderInitialScreen(): React.ReactNode {
-
-        const titleProps = {
-            userInfo: null,
-        };
-
-        const headerButtonProps = {
-            sessionButtonsEnabled: this.state.sessionButtonsEnabled,
-            handleHomeClick: this._handleHomeClick,
-            handleExpireAccessTokenClick: this._handleExpireAccessTokenClick,
-            handleExpireRefreshTokenClick: this._handleExpireRefreshTokenClick,
-            handleRefreshDataClick: this._handleRefreshDataClick,
-            handleLogoutClick: this._handleLogoutClick,
-        };
-
-        return (
-            <ErrorBoundary>
-                <TitleView {...titleProps}/>
-                <HeaderButtonsView {...headerButtonProps}/>
-                <AppErrorView />
-            </ErrorBoundary>
-        );
-    }
-
-    /*
      * Update the load state when notified
      */
     private _onLoadStateChanged(loaded: boolean): void {
@@ -222,18 +222,19 @@ export class App extends React.Component<any, AppState> {
      */
     private async _handleHomeClick(): Promise<void> {
 
+        // Force a full app reload after an error to ensure that all data is retried
+        if (this.state.isStarting || this._viewManager.hasError()) {
+            await this._startApp();
+            return;
+        }
+        
         // When logged out and home is clicked, force a login redirect and return home
         if (!this.state.isLoggedIn) {
             await this._onLoginRedirect();
             return;
         }
 
-        // Force a full app reload after an error to ensure that all data is retried
-        if (this.state.isStarting || this._viewManager.hasError()) {
-            await this._startApp();
-        }
-
-        // Navigate home
+        // Otherwise navigate home
         location.hash = '#';
     }
 

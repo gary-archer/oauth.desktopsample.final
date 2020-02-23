@@ -7,9 +7,9 @@
     "oauth": {
         "authority":                "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_mZ3NBYpTo",
         "clientId":                 "76nlopdg790upkrdhb9512u8ac",
-        "redirectUri":              "x-mycompany-desktopapp:/callback",
+        "redirectUri":              "https://web.authguidance-examples.com/desktop/postlogin.html",
         "logoutEndpoint":           "https://login.authguidance-examples.com/logout",
-        "postLogoutRedirectUri":    "x-mycompany-desktopapp:/logoutCallback",
+        "postLogoutRedirectUri":    "https://web.authguidance-examples.com/desktop/postlogout.html",
         "scope":                    "openid profile email"
     }
 }
