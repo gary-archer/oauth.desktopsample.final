@@ -51,7 +51,7 @@ export class LogoutManager {
             redirectEvents.once(RedirectEvents.ON_END_SESSION_RESPONSE, (error: UIError | null) => {
 
                 CustomSchemeNotifier.removeCorrelationState(state);
-                this._onComplete(null);
+                this._onComplete(error);
                 resolve();
             });
         });

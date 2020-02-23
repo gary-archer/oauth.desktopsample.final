@@ -8,23 +8,6 @@ import {LoginRequiredViewState} from './loginRequiredViewState';
 export class LoginRequiredView extends React.Component<LoginRequiredViewProps, LoginRequiredViewState> {
 
     /*
-     * Start the login workflow by updating the hash fragment, which will invoke the view
-     */
-    public static navigate() {
-
-        if (location.hash.length > 0) {
-
-            // Record the previous main location unless we are already in login required
-            location.hash = `#/loginrequired&return=${encodeURIComponent(location.hash)}`;
-
-        } else {
-
-            // Default to an empty return location
-            location.hash = '#/loginrequired';
-        }
-    }
-
-    /*
      * Initialise state when constructed
      */
     public constructor(props: any) {

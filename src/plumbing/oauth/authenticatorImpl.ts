@@ -25,9 +25,6 @@ export class AuthenticatorImpl implements Authenticator {
     private _tokens: TokenData | null;
     private _metadata: any = null;
 
-    /*
-     * Initialise from configuration
-     */
     public constructor(oauthConfig: OAuthConfiguration) {
         this._oauthConfig = oauthConfig;
         this._tokens = null;
@@ -98,14 +95,13 @@ export class AuthenticatorImpl implements Authenticator {
      */
     public async startLogout(onCompleted: (error: UIError | null) => void): Promise<void> {
 
-        // First clear tokens from memory and storage
-        const idToken = this._tokens!.idToken;
+        // Start the logout redirect
+        const logout = new LogoutManager(this._oauthConfig, this._tokens!.idToken, onCompleted);
+        await logout.start();
+
+        // Clear tokens from memory and storage
         this._tokens = null;
         await TokenStorage.delete();
-
-        // Start the logout redirect
-        const logout = new LogoutManager(this._oauthConfig, idToken, onCompleted);
-        await logout.start();
     }
 
     /*

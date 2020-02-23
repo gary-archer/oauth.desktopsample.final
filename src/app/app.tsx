@@ -1,7 +1,6 @@
 import React from 'react';
 import Modal from 'react-modal';
 import {HashRouter, Route, Switch} from 'react-router-dom';
-import urlparse from 'url-parse';
 import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
@@ -12,6 +11,7 @@ import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {CustomSchemeNotifier} from '../plumbing/utilities/customSchemeNotifier';
 import {DebugProxyAgent} from '../plumbing/utilities/debugProxyAgent';
+import {ExpiryNavigation} from '../plumbing/utilities/expiryNavigation';
 import {SslHelper} from '../plumbing/utilities/sslHelper';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {AppErrorView} from '../views/errors/appErrorView';
@@ -218,11 +218,11 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Ensure we return to the home location and support retries after errors
+     * Return to the home location and also support retries after errors
      */
     private async _handleHomeClick(): Promise<void> {
 
-        // Trigger a login if in the login required view
+        // When logged out and home is clicked, force a login redirect and return home
         if (!this.state.isLoggedIn) {
             await this._onLoginRedirect();
             return;
@@ -269,7 +269,7 @@ export class App extends React.Component<any, AppState> {
     private _onLoginRequired(): void {
 
         this.setState({isLoggedIn: false, sessionButtonsEnabled: false});
-        LoginRequiredView.navigate();
+        ExpiryNavigation.navigateToLoginRequired();
     }
 
     /*
@@ -293,24 +293,8 @@ export class App extends React.Component<any, AppState> {
         // Update state
         this.setState({isLoggedIn: true, loadUserInfo: true, sessionButtonsEnabled: true});
 
-        // TODO: Create a LoginNavigationHelper class
-        // Test refresh token expiry from the transactions view
-
-        // Return to the pre login location
-        if (location.hash.startsWith('#')) {
-
-            // See if the hash fragment has a return parameter
-            const urlData = urlparse('?' + location.hash.substring(1), true);
-            if (urlData && urlData.query && urlData.query.return) {
-
-                // If so return to the pre login location
-                const hash = decodeURIComponent(urlData.query.return);
-                location.hash = hash;
-                return;
-            }
-        }
-
-        location.hash = '#';
+        // Restore the hash location
+        ExpiryNavigation.restorePreLoginLocation();
     }
 
     /*
