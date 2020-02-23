@@ -89,7 +89,7 @@ export class App extends React.Component<any, AppState> {
             });
 
             // First read configuration
-            this._configuration = await ConfigurationLoader.load('desktop.config.json');
+            this._configuration = await ConfigurationLoader.load('desktop.config.localapi.json');
 
             // Set up SSL Trust and HTTP debugging
             await SslHelper.configureTrust();
@@ -227,7 +227,7 @@ export class App extends React.Component<any, AppState> {
             await this._startApp();
             return;
         }
-        
+
         // When logged out and home is clicked, force a login redirect and return home
         if (!this.state.isLoggedIn) {
             await this._onLoginRedirect();
