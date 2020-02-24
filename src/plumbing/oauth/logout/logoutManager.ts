@@ -1,8 +1,8 @@
 import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {UIError} from '../../errors/uiError';
-import {CustomSchemeNotifier} from '../../utilities/customSchemeNotifier';
-import {RedirectEvents} from '../utilities/redirectEvents';
+import {CustomUriSchemeNotifier} from '../../navigation/customUriSchemeNotifier';
+import {RedirectEvents} from '../../navigation/redirectEvents';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {LogoutUrlBuilder} from './logoutUrlBuilder';
 import {OktaLogoutUrlBuilder} from './oktaLogoutUrlBuilder';
@@ -13,15 +13,18 @@ import {OktaLogoutUrlBuilder} from './oktaLogoutUrlBuilder';
 export class LogoutManager {
 
     private readonly _configuration: OAuthConfiguration;
+    private readonly _customSchemeNotifier: CustomUriSchemeNotifier;
     private readonly _idToken: string;
     private readonly _onComplete: (error: UIError | null) => void;
 
     public constructor(
         configuration: OAuthConfiguration,
+        customSchemeNotifier: CustomUriSchemeNotifier,
         idToken: string,
         onComplete: (error: UIError | null) => void) {
 
         this._configuration = configuration;
+        this._customSchemeNotifier = customSchemeNotifier;
         this._idToken = idToken;
         this._onComplete = onComplete;
     }
@@ -39,7 +42,7 @@ export class LogoutManager {
 
         // Ensure that completion callbacks are correlated to the correct logout request
         const state = 'logout';
-        CustomSchemeNotifier.addCorrelationState(state, redirectEvents);
+        this._customSchemeNotifier.addCorrelationState(state, redirectEvents);
 
         // Invoke the browser
         Opener(logoutUrl);
@@ -50,7 +53,7 @@ export class LogoutManager {
             // Wait for the response event from the CustomSchemeNotifier class
             redirectEvents.once(RedirectEvents.ON_END_SESSION_RESPONSE, (error: UIError | null) => {
 
-                CustomSchemeNotifier.removeCorrelationState(state);
+                this._customSchemeNotifier.removeCorrelationState(state);
                 this._onComplete(error);
                 resolve();
             });

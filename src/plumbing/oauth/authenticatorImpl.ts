@@ -9,6 +9,7 @@ import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorHandler} from '../errors/errorHandler';
 import {UIError} from '../errors/uiError';
+import {CustomUriSchemeNotifier} from '../navigation/customUriSchemeNotifier';
 import {Authenticator} from './authenticator';
 import {CustomRequestor} from './customRequestor';
 import {LoginManager} from './login/loginManager';
@@ -22,11 +23,13 @@ import {TokenStorage} from './tokenStorage';
 export class AuthenticatorImpl implements Authenticator {
 
     private readonly _oauthConfig: OAuthConfiguration;
+    private readonly _customSchemeNotifier: CustomUriSchemeNotifier;
     private _tokens: TokenData | null;
     private _metadata: any = null;
 
-    public constructor(oauthConfig: OAuthConfiguration) {
+    public constructor(oauthConfig: OAuthConfiguration, customSchemeNotifier: CustomUriSchemeNotifier) {
         this._oauthConfig = oauthConfig;
+        this._customSchemeNotifier = customSchemeNotifier;
         this._tokens = null;
         this._setupCallbacks();
     }
@@ -85,6 +88,7 @@ export class AuthenticatorImpl implements Authenticator {
         const login = new LoginManager(
             this._oauthConfig,
             this._metadata,
+            this._customSchemeNotifier,
             this._swapAuthorizationCodeForTokens,
             onCompleted);
         await login.start();
@@ -96,10 +100,14 @@ export class AuthenticatorImpl implements Authenticator {
     public async startLogout(onCompleted: (error: UIError | null) => void): Promise<void> {
 
         // Start the logout redirect
-        const logout = new LogoutManager(this._oauthConfig, this._tokens!.idToken, onCompleted);
+        const logout = new LogoutManager(
+            this._oauthConfig,
+            this._customSchemeNotifier,
+            this._tokens!.idToken,
+            onCompleted);
         await logout.start();
 
-        // Clear tokens from memory and storage
+        // Upon completion, clear tokens from memory and storage
         this._tokens = null;
         await TokenStorage.delete();
     }

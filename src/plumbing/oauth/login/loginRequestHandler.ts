@@ -9,7 +9,7 @@ import {AuthorizationError,
         BasicQueryStringUtils,
         DefaultCrypto} from '@openid/appauth';
 import Opener from 'opener';
-import {RedirectEvents} from '../utilities/redirectEvents';
+import {RedirectEvents} from '../../navigation/redirectEvents';
 
 /*
  * An override of the default authorization handler to perform a login

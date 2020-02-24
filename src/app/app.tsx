@@ -7,9 +7,9 @@ import {ConfigurationLoader} from '../configuration/configurationLoader';
 import {UIError} from '../plumbing/errors/uiError';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
+import {CustomUriSchemeNotifier} from '../plumbing/navigation/customUriSchemeNotifier';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
-import {CustomSchemeNotifier} from '../plumbing/utilities/customSchemeNotifier';
 import {DebugProxyAgent} from '../plumbing/utilities/debugProxyAgent';
 import {ExpiryNavigation} from '../plumbing/utilities/expiryNavigation';
 import {SslHelper} from '../plumbing/utilities/sslHelper';
@@ -95,17 +95,16 @@ export class App extends React.Component<any, AppState> {
             await SslHelper.configureTrust();
             DebugProxyAgent.initialize(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
 
-            // Initialise authentication
-            this._authenticator = new AuthenticatorImpl(this._configuration.oauth);
+            // Initialise custom scheme handling
+            const customSchemeNotifier = new CustomUriSchemeNotifier();
+            await customSchemeNotifier.initialize();
 
-            // Initialise listening for login responses
-            await CustomSchemeNotifier.initialize();
+            // Initialise authentication and get the logged in state based on whether there are stored tokens
+            this._authenticator = new AuthenticatorImpl(this._configuration.oauth, customSchemeNotifier);
+            const isLoggedIn = await this._authenticator.isLoggedIn();
 
             // Create a client to reliably call the API
             this._apiClient = new ApiClient(this._configuration.app.apiBaseUrl, this._authenticator);
-
-            // If there are stored tokens, the initial state is logged in
-            const isLoggedIn = await this._authenticator.isLoggedIn();
 
             // Update the UI state
             this.setState({

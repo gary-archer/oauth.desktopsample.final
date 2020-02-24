@@ -9,8 +9,8 @@ import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../../errors/errorCodes';
 import {ErrorHandler} from '../../errors/errorHandler';
 import {UIError} from '../../errors/uiError';
-import {CustomSchemeNotifier} from '../../utilities/customSchemeNotifier';
-import {RedirectEvents} from '../utilities/redirectEvents';
+import {CustomUriSchemeNotifier} from '../../navigation/customUriSchemeNotifier';
+import {RedirectEvents} from '../../navigation/redirectEvents';
 import {LoginRequestHandler} from './loginRequestHandler';
 
 /*
@@ -20,17 +20,20 @@ export class LoginManager {
 
     private readonly _configuration: OAuthConfiguration;
     private readonly _metadata: AuthorizationServiceConfiguration;
+    private readonly _customSchemeNotifier: CustomUriSchemeNotifier;
     private readonly _onCodeReceived: (code: string, verifier: string) => void;
     private readonly _onComplete: (error: UIError | null) => void;
 
     public constructor(
         configuration: OAuthConfiguration,
         metadata: AuthorizationServiceConfiguration,
+        customSchemeNotifier: CustomUriSchemeNotifier,
         onCodeReceived: (code: string, verifier: string) => void,
         onComplete: (error: UIError | null) => void) {
 
         this._configuration = configuration;
         this._metadata = metadata;
+        this._customSchemeNotifier = customSchemeNotifier;
         this._onCodeReceived = onCodeReceived;
         this._onComplete = onComplete;
     }
@@ -56,7 +59,7 @@ export class LoginManager {
         const redirectEvents = new RedirectEvents();
 
         // Ensure that completion callbacks are correlated to the correct authorization request
-        CustomSchemeNotifier.addCorrelationState(authorizationRequest.state, redirectEvents);
+        this._customSchemeNotifier.addCorrelationState(authorizationRequest.state, redirectEvents);
 
         // Create an authorization handler that uses the browser
         const authorizationRequestHandler = new LoginRequestHandler(redirectEvents);
@@ -70,7 +73,7 @@ export class LoginManager {
             error: AuthorizationError | null) => {
 
                 // Now that we've finished with login events, remove the item for this login attempt
-                CustomSchemeNotifier.removeCorrelationState(request.state);
+                this._customSchemeNotifier.removeCorrelationState(request.state);
 
                 // Try to complete login processing
                 const result = await this._handleLoginResponse(request, response, error);

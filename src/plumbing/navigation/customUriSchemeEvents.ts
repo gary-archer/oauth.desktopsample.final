@@ -3,7 +3,7 @@ import EventEmitter from 'events';
 /*
  * Events associated to our custom scheme
  */
-export class CustomSchemeEvents extends EventEmitter {
+export class CustomUriSchemeEvents extends EventEmitter {
 
     // Used when the app is started via a URL such as x-mycompany-desktopapp:/company=2
     public static ON_DEEP_LINKING_STARTUP_URL = 'custom_scheme_deeplinking_startup_url';

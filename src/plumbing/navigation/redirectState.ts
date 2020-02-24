@@ -1,22 +1,15 @@
 import {RedirectEvents} from './redirectEvents';
 
 /*
- * A custom type to map the request state for a redirect attempt to its events
- */
-type StateEventsPair = [string, RedirectEvents];
-
-/*
  * Manage re-entrancy if there are multiple redirect attempts
  */
 export class RedirectState {
 
-    /*
-     * A map of redirect attempts to request state
-     */
-    private static _stateEventsMap = [] as StateEventsPair[];
+    // A map of redirect attempts to request state
+    private static _stateEventsMap = [] as Array<[string, RedirectEvents]>;
 
     /*
-     * Add an entry to our collection
+     * During an authorization redirect, store an entry based on the state parameter
      */
     public addState(state: string, redirectEvents: RedirectEvents): void {
 
@@ -26,7 +19,7 @@ export class RedirectState {
     }
 
     /*
-     * Remove an entry from our collection
+     * Remove an entry when the response is received
      */
     public removeState(state: string): void {
 
@@ -34,7 +27,7 @@ export class RedirectState {
     }
 
     /*
-     * Get events for a received redirect response
+     * Get events for the state parameter in an authorization response message
      */
     public getEvents(state: string): RedirectEvents | null {
 

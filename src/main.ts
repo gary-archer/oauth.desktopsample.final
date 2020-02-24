@@ -1,7 +1,7 @@
 import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
-import {CustomSchemeEvents} from './plumbing/utilities/customSchemeEvents';
+import {CustomUriSchemeEvents} from './plumbing/navigation/customUriSchemeEvents';
 
 /*
  * The Electron main process entry point
@@ -24,7 +24,7 @@ class Main {
      */
     public execute(): void {
 
-        // Prevent custom scheme notifications on Windows and Linux from creating a new instance of the application
+        // Prevent private URI scheme notifications on Windows + Linux from creating a new instance of the application
         const primaryInstance = app.requestSingleInstanceLock();
         if (!primaryInstance) {
             app.quit();
@@ -112,7 +112,7 @@ class Main {
 
         // The new instance of the app could have been started via deep linking
         // In this case the Electron side of the app can send us a message to get the URL
-        ipcMain.on(CustomSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, this._onDeepLink);
+        ipcMain.on(CustomUriSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, this._onDeepLink);
     }
 
     /*
@@ -163,7 +163,7 @@ class Main {
      * In this case the Electron side of the app can send us a message to get the URL
      */
     private _onDeepLink(): void {
-        this._window.webContents.send(CustomSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, this._startupUrl);
+        this._window.webContents.send(CustomUriSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, this._startupUrl);
     }
 
     /*
@@ -175,7 +175,7 @@ class Main {
         this._bringExistingInstanceToForeground();
 
         // Now send an event to the Electron app
-        this._window.webContents.send(CustomSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, customSchemeUrl);
+        this._window.webContents.send(CustomUriSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, customSchemeUrl);
     }
 
     /*
