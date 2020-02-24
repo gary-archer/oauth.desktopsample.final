@@ -33,10 +33,10 @@ export class CustomUriSchemeNotifier {
 
             // Ask the main side of the Electron process for the startup URL
             // When started via deep linking this could be a value such as x-mycompany-desktopapp:/company=2
-            ipcRenderer.send(AppEvents.ON_GET_STARTUP_URL, this._configuration.value);
+            ipcRenderer.send(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._configuration.value);
 
             // Receive the response
-            ipcRenderer.on(AppEvents.ON_GET_STARTUP_URL, (event: any, url: any) => {
+            ipcRenderer.on(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, (event: any, url: any) => {
 
                 // If there was a startup URL set the hash location of the ReactJS app accordingly
                 // This ensures that we move straight to the linked page rather than rendering the default page first

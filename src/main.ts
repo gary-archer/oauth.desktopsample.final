@@ -117,7 +117,7 @@ class Main {
 
         // The new instance of the app could have been started via deep linking
         // In this case the main side of the app can receive a message from the Electron side to get the URL
-        ipcMain.on(AppEvents.ON_GET_STARTUP_URL, this._onGetStartupUrl);
+        ipcMain.on(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._onGetStartupUrl);
     }
 
     /*
@@ -174,7 +174,7 @@ class Main {
      */
     private _onGetStartupUrl(...args: any): void {
 
-        this._window.webContents.send(AppEvents.ON_GET_STARTUP_URL, this._startupUrl);
+        this._window.webContents.send(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._startupUrl);
     }
 
     /*

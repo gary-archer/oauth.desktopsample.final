@@ -5,8 +5,8 @@ import EventEmitter from 'events';
  */
 export class AppEvents extends EventEmitter {
 
-    // Events exchanged between the Electron main and renderer processes
-    public static ON_GET_STARTUP_URL = 'get_startup_url';
+    // Events between the Electron main and renderer processes
+    public static ON_GET_CUSTOM_SCHEME_STARTUP_URL = 'get_startup_url';
     public static ON_CUSTOM_SCHEME_URL_NOTIFICATION = 'custom_scheme_url_notification';
 
     // Events fired during OAuth processing
