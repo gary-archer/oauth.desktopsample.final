@@ -9,7 +9,7 @@ import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorHandler} from '../errors/errorHandler';
 import {UIError} from '../errors/uiError';
-import {CustomUriSchemeNotifier} from '../navigation/customUriSchemeNotifier';
+import {CustomUriSchemeNotifier} from '../events/customUriSchemeNotifier';
 import {Authenticator} from './authenticator';
 import {CustomRequestor} from './customRequestor';
 import {LoginManager} from './login/loginManager';

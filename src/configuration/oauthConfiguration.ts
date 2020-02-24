@@ -1,3 +1,5 @@
+import {CustomUriSchemeConfiguration} from './customUriSchemeConfiguration';
+
 /*
  * A holder for OAuth settings
  */
@@ -8,4 +10,5 @@ export interface OAuthConfiguration {
     logoutEndpoint: string;
     postLogoutRedirectUri: string;
     scope: string;
+    customUriScheme: CustomUriSchemeConfiguration;
 }

@@ -5,9 +5,9 @@ import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
 import {UIError} from '../plumbing/errors/uiError';
+import {CustomUriSchemeNotifier} from '../plumbing/events/customUriSchemeNotifier';
 import {EventEmitter} from '../plumbing/events/eventEmitter';
 import {EventNames} from '../plumbing/events/eventNames';
-import {CustomUriSchemeNotifier} from '../plumbing/navigation/customUriSchemeNotifier';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {DebugProxyAgent} from '../plumbing/utilities/debugProxyAgent';
@@ -96,14 +96,14 @@ export class App extends React.Component<any, AppState> {
             DebugProxyAgent.initialize(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
 
             // Initialise custom scheme handling
-            const customSchemeNotifier = new CustomUriSchemeNotifier();
+            const customSchemeNotifier = new CustomUriSchemeNotifier(this._configuration.oauth.customUriScheme);
             await customSchemeNotifier.initialize();
 
             // Initialise authentication and get the logged in state based on whether there are stored tokens
             this._authenticator = new AuthenticatorImpl(this._configuration.oauth, customSchemeNotifier);
             const isLoggedIn = await this._authenticator.isLoggedIn();
 
-            // Create a client to reliably call the API
+            // Create a client to call the API and handle retries
             this._apiClient = new ApiClient(this._configuration.app.apiBaseUrl, this._authenticator);
 
             // Update the UI state

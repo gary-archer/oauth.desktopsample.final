@@ -1,7 +1,8 @@
 import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
-import {CustomUriSchemeEvents} from './plumbing/navigation/customUriSchemeEvents';
+import {ConfigurationLoader} from './configuration/configurationLoader';
+import {AppEvents} from './plumbing/events/appEvents';
 
 /*
  * The Electron main process entry point
@@ -10,12 +11,12 @@ class Main {
 
     private _window: any;
     private _startupUrl: string | null;
-    private readonly _customSchemeName: string;
+    private _customSchemeName!: string;
 
     public constructor() {
         this._window = null;
         this._startupUrl = null;
-        this._customSchemeName = 'x-mycompany-desktopapp';
+        this._customSchemeName = '';
         this._setupCallbacks();
     }
 
@@ -31,10 +32,14 @@ class Main {
             return;
         }
 
+        // Read configuration to get the custom URI scheme
+        const configuration = ConfigurationLoader.loadSync('desktop.config.json');
+        this._customSchemeName = configuration.oauth.customUriScheme.value;
+
         // Show a startup message, which is reported to the console
         log.info('STARTING ELECTRON MAIN PROCESS');
 
-        // Forward to the existing instance of the application
+        // Attempting to start a second instance will fire the following event to the running instance
         app.on('second-instance', this._onSecondInstance);
 
         // Initialise the primary instance of the application
@@ -111,8 +116,8 @@ class Main {
         this._window.on('closed', this._onClosed);
 
         // The new instance of the app could have been started via deep linking
-        // In this case the Electron side of the app can send us a message to get the URL
-        ipcMain.on(CustomUriSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, this._onDeepLink);
+        // In this case the main side of the app can receive a message from the Electron side to get the URL
+        ipcMain.on(AppEvents.ON_GET_STARTUP_URL, this._onGetStartupUrl);
     }
 
     /*
@@ -127,13 +132,18 @@ class Main {
     }
 
     /*
-     * See if we have a custom scheme notification, and note that Chromium may add its own parameters
+     * If we have a custom scheme notification, forward it to the existing application instance
      */
     private _onSecondInstance(event: any, argv: any) {
 
+        // Process each parameter and note that Chromium may add its own
         for (const arg of argv) {
+
+            // Look for a parameter that matches our custom URI scheme
             const value = arg as string;
             if (value.indexOf(this._customSchemeName) !== -1) {
+
+                // Forward the received value to the renderer process for handling
                 this._receiveNotificationInRunningInstance(value);
                 break;
             }
@@ -160,10 +170,11 @@ class Main {
 
     /*
      * The new instance of the app could have been started via deep linking
-     * In this case the Electron side of the app can send us a message to get the URL
+     * In this case the Electron side of the app can send us a message to get the startup URL
      */
-    private _onDeepLink(): void {
-        this._window.webContents.send(CustomUriSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, this._startupUrl);
+    private _onGetStartupUrl(...args: any): void {
+
+        this._window.webContents.send(AppEvents.ON_GET_STARTUP_URL, this._startupUrl);
     }
 
     /*
@@ -174,8 +185,8 @@ class Main {
         // The existing instance must bring itself to the foreground
         this._bringExistingInstanceToForeground();
 
-        // Now send an event to the Electron app
-        this._window.webContents.send(CustomUriSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, customSchemeUrl);
+        // Send the event to the Electron app
+        this._window.webContents.send(AppEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, customSchemeUrl);
     }
 
     /*
@@ -224,7 +235,7 @@ class Main {
         this._onActivate = this._onActivate.bind(this);
         this._onSecondInstance = this._onSecondInstance.bind(this);
         this._onOpenUrl = this._onOpenUrl.bind(this);
-        this._onDeepLink = this._onDeepLink.bind(this);
+        this._onGetStartupUrl = this._onGetStartupUrl.bind(this);
         this._receiveNotificationInRunningInstance = this._receiveNotificationInRunningInstance.bind(this);
         this._onClosed = this._onClosed.bind(this);
         this._onAllWindowsClosed = this._onAllWindowsClosed.bind(this);

@@ -9,8 +9,8 @@ import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../../errors/errorCodes';
 import {ErrorHandler} from '../../errors/errorHandler';
 import {UIError} from '../../errors/uiError';
-import {CustomUriSchemeNotifier} from '../../navigation/customUriSchemeNotifier';
-import {RedirectEvents} from '../../navigation/redirectEvents';
+import {AppEvents} from '../../events/appEvents';
+import {CustomUriSchemeNotifier} from '../../events/customUriSchemeNotifier';
 import {LoginRequestHandler} from './loginRequestHandler';
 
 /*
@@ -56,13 +56,13 @@ export class LoginManager {
         await authorizationRequest.setupCodeVerifier();
 
         // Create events for this login attempt
-        const redirectEvents = new RedirectEvents();
+        const events = new AppEvents();
 
         // Ensure that completion callbacks are correlated to the correct authorization request
-        this._customSchemeNotifier.addCorrelationState(authorizationRequest.state, redirectEvents);
+        this._customSchemeNotifier.addCorrelationState(authorizationRequest.state, events);
 
         // Create an authorization handler that uses the browser
-        const authorizationRequestHandler = new LoginRequestHandler(redirectEvents);
+        const authorizationRequestHandler = new LoginRequestHandler(events);
 
         // Use the AppAuth mechanism of a notifier to receive the login result
         const notifier = new AuthorizationNotifier();

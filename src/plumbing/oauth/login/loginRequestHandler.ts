@@ -9,20 +9,20 @@ import {AuthorizationError,
         BasicQueryStringUtils,
         DefaultCrypto} from '@openid/appauth';
 import Opener from 'opener';
-import {RedirectEvents} from '../../navigation/redirectEvents';
+import {AppEvents} from '../../events/appEvents';
 
 /*
  * An override of the default authorization handler to perform a login
  */
 export class LoginRequestHandler extends AuthorizationRequestHandler {
 
-    private readonly _redirectEvents: RedirectEvents;
+    private readonly _events: AppEvents;
     private _authorizationPromise: Promise<AuthorizationRequestResponse> | null;
 
-    public constructor(redirectEvents: RedirectEvents) {
+    public constructor(events: AppEvents) {
 
         super(new BasicQueryStringUtils(), new DefaultCrypto());
-        this._redirectEvents = redirectEvents;
+        this._events = events;
         this._authorizationPromise = null;
     }
 
@@ -40,7 +40,7 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
         this._authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
 
             // Wait for a response event from the system
-            this._redirectEvents.once(RedirectEvents.ON_AUTHORIZATION_RESPONSE, (queryParams: any) => {
+            this._events.once(AppEvents.ON_AUTHORIZATION_RESPONSE, (queryParams: any) => {
 
                 // Package up data into an object and then resolve our promise
                 const completeResponse = this._handleBrowserLoginResponse(queryParams, request);

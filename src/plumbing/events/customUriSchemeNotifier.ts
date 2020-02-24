@@ -1,18 +1,20 @@
 import {ipcRenderer} from 'electron';
 import Url from 'url';
-import {CustomUriSchemeEvents} from './customUriSchemeEvents';
-import {RedirectEvents} from './redirectEvents';
-import {RedirectState} from './redirectState';
+import {CustomUriSchemeConfiguration} from '../../configuration/customUriSchemeConfiguration';
+import {OAuthState} from '../oauth/oauthState';
+import {AppEvents} from './appEvents';
 
 /*
  * A class to handle custom scheme responses from the operating system, and correlating to earlier login requests
  */
 export class CustomUriSchemeNotifier {
 
-    private _redirectState: RedirectState;
+    private readonly _configuration: CustomUriSchemeConfiguration;
+    private readonly _oauthState: OAuthState;
 
-    public constructor() {
-        this._redirectState = new RedirectState();
+    public constructor(configuration: CustomUriSchemeConfiguration) {
+        this._configuration = configuration;
+        this._oauthState = new OAuthState();
         this._setupCallbacks();
     }
 
@@ -23,7 +25,7 @@ export class CustomUriSchemeNotifier {
 
         // Register to receive deep linking events from the operating system
         ipcRenderer.on(
-            CustomUriSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION,
+            AppEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION,
             this._handleCustomSchemeUrlNotification);
 
         // Return a promise that fires when the main side of the app
@@ -31,10 +33,10 @@ export class CustomUriSchemeNotifier {
 
             // Ask the main side of the Electron process for the startup URL
             // When started via deep linking this could be a value such as x-mycompany-desktopapp:/company=2
-            ipcRenderer.send(CustomUriSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, null);
+            ipcRenderer.send(AppEvents.ON_GET_STARTUP_URL, this._configuration.value);
 
             // Receive the response
-            ipcRenderer.on(CustomUriSchemeEvents.ON_DEEP_LINKING_STARTUP_URL, (event: any, url: any) => {
+            ipcRenderer.on(AppEvents.ON_GET_STARTUP_URL, (event: any, url: any) => {
 
                 // If there was a startup URL set the hash location of the ReactJS app accordingly
                 // This ensures that we move straight to the linked page rather than rendering the default page first
@@ -51,17 +53,17 @@ export class CustomUriSchemeNotifier {
     }
 
     /*
-     * During logins, add to the redirect state so that the correct response data is used for each request
+     * Add to the redirect state so that the correct response data is used for each request
      */
-    public addCorrelationState(state: string, redirectEvents: RedirectEvents): void {
-        return this._redirectState.addState(state, redirectEvents);
+    public addCorrelationState(state: string, events: AppEvents): void {
+        return this._oauthState.addState(state, events);
     }
 
     /*
-     * After logins, clear redirect state
+     * Clear redirect state when a response is received
      */
     public removeCorrelationState(state: string): void {
-        return this._redirectState.removeState(state);
+        return this._oauthState.removeState(state);
     }
 
     /*
@@ -76,7 +78,7 @@ export class CustomUriSchemeNotifier {
                 // If there is a state parameter we will classify this as a login request
                 this._handleLoginResponseNotification(parsedUrl.query);
 
-            } else if (parsedUrl.path === '/logoutCallback') {
+            } else if (parsedUrl.path === this._configuration.logoutPath) {
 
                 // Handle logout requests
                 this._handleLogoutResponseNotification();
@@ -95,11 +97,11 @@ export class CustomUriSchemeNotifier {
     private _handleLoginResponseNotification(queryParams: any): void {
 
         // Get login events for the login attempt so that we use the correct data for the authorization code grant
-        const redirectEvents = this._redirectState.getEvents(queryParams.state);
-        if (redirectEvents) {
+        const events = this._oauthState.getEvents(queryParams.state);
+        if (events) {
 
             // Raise the response event to complete login processing
-            redirectEvents.emit(RedirectEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
+            events.emit(AppEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
         }
     }
 
@@ -108,15 +110,15 @@ export class CustomUriSchemeNotifier {
      */
     private _handleLogoutResponseNotification(): void {
 
-        const redirectEvents = this._redirectState.getEvents('logout');
-        if (redirectEvents) {
-            redirectEvents.emit(RedirectEvents.ON_END_SESSION_RESPONSE, null);
+        const events = this._oauthState.getEvents(OAuthState.logout);
+        if (events) {
+            events.emit(AppEvents.ON_END_SESSION_RESPONSE, null);
         }
     }
 
     /*
-     * Handle deep linking data originating from a URL like x-mycompany-desktopapp:/mycompany=2
-     * For our sample this method receives /mycompany=2 and updates it to #mycompany=2
+     * Handle deep linking data originating from a URL like x-mycompany-desktopapp:/company=2
+     * For our sample this method receives /company=2 and updates it to #company=2
      */
     private _handleDeepLinkingNotification(deepLinkingPath: string): void {
 

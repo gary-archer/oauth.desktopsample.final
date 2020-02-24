@@ -1,8 +1,9 @@
 import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {UIError} from '../../errors/uiError';
-import {CustomUriSchemeNotifier} from '../../navigation/customUriSchemeNotifier';
-import {RedirectEvents} from '../../navigation/redirectEvents';
+import {AppEvents} from '../../events/appEvents';
+import {CustomUriSchemeNotifier} from '../../events/customUriSchemeNotifier';
+import {OAuthState} from '../oauthState';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {LogoutUrlBuilder} from './logoutUrlBuilder';
 import {OktaLogoutUrlBuilder} from './oktaLogoutUrlBuilder';
@@ -38,11 +39,10 @@ export class LogoutManager {
         const logoutUrl = this._getLogoutUrlBuilder().buildUrl();
 
         // Create the events object that will notify us of completion
-        const redirectEvents = new RedirectEvents();
+        const events = new AppEvents();
 
         // Ensure that completion callbacks are correlated to the correct logout request
-        const state = 'logout';
-        this._customSchemeNotifier.addCorrelationState(state, redirectEvents);
+        this._customSchemeNotifier.addCorrelationState(OAuthState.logout, events);
 
         // Invoke the browser
         Opener(logoutUrl);
@@ -51,9 +51,9 @@ export class LogoutManager {
         return new Promise<void>((resolve, reject) => {
 
             // Wait for the response event from the CustomSchemeNotifier class
-            redirectEvents.once(RedirectEvents.ON_END_SESSION_RESPONSE, (error: UIError | null) => {
+            events.once(AppEvents.ON_END_SESSION_RESPONSE, (error: UIError | null) => {
 
-                this._customSchemeNotifier.removeCorrelationState(state);
+                this._customSchemeNotifier.removeCorrelationState(OAuthState.logout);
                 this._onComplete(error);
                 resolve();
             });
