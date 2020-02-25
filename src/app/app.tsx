@@ -5,8 +5,8 @@ import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
 import {UIError} from '../plumbing/errors/uiError';
+import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
 import {ApplicationEvents} from '../plumbing/events/applicationEvents';
-import {CustomEventEmitter} from '../plumbing/events/customEventEmitter';
 import {CustomUriSchemeNotifier} from '../plumbing/events/customUriSchemeNotifier';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
@@ -115,7 +115,7 @@ export class App extends React.Component<any, AppState> {
             });
 
         } catch (e) {
-            CustomEventEmitter.publish(ApplicationEvents.ON_ERROR, {area: 'Startup', error: e});
+            ApplicationEvents.publish(ApplicationEventNames.ON_ERROR, {area: 'Startup', error: e});
         }
     }
 
@@ -260,7 +260,7 @@ export class App extends React.Component<any, AppState> {
      */
     private async _handleRefreshDataClick(causeError: boolean): Promise<void> {
 
-        CustomEventEmitter.publish(ApplicationEvents.ON_RELOAD, causeError);
+        ApplicationEvents.publish(ApplicationEventNames.ON_RELOAD, causeError);
     }
 
     /*
@@ -282,7 +282,7 @@ export class App extends React.Component<any, AppState> {
             await this._authenticator!.startLogin(this._onLoginCompleted);
 
         } catch (e) {
-            CustomEventEmitter.publish(ApplicationEvents.ON_ERROR, {area: 'Login', error: e});
+            ApplicationEvents.publish(ApplicationEventNames.ON_ERROR, {area: 'Login', error: e});
         }
     }
 
@@ -307,7 +307,7 @@ export class App extends React.Component<any, AppState> {
             await this._authenticator!.startLogout(this._onLogoutCompleted);
 
         } catch (e) {
-            CustomEventEmitter.publish(ApplicationEvents.ON_ERROR, {area: 'Logout', error: e});
+            ApplicationEvents.publish(ApplicationEventNames.ON_ERROR, {area: 'Logout', error: e});
         }
     }
 

@@ -65,12 +65,13 @@ export class CustomUriSchemeNotifier {
 
         const parsedUrl = this._tryParseUrl(url);
         if (parsedUrl) {
+
             if (parsedUrl.query.state) {
 
                 // If there is a state parameter we will classify this as a login response
                 this._loginState.handleLoginResponse(parsedUrl.query);
 
-            } else if (parsedUrl.path === this._configuration.logoutPath) {
+            } else if (parsedUrl.path === this._configuration.logoutCallbackPath) {
 
                 // Handle logout responses
                 this._logoutState.handleLogoutResponse(parsedUrl.query);

@@ -1,11 +1,31 @@
+import EventEmitter from 'events';
+
 /*
- * Constants for named events
+ * A singleton NodeJS event emitter class to manage events used by our application
  */
 export class ApplicationEvents {
 
-    // Used to listen for requests to reload data
-    public static readonly ON_RELOAD = 'reload';
+    // The global instance
+    public static instance = new EventEmitter();
 
-    // Used to listen for requests to report errors
-    public static readonly ON_ERROR = 'error';
+    /*
+     * Publish an event
+     */
+    public static publish(eventName: string, data: any): void {
+        ApplicationEvents.instance.emit(eventName, data);
+    }
+
+    /*
+     * Subscribe to receive an event multiple times
+     */
+    public static subscribe(eventName: string, callback: (data: any) => void): void {
+        ApplicationEvents.instance.on(eventName, callback);
+    }
+
+    /*
+     * Unsubscribe from an event
+     */
+    public static unsubscribe(eventName: string, callback: (data: any) => void): void {
+        ApplicationEvents.instance.removeListener(eventName, callback);
+    }
 }

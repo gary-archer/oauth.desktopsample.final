@@ -3,6 +3,6 @@
  */
 export interface CustomUriSchemeConfiguration {
     value: string;
-    loginPath: string;
-    logoutPath: string;
+    loginCallbackPath: string;
+    logoutCallbackPath: string;
 }
