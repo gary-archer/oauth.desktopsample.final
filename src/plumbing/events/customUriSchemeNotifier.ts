@@ -1,8 +1,9 @@
 import {ipcRenderer} from 'electron';
 import Url from 'url';
 import {CustomUriSchemeConfiguration} from '../../configuration/customUriSchemeConfiguration';
-import {OAuthState} from '../oauth/oauthState';
-import {AppEvents} from './appEvents';
+import {LoginState} from '../oauth/login/loginState';
+import {LogoutState} from '../oauth/logout/logoutState';
+import {CustomSchemeEvents} from './customSchemeEvents';
 
 /*
  * A class to handle custom scheme responses from the operating system, and correlating to earlier login requests
@@ -10,33 +11,38 @@ import {AppEvents} from './appEvents';
 export class CustomUriSchemeNotifier {
 
     private readonly _configuration: CustomUriSchemeConfiguration;
-    private readonly _oauthState: OAuthState;
+    private _loginState!: LoginState;
+    private _logoutState!: LogoutState;
 
+    /*
+     * At application startup register to receive deep linking events from the Electron main process
+     */
     public constructor(configuration: CustomUriSchemeConfiguration) {
         this._configuration = configuration;
-        this._oauthState = new OAuthState();
         this._setupCallbacks();
+        ipcRenderer.on(CustomSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, this._handleCustomSchemeUrlNotification);
     }
 
     /*
-     * Wire up private URI schemes to the operating system
+     * State objects are used when we receive OAuth custom scheme notifications
      */
-    public async initialize(): Promise<void> {
+    public initialise(loginState: LoginState, logoutState: LogoutState): void {
+        this._loginState = loginState;
+        this._logoutState = logoutState;
+    }
 
-        // Register to receive deep linking events from the operating system
-        ipcRenderer.on(
-            AppEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION,
-            this._handleCustomSchemeUrlNotification);
+    /*
+     * If the app was started via a deep link then set the startup URL
+     */
+    public async setDeepLinkStartupUrlIfRequired(): Promise<void> {
 
-        // Return a promise that fires when the main side of the app
         return new Promise<void>((resolve, reject) => {
 
-            // Ask the main side of the Electron process for the startup URL
             // When started via deep linking this could be a value such as x-mycompany-desktopapp:/company=2
-            ipcRenderer.send(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._configuration.value);
+            ipcRenderer.send(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._configuration.value);
 
             // Receive the response
-            ipcRenderer.on(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, (event: any, url: any) => {
+            ipcRenderer.on(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, (event: any, url: any) => {
 
                 // If there was a startup URL set the hash location of the ReactJS app accordingly
                 // This ensures that we move straight to the linked page rather than rendering the default page first
@@ -53,66 +59,28 @@ export class CustomUriSchemeNotifier {
     }
 
     /*
-     * Add to the redirect state so that the correct response data is used for each request
-     */
-    public addCorrelationState(state: string, events: AppEvents): void {
-        return this._oauthState.addState(state, events);
-    }
-
-    /*
-     * Clear redirect state when a response is received
-     */
-    public removeCorrelationState(state: string): void {
-        return this._oauthState.removeState(state);
-    }
-
-    /*
      * Receive URL notifications from the main side of the Electron app
      */
     private _handleCustomSchemeUrlNotification(event: any, url: any): void {
 
         const parsedUrl = this._tryParseUrl(url);
         if (parsedUrl) {
+
             if (parsedUrl.query.state) {
 
-                // If there is a state parameter we will classify this as a login request
-                this._handleLoginResponseNotification(parsedUrl.query);
+                // If there is a state parameter we will classify this as a login response
+                this._loginState.handleLoginResponse(parsedUrl.query);
 
-            } else if (parsedUrl.path === this._configuration.logoutPath) {
+            } else if (parsedUrl.path === this._configuration.logoutCallbackPath) {
 
-                // Handle logout requests
-                this._handleLogoutResponseNotification();
+                // Handle logout responses
+                this._logoutState.handleLogoutResponse(parsedUrl.query);
 
             } else {
 
-                // Otherwise we will treat it a deep linking request
+                // Otherwise we will treat it a deep linking request and update the hash location
                 this._handleDeepLinkingNotification(parsedUrl.path!);
             }
-        }
-    }
-
-    /*
-     * Receive login response data and resume the login flow
-     */
-    private _handleLoginResponseNotification(queryParams: any): void {
-
-        // Get login events for the login attempt so that we use the correct data for the authorization code grant
-        const events = this._oauthState.getEvents(queryParams.state);
-        if (events) {
-
-            // Raise the response event to complete login processing
-            events.emit(AppEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
-        }
-    }
-
-    /*
-     * Receive logout response data and resume the logout flow
-     */
-    private _handleLogoutResponseNotification(): void {
-
-        const events = this._oauthState.getEvents(OAuthState.logout);
-        if (events) {
-            events.emit(AppEvents.ON_END_SESSION_RESPONSE, null);
         }
     }
 

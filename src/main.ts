@@ -2,7 +2,7 @@ import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
 import {ConfigurationLoader} from './configuration/configurationLoader';
-import {AppEvents} from './plumbing/events/appEvents';
+import {CustomSchemeEvents} from './plumbing/events/customSchemeEvents';
 
 /*
  * The Electron main process entry point
@@ -117,7 +117,7 @@ class Main {
 
         // The new instance of the app could have been started via deep linking
         // In this case the main side of the app can receive a message from the Electron side to get the URL
-        ipcMain.on(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._onGetStartupUrl);
+        ipcMain.on(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._onGetStartupUrl);
     }
 
     /*
@@ -174,7 +174,7 @@ class Main {
      */
     private _onGetStartupUrl(...args: any): void {
 
-        this._window.webContents.send(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._startupUrl);
+        this._window.webContents.send(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._startupUrl);
     }
 
     /*
@@ -186,7 +186,7 @@ class Main {
         this._bringExistingInstanceToForeground();
 
         // Send the event to the Electron app
-        this._window.webContents.send(AppEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, customSchemeUrl);
+        this._window.webContents.send(CustomSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, customSchemeUrl);
     }
 
     /*

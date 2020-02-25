@@ -1,7 +1,7 @@
 import React from 'react';
 import {ErrorHandler} from '../../plumbing/errors/errorHandler';
-import {EventEmitter} from '../../plumbing/events/eventEmitter';
-import {EventNames} from '../../plumbing/events/eventNames';
+import {ApplicationEventNames} from '../../plumbing/events/applicationEventNames';
+import {ApplicationEvents} from '../../plumbing/events/applicationEvents';
 import {AppErrorState} from './appErrorState';
 import {ErrorSummaryView} from './errorSummaryView';
 
@@ -52,14 +52,14 @@ export class AppErrorView extends React.Component<any, AppErrorState> {
      * Load data then listen for the reload event
      */
     public async componentDidMount(): Promise<void> {
-        EventEmitter.subscribe(EventNames.error, this._receiveError);
+        ApplicationEvents.subscribe(ApplicationEventNames.ON_ERROR, this._receiveError);
     }
 
     /*
      * Unsubscribe when we unload
      */
     public async componentWillUnmount(): Promise<void> {
-        EventEmitter.unsubscribe(EventNames.error, this._receiveError);
+        ApplicationEvents.unsubscribe(ApplicationEventNames.ON_ERROR, this._receiveError);
     }
 
     /*

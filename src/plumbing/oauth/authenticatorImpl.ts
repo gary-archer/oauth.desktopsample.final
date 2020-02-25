@@ -13,7 +13,9 @@ import {CustomUriSchemeNotifier} from '../events/customUriSchemeNotifier';
 import {Authenticator} from './authenticator';
 import {CustomRequestor} from './customRequestor';
 import {LoginManager} from './login/loginManager';
+import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
+import {LogoutState} from './logout/logoutState';
 import {TokenData} from './tokenData';
 import {TokenStorage} from './tokenStorage';
 
@@ -23,15 +25,22 @@ import {TokenStorage} from './tokenStorage';
 export class AuthenticatorImpl implements Authenticator {
 
     private readonly _oauthConfig: OAuthConfiguration;
-    private readonly _customSchemeNotifier: CustomUriSchemeNotifier;
     private _tokens: TokenData | null;
     private _metadata: any = null;
+    private readonly _loginState: LoginState;
+    private readonly _logoutState: LogoutState;
 
     public constructor(oauthConfig: OAuthConfiguration, customSchemeNotifier: CustomUriSchemeNotifier) {
         this._oauthConfig = oauthConfig;
-        this._customSchemeNotifier = customSchemeNotifier;
         this._tokens = null;
         this._setupCallbacks();
+
+        // Initialise state, used to correlate responses from the system browser with the original requests
+        this._loginState = new LoginState();
+        this._logoutState = new LogoutState();
+
+        // Give the custom scheme notifier access to OAuth state to enable us to resume after notifications
+        customSchemeNotifier.initialise(this._loginState, this._logoutState);
     }
 
     /*
@@ -88,7 +97,7 @@ export class AuthenticatorImpl implements Authenticator {
         const login = new LoginManager(
             this._oauthConfig,
             this._metadata,
-            this._customSchemeNotifier,
+            this._loginState,
             this._swapAuthorizationCodeForTokens,
             onCompleted);
         await login.start();
@@ -102,8 +111,8 @@ export class AuthenticatorImpl implements Authenticator {
         // Start the logout redirect
         const logout = new LogoutManager(
             this._oauthConfig,
-            this._customSchemeNotifier,
             this._tokens!.idToken,
+            this._logoutState,
             onCompleted);
         await logout.start();
 

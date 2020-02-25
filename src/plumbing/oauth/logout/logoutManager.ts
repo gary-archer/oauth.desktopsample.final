@@ -1,10 +1,9 @@
 import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {UIError} from '../../errors/uiError';
-import {AppEvents} from '../../events/appEvents';
-import {CustomUriSchemeNotifier} from '../../events/customUriSchemeNotifier';
-import {OAuthState} from '../oauthState';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
+import {LogoutResponseCallback} from './logoutResponseCallback';
+import {LogoutState} from './logoutState';
 import {LogoutUrlBuilder} from './logoutUrlBuilder';
 import {OktaLogoutUrlBuilder} from './oktaLogoutUrlBuilder';
 
@@ -14,49 +13,44 @@ import {OktaLogoutUrlBuilder} from './oktaLogoutUrlBuilder';
 export class LogoutManager {
 
     private readonly _configuration: OAuthConfiguration;
-    private readonly _customSchemeNotifier: CustomUriSchemeNotifier;
+    private readonly _state: LogoutState;
     private readonly _idToken: string;
     private readonly _onComplete: (error: UIError | null) => void;
 
     public constructor(
         configuration: OAuthConfiguration,
-        customSchemeNotifier: CustomUriSchemeNotifier,
         idToken: string,
-        onComplete: (error: UIError | null) => void) {
+        state: LogoutState,
+        onComplete: LogoutResponseCallback) {
 
         this._configuration = configuration;
-        this._customSchemeNotifier = customSchemeNotifier;
         this._idToken = idToken;
+        this._state = state;
         this._onComplete = onComplete;
     }
 
     /*
-     * Invoke the system browser
+     * Invoke the system browser to log the user out
      */
     public async start(): Promise<void> {
-
-        // First build the logout URL
-        const logoutUrl = this._getLogoutUrlBuilder().buildUrl();
-
-        // Create the events object that will notify us of completion
-        const events = new AppEvents();
-
-        // Ensure that completion callbacks are correlated to the correct logout request
-        this._customSchemeNotifier.addCorrelationState(OAuthState.logout, events);
-
-        // Invoke the browser
-        Opener(logoutUrl);
 
         // Return a promise that is resolved when the logout response is received
         return new Promise<void>((resolve, reject) => {
 
-            // Wait for the response event from the CustomSchemeNotifier class
-            events.once(AppEvents.ON_END_SESSION_RESPONSE, (error: UIError | null) => {
+            // First build the logout URL
+            const logoutUrl = this._getLogoutUrlBuilder().buildUrl();
 
-                this._customSchemeNotifier.removeCorrelationState(OAuthState.logout);
-                this._onComplete(error);
+            // Create a callback to wait for completion
+            const callback = (queryParams: any) => {
+                this._onComplete(null);
                 resolve();
-            });
+            };
+
+            // Store the logout callback so that we can receive the response when we receive a browser notification
+            this._state.storeLogoutCallback(callback);
+
+            // Invoke the browser with the logout URL
+            Opener(logoutUrl);
         });
     }
 

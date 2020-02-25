@@ -1,8 +1,8 @@
 import React from 'react';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {ErrorHandler} from '../../plumbing/errors/errorHandler';
-import {EventEmitter} from '../../plumbing/events/eventEmitter';
-import {EventNames} from '../../plumbing/events/eventNames';
+import {ApplicationEventNames} from '../../plumbing/events/applicationEventNames';
+import {ApplicationEvents} from '../../plumbing/events/applicationEvents';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {CompaniesContainerProps} from './companiesContainerProps';
 import {CompaniesContainerState} from './companiesContainerState';
@@ -58,7 +58,7 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
     public async componentDidMount(): Promise<void> {
 
         await this._loadData(false);
-        EventEmitter.subscribe(EventNames.reload, this._loadData);
+        ApplicationEvents.subscribe(ApplicationEventNames.ON_RELOAD, this._loadData);
     }
 
     /*
@@ -66,7 +66,7 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
      */
     public async componentWillUnmount(): Promise<void> {
 
-        EventEmitter.unsubscribe(EventNames.reload, this._loadData);
+        ApplicationEvents.unsubscribe(ApplicationEventNames.ON_RELOAD, this._loadData);
     }
 
     /*
