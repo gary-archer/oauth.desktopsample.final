@@ -9,20 +9,20 @@ import {AuthorizationError,
         BasicQueryStringUtils,
         DefaultCrypto} from '@openid/appauth';
 import Opener from 'opener';
-import {AppEvents} from '../../events/appEvents';
+import {LoginState} from './loginState';
 
 /*
- * An override of the default authorization handler to perform a login
+ * An override of the default authorization handler
  */
-export class LoginRequestHandler extends AuthorizationRequestHandler {
+export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
 
-    private readonly _events: AppEvents;
+    private readonly _state: LoginState;
     private _authorizationPromise: Promise<AuthorizationRequestResponse> | null;
 
-    public constructor(events: AppEvents) {
+    public constructor(state: LoginState) {
 
         super(new BasicQueryStringUtils(), new DefaultCrypto());
-        this._events = events;
+        this._state = state;
         this._authorizationPromise = null;
     }
 
@@ -33,14 +33,14 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
         metadata: AuthorizationServiceConfiguration,
         request: AuthorizationRequest): void {
 
-        // Form the OAuth request
-        const oauthUrl = this.buildRequestUrl(metadata, request);
-
-        // Create a promise to handle the response from the browser
+        // Create a promise to receive the response from the browser
         this._authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
 
-            // Wait for a response event from the system
-            this._events.once(AppEvents.ON_AUTHORIZATION_RESPONSE, (queryParams: any) => {
+            // Form the OAuth request using AppAuth libraries
+            const loginUrl = this.buildRequestUrl(metadata, request);
+
+            // Create a callback to wait for completion
+            const callback = (queryParams: any) => {
 
                 // Package up data into an object and then resolve our promise
                 const completeResponse = this._handleBrowserLoginResponse(queryParams, request);
@@ -48,11 +48,14 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
 
                 // Ask the base class to call our completeAuthorizationRequest
                 this.completeAuthorizationRequestIfPossible();
-            });
-        });
+            };
 
-        // Invoke the browser
-        Opener(oauthUrl);
+            // Store login state so that we can receive the response
+            this._state.storeLoginCallback(request.state, callback);
+
+            // Invoke the browser
+            Opener(loginUrl);
+        });
     }
 
     /*

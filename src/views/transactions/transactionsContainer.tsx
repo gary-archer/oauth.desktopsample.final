@@ -1,8 +1,8 @@
 import React from 'react';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {ErrorHandler} from '../../plumbing/errors/errorHandler';
-import {EventEmitter} from '../../plumbing/events/eventEmitter';
-import {EventNames} from '../../plumbing/events/eventNames';
+import {ApplicationEvents} from '../../plumbing/events/applicationEvents';
+import {CustomEventEmitter} from '../../plumbing/events/customEventEmitter';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {TransactionsContainerProps} from './transactionsContainerProps';
 import {TransactionsContainerState} from './transactionsContainerState';
@@ -79,7 +79,7 @@ export class TransactionsContainer extends React.Component<TransactionsContainer
     public async componentDidMount(): Promise<void> {
 
         await this._loadData(false);
-        EventEmitter.subscribe(EventNames.reload, this._loadData);
+        CustomEventEmitter.subscribe(ApplicationEvents.ON_RELOAD, this._loadData);
     }
 
     /*
@@ -99,7 +99,7 @@ export class TransactionsContainer extends React.Component<TransactionsContainer
      */
     public async componentWillUnmount(): Promise<void> {
 
-        EventEmitter.unsubscribe(EventNames.reload, this._loadData);
+        CustomEventEmitter.unsubscribe(ApplicationEvents.ON_RELOAD, this._loadData);
     }
 
     /*

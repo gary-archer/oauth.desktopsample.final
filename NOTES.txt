@@ -1,16 +1,14 @@
-1. Events need consolidating
-   Use a global NodeJS EventEmitter consistently
-   Split event names / event state / global event instance
+1. Get basics working again with improved code
 
-2. Custom scheme notifier should know nothing about event state or correlation
-   It just fires events vis a global event emitter class
+2. Deep link startup not working reliably on Windows 10
+   Can I use setAsDefaultProtocol with extra parameters?
+   If so test startup location renders correctly
+   See if it is possible to use private uri schemes without a full rebuild
+   Do detailed testing in terms of React views invoked
 
-3. Deep link startup not working reliably on Windows 10
-   Needs detailed testing in terms of React views invoked
-
-4. Login and logout errors to reflect in hosted web pages
+3. Login and logout errors to reflect in hosted web pages
    Needs more failure testing
 
-5. React main startup is messy
+4. React main startup needs improving
    Use async file reading and handle main process errors via console output
-   Single place to express config file name
+   Single place to set config file name

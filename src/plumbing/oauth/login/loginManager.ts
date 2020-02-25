@@ -9,9 +9,8 @@ import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../../errors/errorCodes';
 import {ErrorHandler} from '../../errors/errorHandler';
 import {UIError} from '../../errors/uiError';
-import {AppEvents} from '../../events/appEvents';
-import {CustomUriSchemeNotifier} from '../../events/customUriSchemeNotifier';
-import {LoginRequestHandler} from './loginRequestHandler';
+import {BrowserLoginRequestHandler} from './browserLoginRequestHandler';
+import {LoginState} from './loginState';
 
 /*
  * A class to handle the plumbing of login redirects via the system browser
@@ -20,20 +19,20 @@ export class LoginManager {
 
     private readonly _configuration: OAuthConfiguration;
     private readonly _metadata: AuthorizationServiceConfiguration;
-    private readonly _customSchemeNotifier: CustomUriSchemeNotifier;
+    private readonly _state: LoginState;
     private readonly _onCodeReceived: (code: string, verifier: string) => void;
     private readonly _onComplete: (error: UIError | null) => void;
 
     public constructor(
         configuration: OAuthConfiguration,
         metadata: AuthorizationServiceConfiguration,
-        customSchemeNotifier: CustomUriSchemeNotifier,
+        state: LoginState,
         onCodeReceived: (code: string, verifier: string) => void,
         onComplete: (error: UIError | null) => void) {
 
         this._configuration = configuration;
         this._metadata = metadata;
-        this._customSchemeNotifier = customSchemeNotifier;
+        this._state = state;
         this._onCodeReceived = onCodeReceived;
         this._onComplete = onComplete;
     }
@@ -43,7 +42,7 @@ export class LoginManager {
      */
     public async start(): Promise<void> {
 
-        // Create the authorization request
+        // Create the authorization request in the AppAuth style
         const requestJson = {
             response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
             client_id: this._configuration.clientId,
@@ -55,25 +54,16 @@ export class LoginManager {
         // Set up PKCE for the redirect, which avoids native app vulnerabilities
         await authorizationRequest.setupCodeVerifier();
 
-        // Create events for this login attempt
-        const events = new AppEvents();
-
-        // Ensure that completion callbacks are correlated to the correct authorization request
-        this._customSchemeNotifier.addCorrelationState(authorizationRequest.state, events);
-
-        // Create an authorization handler that uses the browser
-        const authorizationRequestHandler = new LoginRequestHandler(events);
+        // Create a custom browser handler for the redirect
+        const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
 
         // Use the AppAuth mechanism of a notifier to receive the login result
         const notifier = new AuthorizationNotifier();
-        authorizationRequestHandler.setAuthorizationNotifier(notifier);
+        browserLoginRequestHandler.setAuthorizationNotifier(notifier);
         notifier.setAuthorizationListener(async (
             request: AuthorizationRequest,
             response: AuthorizationResponse | null,
             error: AuthorizationError | null) => {
-
-                // Now that we've finished with login events, remove the item for this login attempt
-                this._customSchemeNotifier.removeCorrelationState(request.state);
 
                 // Try to complete login processing
                 const result = await this._handleLoginResponse(request, response, error);
@@ -83,7 +73,7 @@ export class LoginManager {
         });
 
         // Start the login
-        authorizationRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
+        browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
     }
 
     /*
