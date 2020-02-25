@@ -1,6 +1,8 @@
 import {ipcRenderer} from 'electron';
 import Url from 'url';
 import {CustomUriSchemeConfiguration} from '../../configuration/customUriSchemeConfiguration';
+import {GlobalEventEmitter} from '../events2/globalEventEmitter';
+import {GlobalEventNames} from '../events2/globalEventNames';
 import {OAuthState} from '../oauth/oauthState';
 import {AppEvents} from './appEvents';
 
@@ -16,22 +18,18 @@ export class CustomUriSchemeNotifier {
         this._configuration = configuration;
         this._oauthState = new OAuthState();
         this._setupCallbacks();
+
+        // Register to receive deep linking events from the Electron main process
+        ipcRenderer.on(AppEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, this._handleCustomSchemeUrlNotification);
     }
 
     /*
-     * Wire up private URI schemes to the operating system
+     * Ask the main side of the Electron process for the startup URL, which is '#' by default
      */
-    public async initialize(): Promise<void> {
+    public async setStartupUrl(): Promise<void> {
 
-        // Register to receive deep linking events from the operating system
-        ipcRenderer.on(
-            AppEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION,
-            this._handleCustomSchemeUrlNotification);
-
-        // Return a promise that fires when the main side of the app
         return new Promise<void>((resolve, reject) => {
 
-            // Ask the main side of the Electron process for the startup URL
             // When started via deep linking this could be a value such as x-mycompany-desktopapp:/company=2
             ipcRenderer.send(AppEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._configuration.value);
 
@@ -100,8 +98,11 @@ export class CustomUriSchemeNotifier {
         const events = this._oauthState.getEvents(queryParams.state);
         if (events) {
 
+            // TODO: Get this working and test multiple in flight events
+            GlobalEventEmitter.publish(GlobalEventNames.ON_AUTHORIZATION_RESPONSE, queryParams);
+
             // Raise the response event to complete login processing
-            events.emit(AppEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
+            // events.emit(AppEvents.ON_AUTHORIZATION_RESPONSE, queryParams);
         }
     }
 

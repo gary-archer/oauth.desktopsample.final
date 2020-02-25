@@ -95,9 +95,9 @@ export class App extends React.Component<any, AppState> {
             await SslHelper.configureTrust();
             DebugProxyAgent.initialize(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
 
-            // Initialise custom scheme handling
+            // Initialise custom scheme handling and set the startup URL if required
             const customSchemeNotifier = new CustomUriSchemeNotifier(this._configuration.oauth.customUriScheme);
-            await customSchemeNotifier.initialize();
+            await customSchemeNotifier.setStartupUrl();
 
             // Initialise authentication and get the logged in state based on whether there are stored tokens
             this._authenticator = new AuthenticatorImpl(this._configuration.oauth, customSchemeNotifier);
