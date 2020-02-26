@@ -97,7 +97,7 @@ export class App extends React.Component<any, AppState> {
             DebugProxyAgent.initialize(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
 
             // Initialise custom scheme handling
-            this._customSchemeNotifier = new CustomUriSchemeNotifier(this._configuration.oauth.customUriScheme);
+            this._customSchemeNotifier = new CustomUriSchemeNotifier(this._configuration.oauth.logoutCallbackPath);
             await this._customSchemeNotifier.setDeepLinkStartupUrlIfRequired();
 
             // Initialise authentication and get the logged in state based on whether there are stored tokens

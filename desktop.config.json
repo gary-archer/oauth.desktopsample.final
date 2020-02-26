@@ -11,10 +11,6 @@
         "scope":                    "openid profile email",
         "logoutEndpoint":           "https://login.authguidance-examples.com/logout",
         "postLogoutRedirectUri":    "https://web.authguidance-examples.com/desktop/postlogout.html",
-        "customUriScheme": {
-            "value":                "x-mycompany-desktopapp",
-            "loginCallbackPath":    "/callback",
-            "logoutCallbackPath":   "/logoutCallback"
-        }
+        "logoutCallbackPath":       "/logoutCallback"
     }
 }

@@ -62,10 +62,13 @@ class Main {
             if (app.isPackaged) {
                 app.setAsDefaultProtocolClient(this._customSchemeName);
             } else {
-                
+
                 // On Windows we register the custom scheme for a non packaged app liked this
                 // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
-                app.setAsDefaultProtocolClient(this._customSchemeName, process.execPath, [path.resolve(process.argv[1])]);
+                app.setAsDefaultProtocolClient(
+                    this._customSchemeName,
+                    process.execPath,
+                    [path.resolve(process.argv[1])]);
             }
         } else {
             app.setAsDefaultProtocolClient(this._customSchemeName);
@@ -74,10 +77,8 @@ class Main {
         // Handle login responses or deep linking requests against the running app on Mac OS
         app.on('open-url', this._onOpenUrl);
 
-        // For Windows or Linux we store the startup URL from the process object
-        if (process.argv.length > 1) {
-            this._startupUrl = process.argv[1];
-        }
+        // For Windows or Linux we store the startup URL when provided
+        this._startupUrl = this._getDeepLinkUrl(process.argv);
     }
 
     /*
@@ -143,17 +144,9 @@ class Main {
      */
     private _onSecondInstance(event: any, argv: any) {
 
-        // Process each parameter and note that Chromium may add its own
-        for (const arg of argv) {
-
-            // Look for a parameter that matches our custom URI scheme
-            const value = arg as string;
-            if (value.indexOf(this._customSchemeName) !== -1) {
-
-                // Forward the received value to the renderer process for handling
-                this._receiveNotificationInRunningInstance(value);
-                break;
-            }
+        const url = this._getDeepLinkUrl(argv);
+        if (url) {
+            this._receiveNotificationInRunningInstance(url);
         }
     }
 
@@ -212,6 +205,23 @@ class Main {
     }
 
     /*
+     * Look for a deep linked URL as a command line parameter
+     * Note also that Chromium may add its own parameters
+     */
+
+    private _getDeepLinkUrl(argv: any): string {
+
+        for (const arg of argv) {
+            const value = arg as string;
+            if (value.indexOf(this._customSchemeName) !== -1) {
+                return value;
+            }
+        }
+
+        return '';
+    }
+
+    /*
      * Dereference the window object, usually you would store windows
      * in an array if your app supports multi windows, this is the time
      * when you should delete the corresponding element
@@ -224,9 +234,6 @@ class Main {
      * Quit when all windows are closed
      */
     private _onAllWindowsClosed(): void {
-
-        // For convenience, to allow us to run from multiple locations, we unregister here
-        app.removeAsDefaultProtocolClient(this._customSchemeName);
 
         // On macOS, applications and their menu bar stay active until the user quits explicitly with Cmd + Q
         if (process.platform !== 'darwin') {

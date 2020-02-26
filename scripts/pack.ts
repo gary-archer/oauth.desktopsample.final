@@ -56,7 +56,7 @@ class Pack {
         // Run the packaged Electron executable
         const exePath = this._getBuiltAppPath();
         const child = ChildProcess.spawn(exePath, []);
-        
+
         // Capture any stdout messages sent from main.ts via log.info
         child.stdout.on('data', (data: any) => {
             const text = data.toString().trim();

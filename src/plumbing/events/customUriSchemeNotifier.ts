@@ -1,6 +1,5 @@
 import {ipcRenderer} from 'electron';
 import Url from 'url';
-import {CustomUriSchemeConfiguration} from '../../configuration/customUriSchemeConfiguration';
 import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
 import {CustomSchemeEvents} from './customSchemeEvents';
@@ -10,15 +9,15 @@ import {CustomSchemeEvents} from './customSchemeEvents';
  */
 export class CustomUriSchemeNotifier {
 
-    private readonly _configuration: CustomUriSchemeConfiguration;
+    private readonly _logoutCallbackPath: string;
     private _loginState!: LoginState;
     private _logoutState!: LogoutState;
 
     /*
      * At application startup register to receive deep linking events from the Electron main process
      */
-    public constructor(configuration: CustomUriSchemeConfiguration) {
-        this._configuration = configuration;
+    public constructor(logoutCallbackPath: string) {
+        this._logoutCallbackPath = logoutCallbackPath;
         this._setupCallbacks();
         ipcRenderer.on(CustomSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, this._handleCustomSchemeUrlNotification);
     }
@@ -39,7 +38,7 @@ export class CustomUriSchemeNotifier {
         return new Promise<void>((resolve, reject) => {
 
             // When started via deep linking this could be a value such as x-mycompany-desktopapp:/company=2
-            ipcRenderer.send(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._configuration.value);
+            ipcRenderer.send(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, {});
 
             // Receive the response
             ipcRenderer.on(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, (event: any, url: any) => {
@@ -71,7 +70,7 @@ export class CustomUriSchemeNotifier {
                 // If there is a state parameter we will classify this as a login response
                 this._loginState.handleLoginResponse(parsedUrl.query);
 
-            } else if (parsedUrl.path === this._configuration.logoutCallbackPath) {
+            } else if (parsedUrl.path === this._logoutCallbackPath) {
 
                 // Handle logout responses
                 this._logoutState.handleLogoutResponse(parsedUrl.query);
