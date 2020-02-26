@@ -96,9 +96,10 @@ class Main {
             height: 768,
             minWidth: 800,
             minHeight: 600,
-            webPreferences: {
+            
+            /*webPreferences: {
                 nodeIntegration: true,
-            },
+            },*/
         });
 
         // Ensure that our window has its own menu after Electron Packager has run
