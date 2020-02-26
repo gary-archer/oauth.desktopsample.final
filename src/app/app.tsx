@@ -91,7 +91,7 @@ export class App extends React.Component<any, AppState> {
             });
 
             // First read configuration
-            this._configuration = await ConfigurationLoader.load('desktop.config.localapi.json');
+            this._configuration = await ConfigurationLoader.load('desktop.config.json');
 
             // Set up SSL Trust and HTTP debugging
             await SslHelper.configureTrust();

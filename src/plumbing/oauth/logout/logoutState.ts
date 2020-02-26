@@ -25,7 +25,7 @@ export class LogoutState {
     public handleLogoutResponse(queryParams: any): void {
 
         if (this._logoutCallback) {
-            this._logoutCallback(null);
+            this._logoutCallback(queryParams);
             this._logoutCallback = null;
         }
     }
