@@ -57,6 +57,9 @@ class Main {
         // Handle reactivation
         app.on('activate', this._onActivate);
 
+        // Set this to avoid a warning and to improve performance
+        app.allowRendererProcessReuse = true;
+
         // Register our private URI scheme for the current user when we run for the first time
         if (process.platform === 'win32') {
             if (app.isPackaged) {
