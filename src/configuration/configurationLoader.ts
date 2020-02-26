@@ -15,14 +15,4 @@ export class ConfigurationLoader {
         const configurationBuffer = await fs.readFile(filePath);
         return JSON.parse(configurationBuffer.toString()) as Configuration;
     }
-
-    /*
-     * Load configuration synchronously to prevent hangs in the main process
-     */
-    public static loadSync(fileName: string): Configuration {
-
-        const filePath = `${__dirname}/../../${fileName}`;
-        const configurationBuffer = fs.readFileSync(filePath);
-        return JSON.parse(configurationBuffer.toString()) as Configuration;
-    }
 }

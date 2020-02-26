@@ -1,7 +1,7 @@
 import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
-import {ConfigurationLoader} from './configuration/configurationLoader';
+import path from 'path';
 import {CustomSchemeEvents} from './plumbing/events/customSchemeEvents';
 
 /*
@@ -11,12 +11,12 @@ class Main {
 
     private _window: any;
     private _startupUrl: string | null;
-    private _customSchemeName!: string;
+    private readonly _customSchemeName!: string;
 
     public constructor() {
         this._window = null;
         this._startupUrl = null;
-        this._customSchemeName = '';
+        this._customSchemeName = 'x-mycompany-desktopapp';
         this._setupCallbacks();
     }
 
@@ -31,10 +31,6 @@ class Main {
             app.quit();
             return;
         }
-
-        // Read configuration to get the custom URI scheme
-        const configuration = ConfigurationLoader.loadSync('desktop.config.json');
-        this._customSchemeName = configuration.oauth.customUriScheme.value;
 
         // Show a startup message, which is reported to the console
         log.info('STARTING ELECTRON MAIN PROCESS');
@@ -62,7 +58,18 @@ class Main {
         app.on('activate', this._onActivate);
 
         // Register our private URI scheme for the current user when we run for the first time
-        app.setAsDefaultProtocolClient(this._customSchemeName);
+        if (process.platform === 'win32') {
+            if (app.isPackaged) {
+                app.setAsDefaultProtocolClient(this._customSchemeName);
+            } else {
+                
+                // On Windows we register the custom scheme for a non packaged app liked this
+                // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
+                app.setAsDefaultProtocolClient(this._customSchemeName, process.execPath, [path.resolve(process.argv[1])]);
+            }
+        } else {
+            app.setAsDefaultProtocolClient(this._customSchemeName);
+        }
 
         // Handle login responses or deep linking requests against the running app on Mac OS
         app.on('open-url', this._onOpenUrl);

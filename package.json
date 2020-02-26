@@ -6,8 +6,9 @@
   "scripts": {
     "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'",
     "buildnative": "node_modules/.bin/electron-rebuild",
-    "build": "rimraf built && tsc && ts-node scripts/build.ts",
-    "start": "ts-node scripts/start.ts"
+    "build": "rimraf built && tsc",
+    "start": "node_modules/.bin/electron .",
+    "pack": "ts-node scripts/pack.ts"
   },
   "files": [
     "built/**"
