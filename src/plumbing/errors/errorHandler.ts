@@ -228,6 +228,10 @@ export class ErrorHandler {
             return exception.message;
         }
 
+        if (exception.errorSummary) {
+            return exception.errorSummary;
+        }
+
         const details = exception.toString();
         if (details !== {}.toString()) {
             return details;

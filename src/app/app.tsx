@@ -310,7 +310,7 @@ export class App extends React.Component<any, AppState> {
 
         try {
             this.setState({errorArea: '', error: null});
-            await this._authenticator!.startLogout(this._onLogoutCompleted);
+            await this._authenticator!.logoutRedirect(this._onLogoutCompleted);
 
         } catch (e) {
             this.setState({errorArea: 'Logout', error: e});

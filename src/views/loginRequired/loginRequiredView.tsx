@@ -1,5 +1,4 @@
 import React from 'react';
-import {UIError} from '../../plumbing/errors/uiError';
 import {ApplicationEventNames} from '../../plumbing/events/applicationEventNames';
 import {ApplicationEvents} from '../../plumbing/events/applicationEvents';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
@@ -111,7 +110,10 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
             this.setState({signingIn: true});
 
             // Do the login redirect
-            await this.props.authenticator.startLogin(this._onLoginComplete);
+            await this.props.authenticator.loginRedirect();
+
+            // Inform the parent view when a login completes successfully
+            this.props.onLoginCompleted();
 
         } catch (e) {
 
@@ -121,25 +123,10 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
     }
 
     /*
-     * Receive login responses
-     */
-    private async _onLoginComplete(error: UIError | null): Promise<void> {
-
-        // Report errors if required
-        this.setState({error});
-
-        // Inform the parent view when a login completes successfully
-        if (!error) {
-            this.props.onLoginCompleted();
-        }
-    }
-
-    /*
      * Ensure that the this parameter is available in callbacks
      */
     private _setupCallbacks() {
         this._onLoginClick = this._onLoginClick.bind(this);
         this._onLogin = this._onLogin.bind(this);
-        this._onLoginComplete = this._onLoginComplete.bind(this);
     }
 }

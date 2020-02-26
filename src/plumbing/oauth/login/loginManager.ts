@@ -21,59 +21,61 @@ export class LoginManager {
     private readonly _metadata: AuthorizationServiceConfiguration;
     private readonly _state: LoginState;
     private readonly _onCodeReceived: (code: string, verifier: string) => void;
-    private readonly _onComplete: (error: UIError | null) => void;
 
     public constructor(
         configuration: OAuthConfiguration,
         metadata: AuthorizationServiceConfiguration,
         state: LoginState,
-        onCodeReceived: (code: string, verifier: string) => void,
-        onComplete: (error: UIError | null) => void) {
+        onCodeReceived: (code: string, verifier: string) => void) {
 
         this._configuration = configuration;
         this._metadata = metadata;
         this._state = state;
         this._onCodeReceived = onCodeReceived;
-        this._onComplete = onComplete;
     }
 
     /*
      * Start the login redirect and listen for the response
      */
-    public async start(): Promise<void> {
+    public async login(): Promise<void> {
 
-        // Create the authorization request in the AppAuth style
-        const requestJson = {
-            response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
-            client_id: this._configuration.clientId,
-            redirect_uri: this._configuration.redirectUri,
-            scope: this._configuration.scope + ' xxx',
-        } as AuthorizationRequestJson;
-        const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
+        return new Promise<void>(async (resolve, reject) => {
 
-        // Set up PKCE for the redirect, which avoids native app vulnerabilities
-        await authorizationRequest.setupCodeVerifier();
+            // Create the authorization request in the AppAuth style
+            const requestJson = {
+                response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
+                client_id: this._configuration.clientId,
+                redirect_uri: this._configuration.redirectUri,
+                scope: this._configuration.scope,
+            } as AuthorizationRequestJson;
+            const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
 
-        // Create a custom browser handler for the redirect
-        const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
+            // Set up PKCE for the redirect, which avoids native app vulnerabilities
+            await authorizationRequest.setupCodeVerifier();
 
-        // Use the AppAuth mechanism of a notifier to receive the login result
-        const notifier = new AuthorizationNotifier();
-        browserLoginRequestHandler.setAuthorizationNotifier(notifier);
-        notifier.setAuthorizationListener(async (
-            request: AuthorizationRequest,
-            response: AuthorizationResponse | null,
-            error: AuthorizationError | null) => {
+            // Use the AppAuth mechanism of a notifier to receive the login result
+            const notifier = new AuthorizationNotifier();
+            notifier.setAuthorizationListener(async (
+                request: AuthorizationRequest,
+                response: AuthorizationResponse | null,
+                error: AuthorizationError | null) => {
 
-                // Try to complete login processing
-                const result = await this._handleLoginResponse(request, response, error);
+                    // Try to complete login processing
+                    const responseError = await this._handleLoginResponse(request, response, error);
 
-                // Call back the desktop UI so that it can navigate or show error details
-                this._onComplete(result);
+                    // Resolve the promise and return to the authenticator
+                    if (responseError) {
+                        reject(responseError);
+                    } else {
+                        resolve();
+                    }
+            });
+
+            // Start the login on a custom browser handler
+            const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
+            browserLoginRequestHandler.setAuthorizationNotifier(notifier);
+            browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
         });
-
-        // Start the login
-        browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
     }
 
     /*

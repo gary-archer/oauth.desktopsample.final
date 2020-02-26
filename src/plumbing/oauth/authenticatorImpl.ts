@@ -82,43 +82,58 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Begin an authorization redirect when the user clicks the Sign In button
+     * Do the authorization redirect when the user clicks the Sign In button
      */
-    public async startLogin(onCompleted: (error: UIError | null) => void): Promise<void> {
+    public async loginRedirect(): Promise<void> {
 
-        // Download metadata from the Authorization server if required
-        if (!this._metadata) {
-            this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                this._oauthConfig.authority,
-                new CustomRequestor());
+        try {
+
+            // Download metadata from the Authorization server if required
+            if (!this._metadata) {
+                this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
+                    this._oauthConfig.authority,
+                    new CustomRequestor());
+            }
+
+            // Do the work of the login
+            const loginManager = new LoginManager(
+                this._oauthConfig,
+                this._metadata,
+                this._loginState,
+                this._swapAuthorizationCodeForTokens);
+            await loginManager.login();
+
+        } catch (e) {
+
+            // Do error translation if required
+            throw ErrorHandler.getFromOAuthRequest(e, ErrorCodes.loginRequestFailed);
         }
-
-        // Start the login process
-        const login = new LoginManager(
-            this._oauthConfig,
-            this._metadata,
-            this._loginState,
-            this._swapAuthorizationCodeForTokens,
-            onCompleted);
-        await login.start();
     }
 
     /*
      * Implement full logout by clearing tokens and also redirecting to remove the Authorization Server session cookie
      */
-    public async startLogout(onCompleted: (error: UIError | null) => void): Promise<void> {
+    public async logoutRedirect(onCompleted: (error: UIError | null) => void): Promise<void> {
 
-        // Start the logout redirect
-        const logout = new LogoutManager(
-            this._oauthConfig,
-            this._tokens!.idToken,
-            this._logoutState,
-            onCompleted);
-        await logout.start();
+        try {
 
-        // Upon completion, clear tokens from memory and storage
-        this._tokens = null;
-        await TokenStorage.delete();
+            // Start the logout redirect
+            const logout = new LogoutManager(
+                this._oauthConfig,
+                this._tokens!.idToken,
+                this._logoutState,
+                onCompleted);
+            await logout.start();
+
+            // Upon completion, clear tokens from memory and storage
+            this._tokens = null;
+            await TokenStorage.delete();
+
+        } catch (e) {
+
+            // Do error translation if required
+            throw ErrorHandler.getFromOAuthRequest(e, ErrorCodes.logoutRequestFailed);
+        }
     }
 
     /*
@@ -201,28 +216,28 @@ export class AuthenticatorImpl implements Authenticator {
      */
     private async _refreshAccessToken(): Promise<void> {
 
-        // Download metadata from the Authorization server if required
-        if (!this._metadata) {
-            this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                this._oauthConfig.authority,
-                new CustomRequestor());
-        }
-
-        // Supply the scope for access tokens
-        const extras: StringMap = {
-            scope: this._oauthConfig.scope,
-        };
-
-        // Create the token request
-        const requestJson = {
-            grant_type: GRANT_TYPE_REFRESH_TOKEN,
-            client_id: this._oauthConfig.clientId,
-            refresh_token: this._tokens!.refreshToken,
-            extras,
-        } as TokenRequestJson;
-        const tokenRequest = new TokenRequest(requestJson);
-
         try {
+
+            // Download metadata from the Authorization server if required
+            if (!this._metadata) {
+                this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
+                    this._oauthConfig.authority,
+                    new CustomRequestor());
+            }
+
+            // Supply the scope for access tokens
+            const extras: StringMap = {
+                scope: this._oauthConfig.scope,
+            };
+
+            // Create the token request
+            const requestJson = {
+                grant_type: GRANT_TYPE_REFRESH_TOKEN,
+                client_id: this._oauthConfig.clientId,
+                refresh_token: this._tokens!.refreshToken,
+                extras,
+            } as TokenRequestJson;
+            const tokenRequest = new TokenRequest(requestJson);
 
             // Execute the request to send the refresh token and get new tokens
             const requestor = new CustomRequestor();

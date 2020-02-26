@@ -11,11 +11,11 @@ export interface Authenticator {
     // Try to get an access token
     getAccessToken(): Promise<string>;
 
-    // Start a login redirect
-    startLogin(onCompleted: (error: UIError | null) => void): Promise<void>;
+    // Do the login redirect and process the response
+    loginRedirect(): Promise<void>;
 
-    // Handle a main window login response when the page loads
-    startLogout(onCompleted: (error: UIError | null) => void): Promise<void>;
+    // Do the logout redirect and process the response
+    logoutRedirect(onCompleted: (error: UIError | null) => void): Promise<void>;
 
     // Clear the access token from HTML 5 storage
     clearAccessToken(): Promise<void>;
