@@ -8,7 +8,6 @@ import {AuthorizationError,
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../../errors/errorCodes';
 import {ErrorHandler} from '../../errors/errorHandler';
-import {UIError} from '../../errors/uiError';
 import {BrowserLoginRequestHandler} from './browserLoginRequestHandler';
 import {LoginState} from './loginState';
 
@@ -41,41 +40,51 @@ export class LoginManager {
 
         return new Promise<void>(async (resolve, reject) => {
 
-            // Create the authorization request in the AppAuth style
-            const requestJson = {
-                response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
-                client_id: this._configuration.clientId,
-                redirect_uri: this._configuration.redirectUri,
-                scope: this._configuration.scope,
-            } as AuthorizationRequestJson;
-            const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
-
-            // Set up PKCE for the redirect, which avoids native app vulnerabilities
-            await authorizationRequest.setupCodeVerifier();
-
-            // Use the AppAuth mechanism of a notifier to receive the login result
-            const notifier = new AuthorizationNotifier();
-            notifier.setAuthorizationListener(async (
-                request: AuthorizationRequest,
-                response: AuthorizationResponse | null,
-                error: AuthorizationError | null) => {
-
-                    // Try to complete login processing
-                    const responseError = await this._handleLoginResponse(request, response, error);
-
-                    // Resolve the promise and return to the authenticator
-                    if (responseError) {
-                        reject(responseError);
-                    } else {
-                        resolve();
-                    }
-            });
-
-            // Start the login on a custom browser handler
-            const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
-            browserLoginRequestHandler.setAuthorizationNotifier(notifier);
-            browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
+            try {
+                await this._startLogin(resolve, reject);
+            } catch (e) {
+                reject(e);
+            }
         });
+    }
+
+    /*
+     * Do the work of the login redirect
+     */
+    private async _startLogin(onSuccess: () => void, onError: (e: any) => void): Promise<void> {
+
+        // Create the authorization request in the AppAuth style
+        const requestJson = {
+            response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
+            client_id: this._configuration.clientId,
+            redirect_uri: this._configuration.redirectUri,
+            scope: this._configuration.scope,
+        } as AuthorizationRequestJson;
+        const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
+
+        // Set up PKCE for the redirect, which avoids native app vulnerabilities
+        await authorizationRequest.setupCodeVerifier();
+
+        // Use the AppAuth mechanism of a notifier to receive the login result
+        const notifier = new AuthorizationNotifier();
+        notifier.setAuthorizationListener(async (
+            request: AuthorizationRequest,
+            response: AuthorizationResponse | null,
+            error: AuthorizationError | null) => {
+
+                // When we receive the result, handle it and complete the callback
+                try {
+                    await this._handleLoginResponse(request, response, error);
+                    onSuccess();
+                } catch (e) {
+                    onError(e);
+                }
+        });
+
+        // Start the login on a custom browser handler
+        const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
+        browserLoginRequestHandler.setAuthorizationNotifier(notifier);
+        browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
     }
 
     /*
@@ -84,16 +93,16 @@ export class LoginManager {
     private async _handleLoginResponse(
         request: AuthorizationRequest,
         response: AuthorizationResponse | null,
-        error: AuthorizationError | null): Promise<UIError | null> {
+        error: AuthorizationError | null): Promise<void> {
 
         // Phase 1 of login has completed
         if (error) {
-            return ErrorHandler.getFromOAuthResponse(error, ErrorCodes.loginResponseFailed);
+            throw ErrorHandler.getFromOAuthResponse(error, ErrorCodes.loginResponseFailed);
         }
 
         // Check that the response state matches the request state
         if (request.state !== response!.state) {
-            return ErrorHandler.getFromInvalidLoginResponseState();
+            throw ErrorHandler.getFromInvalidLoginResponseState();
         }
 
         try {
@@ -103,11 +112,10 @@ export class LoginManager {
 
             // Swap the authorization code for tokens
             await this._onCodeReceived(response!.code, codeVerifier);
-            return null;
 
         } catch (e) {
 
-            return ErrorHandler.getFromOAuthResponse(e, ErrorCodes.authorizationCodeGrantFailed);
+            throw ErrorHandler.getFromOAuthResponse(e, ErrorCodes.authorizationCodeGrantFailed);
         }
     }
 }

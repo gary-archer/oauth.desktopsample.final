@@ -13,7 +13,7 @@ export class CognitoLogoutUrlBuilder implements LogoutUrlBuilder {
     }
 
     /*
-     * Format the vendor specific URL
+     * Format the vendor specific URL and include the state parameter, even though it is not returned in the response
      */
     public buildUrl(): string {
 

@@ -29,25 +29,36 @@ export class LogoutManager {
      */
     public async start(): Promise<void> {
 
-        // Return a promise that is resolved when the logout response is received
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
 
-            // First build the logout URL
-            const logoutUrl = this._getLogoutUrlBuilder().buildUrl();
-
-            // Create a callback to wait for completion
-            const callback = (queryParams: any) => {
-
-                // Complete the promise when the callback is invoked
-                resolve();
-            };
-
-            // Store the logout callback so that we can receive the response when we receive a browser notification
-            this._state.storeLogoutCallback(callback);
-
-            // Invoke the browser with the logout URL
-            Opener(logoutUrl);
+            try {
+                await this._startLogout(resolve, reject);
+            } catch (e) {
+                reject(e);
+            }
         });
+    }
+
+    /*
+     * Do the work to start the logout
+     */
+    private async _startLogout(onSuccess: () => void, onError: (e: any) => void): Promise<void> {
+
+        // First build the logout URL
+        const logoutUrl = this._getLogoutUrlBuilder().buildUrl();
+
+        // Create a callback to wait for completion
+        const callback = (queryParams: any) => {
+
+            // Complete the promise when the callback is invoked
+            onSuccess();
+        };
+
+        // Store the logout callback so that we can receive the response when we receive a browser notification
+        this._state.storeLogoutCallback(callback);
+
+        // Invoke the browser with the logout URL
+        Opener(logoutUrl);
     }
 
     /*

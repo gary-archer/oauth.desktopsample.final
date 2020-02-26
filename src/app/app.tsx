@@ -4,7 +4,6 @@ import {HashRouter, Route, Switch} from 'react-router-dom';
 import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
-import {UIError} from '../plumbing/errors/uiError';
 import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
 import {ApplicationEvents} from '../plumbing/events/applicationEvents';
 import {CustomUriSchemeNotifier} from '../plumbing/events/customUriSchemeNotifier';
