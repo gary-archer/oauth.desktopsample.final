@@ -66,12 +66,16 @@ class Main {
                 app.setAsDefaultProtocolClient(this._customSchemeName);
             } else {
 
+                log.info('NOT PACKAGED');
+                log.info('EXEC PATH: ' + process.execPath);
+                console.log([path.resolve('.')]);
+
                 // On Windows we register the custom scheme for a non packaged app liked this
                 // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
                 app.setAsDefaultProtocolClient(
                     this._customSchemeName,
                     process.execPath,
-                    [path.resolve(process.argv[1])]);
+                    [path.resolve('.')]);
             }
         } else {
             app.setAsDefaultProtocolClient(this._customSchemeName);
