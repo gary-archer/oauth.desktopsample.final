@@ -44,6 +44,8 @@ export class App extends React.Component<any, AppState> {
             isLoggedIn: false,
             loadUserInfo: true,
             sessionButtonsEnabled: false,
+            errorArea: '',
+            error: null,
         };
 
         // Make callbacks available
@@ -90,7 +92,7 @@ export class App extends React.Component<any, AppState> {
             });
 
             // First read configuration
-            this._configuration = await ConfigurationLoader.load('desktop.config.json');
+            this._configuration = await ConfigurationLoader.load('desktop.config.localapi.json');
 
             // Set up SSL Trust and HTTP debugging
             await SslHelper.configureTrust();
@@ -115,7 +117,7 @@ export class App extends React.Component<any, AppState> {
             });
 
         } catch (e) {
-            ApplicationEvents.publish(ApplicationEventNames.ON_ERROR, {area: 'Startup', error: e});
+            this.setState({errorArea: 'Startup', error: e});
         }
     }
 
@@ -126,6 +128,11 @@ export class App extends React.Component<any, AppState> {
 
         const titleProps = {
             userInfo: null,
+        };
+
+        const errorProps = {
+            initialArea: this.state.errorArea,
+            initialError: this.state.error,
         };
 
         const headerButtonProps = {
@@ -139,9 +146,9 @@ export class App extends React.Component<any, AppState> {
 
         return (
             <ErrorBoundary>
-                <TitleView {...titleProps}/>
-                <HeaderButtonsView {...headerButtonProps}/>
-                <AppErrorView />
+                <TitleView {...titleProps} />
+                <HeaderButtonsView {...headerButtonProps} />
+                <AppErrorView {...errorProps} />
             </ErrorBoundary>
         );
     }
@@ -169,6 +176,11 @@ export class App extends React.Component<any, AppState> {
             handleLogoutClick: this._handleLogoutClick,
         };
 
+        const errorProps = {
+            initialArea: this.state.errorArea,
+            initialError: this.state.error,
+        };
+
         const sessionProps = {
             isVisible: this.state.isLoggedIn,
             apiClient: this._apiClient,
@@ -182,7 +194,8 @@ export class App extends React.Component<any, AppState> {
         };
 
         const loginRequiredProps = {
-            onLoginRedirect: this._onLoginRedirect,
+            authenticator: this._authenticator,
+            onLoginCompleted: this._onLoginCompleted,
         };
 
         // Callbacks to prevent multi line JSX warnings
@@ -195,8 +208,8 @@ export class App extends React.Component<any, AppState> {
             <ErrorBoundary>
                 <TitleView {...titleProps} />
                 <HeaderButtonsView {...headerButtonProps} />
-                <AppErrorView />
-                <SessionView {...sessionProps}/>
+                <AppErrorView {...errorProps} />
+                <SessionView {...sessionProps} />
                 <HashRouter>
                     <Switch>
                         <Route exact={true} path='/'               render={renderCompaniesView} />
@@ -222,15 +235,20 @@ export class App extends React.Component<any, AppState> {
      */
     private async _handleHomeClick(): Promise<void> {
 
-        // Force a full app reload after an error to ensure that all data is retried
-        if (this.state.isStarting || this._viewManager.hasError()) {
+        // If there is an error then reset for the retry
+        if (this.state.error) {
+            this.setState({errorArea: '', error: null});
+        }
+
+        // Force a full app reload after startup errors
+        if (this.state.isStarting) {
             await this._startApp();
             return;
         }
 
-        // When logged out and home is clicked, force a login redirect and return home
+        // When logged out and home is clicked, force a login redirect
         if (!this.state.isLoggedIn) {
-            await this._onLoginRedirect();
+            ApplicationEvents.publish(ApplicationEventNames.ON_LOGIN, {});
             return;
         }
 
@@ -274,19 +292,6 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * The login required view calls us back to begin the login process
-     */
-    private async _onLoginRedirect(): Promise<void> {
-
-        try {
-            await this._authenticator!.startLogin(this._onLoginCompleted);
-
-        } catch (e) {
-            ApplicationEvents.publish(ApplicationEventNames.ON_ERROR, {area: 'Login', error: e});
-        }
-    }
-
-    /*
      * Update state when a login completes
      */
     private _onLoginCompleted(): void {
@@ -304,17 +309,24 @@ export class App extends React.Component<any, AppState> {
     private async _handleLogoutClick(): Promise<void> {
 
         try {
+            this.setState({errorArea: '', error: null});
             await this._authenticator!.startLogout(this._onLogoutCompleted);
 
         } catch (e) {
-            ApplicationEvents.publish(ApplicationEventNames.ON_ERROR, {area: 'Logout', error: e});
+            this.setState({errorArea: 'Logout', error: e});
         }
     }
 
     /*
      * Complete logout processing
      */
-    private _onLogoutCompleted(e: UIError | null): void {
+    private _onLogoutCompleted(error: UIError | null): void {
+
+        // Report logout response errors
+        if (error) {
+            this.setState({errorArea: 'Logout', error});
+            return;
+        }
 
         // Update state to indicate that we are logged out
         this.setState({isLoggedIn: false, loadUserInfo: false, sessionButtonsEnabled: false});
@@ -332,9 +344,8 @@ export class App extends React.Component<any, AppState> {
         this._handleRefreshDataClick = this._handleRefreshDataClick.bind(this);
         this._handleExpireAccessTokenClick = this._handleExpireAccessTokenClick.bind(this);
         this._handleExpireRefreshTokenClick = this._handleExpireRefreshTokenClick.bind(this);
-        this._onLoginCompleted = this._onLoginCompleted.bind(this);
         this._onLoginRequired = this._onLoginRequired.bind(this);
-        this._onLoginRedirect = this._onLoginRedirect.bind(this);
+        this._onLoginCompleted = this._onLoginCompleted.bind(this);
         this._onLogoutCompleted = this._onLogoutCompleted.bind(this);
         this._handleLogoutClick = this._handleLogoutClick.bind(this);
     }

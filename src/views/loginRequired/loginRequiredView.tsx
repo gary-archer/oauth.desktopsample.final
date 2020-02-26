@@ -1,4 +1,8 @@
 import React from 'react';
+import {UIError} from '../../plumbing/errors/uiError';
+import {ApplicationEventNames} from '../../plumbing/events/applicationEventNames';
+import {ApplicationEvents} from '../../plumbing/events/applicationEvents';
+import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {LoginRequiredViewProps} from './loginRequiredViewProps';
 import {LoginRequiredViewState} from './loginRequiredViewState';
 
@@ -16,6 +20,7 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
 
         this.state = {
             signingIn: false,
+            error: null,
         };
     }
 
@@ -25,13 +30,30 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
     public render(): React.ReactNode {
 
         return  (
-            <div className='card border-0 loginrequired'>
-                <h5>
-                    You are logged out - click <a href='#' onClick={this._onLoginClick}>here</a> to log in ...
-                </h5>
-                {this.state.signingIn && this._renderSigningIn()}
+            <div className='row'>
+                <div className='col-12 text-center mx-auto loginrequired'>
+                    <h5>
+                        You are logged out - click <a href='#' onClick={this._onLoginClick}>here</a> to sign in ...
+                    </h5>
+                    {this.state.signingIn && !this.state.error && this._renderSigningIn()}
+                    {this.state.error && this._renderError()}
+                </div>
             </div>
         );
+    }
+
+    /*
+     * Load data then listen for the login event
+     */
+    public async componentDidMount(): Promise<void> {
+        ApplicationEvents.subscribe(ApplicationEventNames.ON_LOGIN, this._onLogin);
+    }
+
+    /*
+     * Unsubscribe when we unload
+     */
+    public async componentWillUnmount(): Promise<void> {
+        ApplicationEvents.unsubscribe(ApplicationEventNames.ON_RELOAD, this._onLogin);
     }
 
     /*
@@ -49,16 +71,67 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
     }
 
     /*
+     * Render any sign in error details
+     */
+    private _renderError(): React.ReactNode {
+
+        const errorProps = {
+            hyperlinkMessage: 'Problem Encountered Logging In',
+            dialogTitle: 'Login Error',
+            error: this.state.error,
+        };
+        return (
+            <div className='row'>
+                <div className='col-12 text-center mx-auto'>
+                    <ErrorSummaryView {...errorProps}/>
+                </div>
+            </div>
+        );
+    }
+
+    /*
      * Trigger the login redirect when login is clicked
      */
     private async _onLoginClick(event: React.MouseEvent<HTMLAnchorElement>): Promise<void> {
 
-        // Update UI state to show that a sign in is in progress
         event.preventDefault();
-        this.setState({signingIn: true});
+        await this._onLogin();
+    }
 
-        // Do the login redirect
-        await this.props.onLoginRedirect();
+    /*
+     * Trigger the login redirect when login is clicked
+     */
+    private async _onLogin(): Promise<void> {
+
+        try {
+            // Reset error state during a login attempt
+            this.setState({error: null});
+
+            // Update UI state to show that a sign in is in progress
+            this.setState({signingIn: true});
+
+            // Do the login redirect
+            await this.props.authenticator.startLogin(this._onLoginComplete);
+
+        } catch (e) {
+
+            // Render errors
+            this.setState({error: e});
+        }
+    }
+
+    /*
+     * Receive login responses
+     */
+    private async _onLoginComplete(error: UIError | null): Promise<void> {
+
+        // Report errors if required
+        this.setState({error});
+
+        // Inform the parent view when a login completes successfully
+        if (!error) {
+            this.props.onLoginCompleted();
+        }
     }
 
     /*
@@ -66,5 +139,7 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
      */
     private _setupCallbacks() {
         this._onLoginClick = this._onLoginClick.bind(this);
+        this._onLogin = this._onLogin.bind(this);
+        this._onLoginComplete = this._onLoginComplete.bind(this);
     }
 }

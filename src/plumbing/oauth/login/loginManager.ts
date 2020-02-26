@@ -47,7 +47,7 @@ export class LoginManager {
             response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
             client_id: this._configuration.clientId,
             redirect_uri: this._configuration.redirectUri,
-            scope: this._configuration.scope,
+            scope: this._configuration.scope + ' xxx',
         } as AuthorizationRequestJson;
         const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
 
@@ -95,7 +95,6 @@ export class LoginManager {
         }
 
         try {
-
             // Get the PKCE verifier
             const codeVerifierKey = 'code_verifier';
             const codeVerifier = request.internal![codeVerifierKey];

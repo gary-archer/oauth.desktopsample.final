@@ -3,9 +3,9 @@
  */
 export class ApplicationEventNames {
 
-    // Used to listen for requests to reload data
+    // Used to send requests to reload data to view pages
     public static readonly ON_RELOAD = 'reload';
 
-    // Used to listen for requests to report errors
-    public static readonly ON_ERROR = 'error';
+    // Used to send requests to login to the login required page
+    public static readonly ON_LOGIN = 'login';
 }

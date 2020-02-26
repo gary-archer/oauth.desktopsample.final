@@ -43,8 +43,8 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
             const callback = (queryParams: any) => {
 
                 // Package up data into an object and then resolve our promise
-                const completeResponse = this._handleBrowserLoginResponse(queryParams, request);
-                resolve(completeResponse);
+                const response = this._handleBrowserLoginResponse(queryParams, request);
+                resolve(response);
 
                 // Ask the base class to call our completeAuthorizationRequest
                 this.completeAuthorizationRequestIfPossible();
@@ -67,7 +67,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
     }
 
     /*
-     * Collect response data to return to the caller
+     * Collect response data using AppAuth objects
      */
     private _handleBrowserLoginResponse(
         queryParams: any,

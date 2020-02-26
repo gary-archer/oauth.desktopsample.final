@@ -10,8 +10,9 @@
 
         <script>
             window.addEventListener("DOMContentLoaded", function() {
+                
+                // Forward the logout URL to our app
                 var redirectUri = "x-mycompany-desktopapp:/logoutCallback";
-
                 document.getElementById('continueButton').onclick = () => {
                     window.location.href = redirectUri;
                 };

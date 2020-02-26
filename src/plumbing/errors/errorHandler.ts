@@ -207,8 +207,8 @@ export class ErrorHandler {
         let oauthError = '';
         if (exception.error) {
             oauthError = exception.error;
-            if (exception.error_description) {
-                oauthError += ` : ${exception.error_description}`;
+            if (exception.errorDescription) {
+                oauthError += ` : ${exception.errorDescription}`;
             }
         }
 

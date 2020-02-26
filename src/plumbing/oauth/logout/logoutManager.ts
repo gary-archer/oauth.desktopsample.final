@@ -42,6 +42,8 @@ export class LogoutManager {
 
             // Create a callback to wait for completion
             const callback = (queryParams: any) => {
+
+                // Logout errors are rendered on the main window
                 this._onComplete(null);
                 resolve();
             };
