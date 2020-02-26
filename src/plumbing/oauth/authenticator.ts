@@ -15,7 +15,7 @@ export interface Authenticator {
     loginRedirect(): Promise<void>;
 
     // Do the logout redirect and process the response
-    logoutRedirect(onCompleted: (error: UIError | null) => void): Promise<void>;
+    logoutRedirect(): Promise<void>;
 
     // Clear the access token from HTML 5 storage
     clearAccessToken(): Promise<void>;

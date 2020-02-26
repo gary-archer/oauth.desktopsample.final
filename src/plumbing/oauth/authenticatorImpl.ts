@@ -113,7 +113,7 @@ export class AuthenticatorImpl implements Authenticator {
     /*
      * Implement full logout by clearing tokens and also redirecting to remove the Authorization Server session cookie
      */
-    public async logoutRedirect(onCompleted: (error: UIError | null) => void): Promise<void> {
+    public async logoutRedirect(): Promise<void> {
 
         try {
 
@@ -121,8 +121,7 @@ export class AuthenticatorImpl implements Authenticator {
             const logout = new LogoutManager(
                 this._oauthConfig,
                 this._tokens!.idToken,
-                this._logoutState,
-                onCompleted);
+                this._logoutState);
             await logout.start();
 
             // Upon completion, clear tokens from memory and storage

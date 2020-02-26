@@ -309,30 +309,20 @@ export class App extends React.Component<any, AppState> {
     private async _handleLogoutClick(): Promise<void> {
 
         try {
+
+            // Clear error state and try the logout
             this.setState({errorArea: '', error: null});
-            await this._authenticator!.logoutRedirect(this._onLogoutCompleted);
+            await this._authenticator!.logoutRedirect();
+
+            // Update state to indicate that we are logged out
+            this.setState({isLoggedIn: false, loadUserInfo: false, sessionButtonsEnabled: false});
+
+            // Move to the login required page
+            location.hash = `#/loginrequired`;
 
         } catch (e) {
             this.setState({errorArea: 'Logout', error: e});
         }
-    }
-
-    /*
-     * Complete logout processing
-     */
-    private _onLogoutCompleted(error: UIError | null): void {
-
-        // Report logout response errors
-        if (error) {
-            this.setState({errorArea: 'Logout', error});
-            return;
-        }
-
-        // Update state to indicate that we are logged out
-        this.setState({isLoggedIn: false, loadUserInfo: false, sessionButtonsEnabled: false});
-
-        // Move to the login required page
-        location.hash = `#/loginrequired`;
     }
 
     /*
@@ -346,7 +336,6 @@ export class App extends React.Component<any, AppState> {
         this._handleExpireRefreshTokenClick = this._handleExpireRefreshTokenClick.bind(this);
         this._onLoginRequired = this._onLoginRequired.bind(this);
         this._onLoginCompleted = this._onLoginCompleted.bind(this);
-        this._onLogoutCompleted = this._onLogoutCompleted.bind(this);
         this._handleLogoutClick = this._handleLogoutClick.bind(this);
     }
 }

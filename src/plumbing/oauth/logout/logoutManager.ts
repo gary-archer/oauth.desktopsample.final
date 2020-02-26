@@ -1,8 +1,6 @@
 import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
-import {UIError} from '../../errors/uiError';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
-import {LogoutResponseCallback} from './logoutResponseCallback';
 import {LogoutState} from './logoutState';
 import {LogoutUrlBuilder} from './logoutUrlBuilder';
 import {OktaLogoutUrlBuilder} from './oktaLogoutUrlBuilder';
@@ -15,18 +13,15 @@ export class LogoutManager {
     private readonly _configuration: OAuthConfiguration;
     private readonly _state: LogoutState;
     private readonly _idToken: string;
-    private readonly _onComplete: (error: UIError | null) => void;
 
     public constructor(
         configuration: OAuthConfiguration,
         idToken: string,
-        state: LogoutState,
-        onComplete: LogoutResponseCallback) {
+        state: LogoutState) {
 
         this._configuration = configuration;
         this._idToken = idToken;
         this._state = state;
-        this._onComplete = onComplete;
     }
 
     /*
@@ -43,8 +38,7 @@ export class LogoutManager {
             // Create a callback to wait for completion
             const callback = (queryParams: any) => {
 
-                // Logout errors are rendered on the main window
-                this._onComplete(null);
+                // Complete the promise when the callback is invoked
                 resolve();
             };
 
