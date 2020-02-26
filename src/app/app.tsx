@@ -88,6 +88,8 @@ export class App extends React.Component<any, AppState> {
                 isLoggedIn: false,
                 loadUserInfo: true,
                 sessionButtonsEnabled: false,
+                errorArea: '',
+                error: null,
             });
 
             // First read configuration
