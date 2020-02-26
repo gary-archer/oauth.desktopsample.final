@@ -7,11 +7,8 @@
     "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}' 'scripts/*.ts'",
     "buildnative": "node_modules/.bin/electron-rebuild",
     "build": "rimraf built && tsc",
-    "pack": "ts-node scripts/pack.ts",
     "start": "node_modules/.bin/electron .",
-    "webpackDev": "npm run webpackClean && webpack --config webpack/webpack.config.dev.js --watch",
-    "webpackProd": "npm run webpackClean && webpack --config webpack/webpack.config.prod.js",
-    "webpackClean": "rimraf bundles"
+    "pack": "ts-node scripts/pack.ts"
   },
   "files": [
     "built/**"
@@ -49,13 +46,9 @@
     "electron-packager": "^14.2.1",
     "electron-rebuild": "^1.10.0",
     "rimraf": "^3.0.0",
-    "ts-loader": "^6.2.1",
     "ts-node": "^6.2.0",
     "tslint": "^5.20.1",
     "tslint-react": "^4.1.0",
-    "typescript": "^3.7.3",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.9",
-    "webpack-merge": "^4.2.2"
+    "typescript": "^3.7.3"
   }
 }

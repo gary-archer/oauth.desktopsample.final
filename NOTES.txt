@@ -1,9 +1,0 @@
-1. How to disable node integration?
-
-2. How to package keytar in webpack?
-   https://html.developreference.com/article/14335669/Packaging+Keytar+with+an+Electron+app
-
-3. How to use main?
-
-4. Needs a separate feature branch
-   https://medium.com/@ad_harmonium/build-to-both-electron-js-and-browser-targets-using-webpack-59266bdb76a

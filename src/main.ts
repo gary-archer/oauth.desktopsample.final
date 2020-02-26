@@ -59,22 +59,21 @@ class Main {
 
         // Set this to avoid a warning and to improve performance
         app.allowRendererProcessReuse = true;
+        if (app.isPackaged) {
 
-        // Register our private URI scheme for the current user when we run for the first time
-        if (process.platform === 'win32') {
-            if (app.isPackaged) {
-                app.setAsDefaultProtocolClient(this._customSchemeName);
-            } else {
+            log.info('is packaged');
 
-                // On Windows we register the custom scheme for a non packaged app liked this
-                // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
-                app.setAsDefaultProtocolClient(
-                    this._customSchemeName,
-                    process.execPath,
-                    [path.resolve('.')]);
-            }
-        } else {
+            // Register our private URI scheme for the current user
             app.setAsDefaultProtocolClient(this._customSchemeName);
+
+        } else {
+
+            // Register our private URI scheme for a non packaged app
+            // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
+            app.setAsDefaultProtocolClient(
+                this._customSchemeName,
+                process.execPath,
+                [path.resolve('.')]);
         }
 
         // Handle login responses or deep linking requests against the running app on Mac OS
@@ -96,10 +95,9 @@ class Main {
             height: 768,
             minWidth: 800,
             minHeight: 600,
-            
-            /*webPreferences: {
+            webPreferences: {
                 nodeIntegration: true,
-            },*/
+            },
         });
 
         // Ensure that our window has its own menu after Electron Packager has run
