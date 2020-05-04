@@ -1,0 +1,61 @@
+{
+  "name": "basicdesktopapp",
+  "version": "2.0.0",
+  "description": "A Desktop App using the AppAuth-JS security library",
+  "main": "built/main.js",
+  "scripts": {
+    "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}' 'scripts/*.ts'",
+    "buildnative": "node_modules/.bin/electron-rebuild",
+    "build": "rimraf built && tsc",
+    "start": "node_modules/.bin/electron .",
+    "pack": "rimraf dist && electron-packager . --out=dist"
+  },
+  "build": {
+    "protocols": {
+      "name": "basicdesktopapp",
+      "schemes": [
+        "x-mycompany-desktopapp"
+      ]
+    }
+  },
+  "files": [
+    "built/**"
+  ],
+  "keywords": [],
+  "author": "Gary Archer",
+  "license": "ISC",
+  "dependencies": {
+    "@openid/appauth": "^1.2.7",
+    "electron-default-menu": "^1.0.1",
+    "electron-log": "^4.0.7",
+    "fs-extra": "^8.1.0",
+    "got": "^9.6.0",
+    "guid-typescript": "^1.0.9",
+    "keytar": "^5.2.0",
+    "moment": "2.24.0",
+    "opener": "^1.5.1",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
+    "react-modal": "^3.11.1",
+    "react-router-dom": "^5.1.2",
+    "tunnel-agent": "^0.6.0",
+    "url-parse": "^1.4.7",
+    "username": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^8.0.1",
+    "@types/node": "^12.12.21",
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.4",
+    "@types/react-modal": "^3.10.1",
+    "@types/react-router-dom": "^5.1.3",
+    "@types/url-parse": "^1.4.3",
+    "electron": "8.2.5",
+    "electron-packager": "^14.2.1",
+    "electron-rebuild": "^1.10.0",
+    "rimraf": "^3.0.0",
+    "tslint": "^6.1.2",
+    "tslint-react": "^4.1.0",
+    "typescript": "^3.8.3"
+  }
+}
