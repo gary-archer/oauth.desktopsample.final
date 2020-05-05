@@ -1,6 +1,7 @@
 import React from 'react';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {ErrorHandler} from '../../plumbing/errors/errorHandler';
+import {UIError} from '../../plumbing/errors/uiError';
 import {ApplicationEventNames} from '../../plumbing/events/ApplicationEventNames';
 import {ApplicationEvents} from '../../plumbing/events/applicationEvents';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
@@ -108,31 +109,30 @@ export class TransactionsContainer extends React.Component<TransactionsContainer
     private async _loadData(causeError: boolean): Promise<void> {
 
         try {
+            // Initialise for this request
             const options = {
                 causeError,
             };
+            this.setState({error: null});
 
             // Do the load
             this.props.onViewLoading();
             const data = await this.props.apiClient.getCompanyTransactions(this.state.companyId, options);
+            this.props.onViewLoaded();
 
             // Update success state
-            this.setState({error: null, data});
+            this.setState({data});
             this.props.onViewLoaded();
 
         } catch (e) {
 
+            // Handle the error
             const error = ErrorHandler.getFromException(e);
+            const isExpected = this._handleApiError(error);
+            if (isExpected) {
 
-            // Handle invalid input due to typing an id into the browser address bar
-            if (error.statusCode === 404 && error.errorCode === ErrorCodes.companyNotFound) {
-
-                // User typed an id value outside of allowed company ids
-                location.hash = '#';
-
-            } else if (error.statusCode === 400 && error.errorCode === ErrorCodes.invalidCompanyId) {
-
-                // User typed an invalid id such as 'abc'
+                // For 'expected' errors, return to the home view
+                this.props.onViewLoaded();
                 location.hash = '#';
 
             } else {
@@ -166,6 +166,28 @@ export class TransactionsContainer extends React.Component<TransactionsContainer
         return (
             <ErrorSummaryView {...errorProps}/>
         );
+    }
+
+    /*
+     * Handle 'business errors' received from the API
+     */
+    private _handleApiError(error: UIError) {
+
+        let isExpected = false;
+
+        if (error.statusCode === 404 && error.errorCode === ErrorCodes.companyNotFound) {
+
+            // User typed an id value outside of allowed company ids
+            isExpected = true
+
+        } else if (error.statusCode === 400 && error.errorCode === ErrorCodes.invalidCompanyId) {
+
+            // User typed an invalid id such as 'abc'
+            isExpected = true
+
+        }
+
+        return isExpected;
     }
 
     /*

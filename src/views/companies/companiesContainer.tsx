@@ -75,17 +75,19 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
     private async _loadData(causeError: boolean): Promise<void> {
 
         try {
+            // Initialise for this request
             const options = {
                 causeError,
             };
+            this.setState({error: null});
 
             // Do the load
             this.props.onViewLoading();
             const companies = await this.props.apiClient.getCompanyList(options);
+            this.props.onViewLoaded();
 
             // Update success state
-            this.setState({error: null, companies});
-            this.props.onViewLoaded();
+            this.setState({companies});
 
         } catch (e) {
 
