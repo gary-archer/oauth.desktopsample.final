@@ -16,9 +16,9 @@ import {SslHelper} from '../plumbing/utilities/sslHelper';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {ErrorBoundary} from '../views/errors/errorBoundary';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
-import {SessionView} from '../views/frame/sessionView';
-import {TitleView} from '../views/frame/titleView';
-import {HeaderButtonsView} from '../views/headerButtons/headerButtonsView';
+import {HeaderButtonsView} from '../views/headings/headerButtonsView';
+import {SessionView} from '../views/headings/sessionView';
+import {TitleView} from '../views/headings/titleView';
 import {LoginRequiredView} from '../views/loginRequired/loginRequiredView';
 import {TransactionsContainer} from '../views/transactions/transactionsContainer';
 import {ViewManager} from '../views/viewManager';
@@ -156,17 +156,15 @@ export class App extends React.Component<any, AppState> {
     }
 
     /*
-     * Attempt to render the entire layout
+     * Attempt to render the entire layout after initialisation
      */
     private _renderMain(): React.ReactNode {
 
         const titleProps = {
             userInfo: {
                 apiClient: this._apiClient!,
-                shouldLoad: !this._isLoggedOut(),
-                onViewLoading: this._viewManager.onViewLoading,
-                onViewLoaded: this._viewManager.onViewLoaded,
-                onViewLoadFailed: this._viewManager.onViewLoadFailed,
+                viewManager: this._viewManager!,
+                shouldLoad: !this._isInLoginRequired(),
             },
         };
 
@@ -180,15 +178,13 @@ export class App extends React.Component<any, AppState> {
         };
 
         const sessionProps = {
-            isVisible: this._authenticator!.isLoggedIn(),
             apiClient: this._apiClient!,
+            isVisible: this._authenticator!.isLoggedIn(),
         };
 
         const mainViewProps = {
-            onViewLoading: this._viewManager.onViewLoading,
-            onViewLoaded: this._viewManager.onViewLoaded,
-            onViewLoadFailed: this._viewManager.onViewLoadFailed,
             apiClient: this._apiClient!,
+            viewManager: this._viewManager,
         };
 
         const loginRequiredProps = {
@@ -312,7 +308,7 @@ export class App extends React.Component<any, AppState> {
     /*
      * Return true if our location is the login required view
      */
-    private _isLoggedOut(): boolean {
+    private _isInLoginRequired(): boolean {
         return location.hash.indexOf('loginrequired') !== -1;
     }
 

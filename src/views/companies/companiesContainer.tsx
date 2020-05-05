@@ -82,9 +82,9 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
             this.setState({error: null});
 
             // Do the load
-            this.props.onViewLoading();
+            this.props.viewManager.onViewLoading();
             const companies = await this.props.apiClient.getCompanyList(options);
-            this.props.onViewLoaded();
+            this.props.viewManager.onViewLoaded();
 
             // Update success state
             this.setState({companies});
@@ -94,7 +94,7 @@ export class CompaniesContainer extends React.Component<CompaniesContainerProps,
             // Update error state
             const error = ErrorHandler.getFromException(e);
             this.setState({error});
-            this.props.onViewLoadFailed(error);
+            this.props.viewManager.onViewLoadFailed(error);
         }
     }
 

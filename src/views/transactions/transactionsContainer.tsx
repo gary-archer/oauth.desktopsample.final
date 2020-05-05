@@ -116,13 +116,12 @@ export class TransactionsContainer extends React.Component<TransactionsContainer
             this.setState({error: null});
 
             // Do the load
-            this.props.onViewLoading();
+            this.props.viewManager.onViewLoading();
             const data = await this.props.apiClient.getCompanyTransactions(this.state.companyId, options);
-            this.props.onViewLoaded();
+            this.props.viewManager.onViewLoaded();
 
             // Update success state
             this.setState({data});
-            this.props.onViewLoaded();
 
         } catch (e) {
 
@@ -132,14 +131,14 @@ export class TransactionsContainer extends React.Component<TransactionsContainer
             if (isExpected) {
 
                 // For 'expected' errors, return to the home view
-                this.props.onViewLoaded();
+                this.props.viewManager.onViewLoaded();
                 location.hash = '#';
 
             } else {
 
                 // Indicate failure to the view manager
                 this.setState({error});
-                this.props.onViewLoadFailed(error);
+                this.props.viewManager.onViewLoadFailed(error);
             }
         }
     }
