@@ -89,7 +89,7 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
     public async componentDidMount(): Promise<void> {
 
         ApplicationEvents.subscribe(ApplicationEventNames.ON_RELOAD, this._loadData);
-        await this._loadData();
+        await this._loadData(false);
     }
 
     /*
@@ -108,14 +108,14 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
         prevState: UserInfoViewState): Promise<void> {
 
         if (!prevState.shouldLoad && this.state.shouldLoad) {
-            await this._loadData();
+            await this._loadData(false);
         }
     }
 
     /*
      * Load data when requested
      */
-    private async _loadData(): Promise<void> {
+    private async _loadData(causeError: boolean): Promise<void> {
 
         try {
 
@@ -126,11 +126,14 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
             }
 
             // Initialise for this request
+            const options = {
+                causeError,
+            };
             this.setState({error: null});
 
             // Get user info
             this.props.viewManager.onViewLoading();
-            const claims = await this.props.apiClient.getUserInfo();
+            const claims = await this.props.apiClient.getUserInfo(options);
             this.props.viewManager.onViewLoaded();
 
             // Update state with claims in order to render the logged in user info
