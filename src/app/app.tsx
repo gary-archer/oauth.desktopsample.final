@@ -5,6 +5,7 @@ import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
 import {ConfigurationLoader} from '../configuration/configurationLoader';
 import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
+import {ErrorHandler} from '../plumbing/errors/errorHandler';
 import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
 import {ApplicationEvents} from '../plumbing/events/applicationEvents';
 import {CustomUriSchemeNotifier} from '../plumbing/events/customUriSchemeNotifier';
@@ -117,7 +118,7 @@ export class App extends React.Component<any, AppState> {
             });
 
         } catch (e) {
-            this.setState({error: e});
+            this.setState({error: ErrorHandler.getFromException(e)});
         }
     }
 
@@ -240,25 +241,23 @@ export class App extends React.Component<any, AppState> {
         // If there is a startup error then reinitialise the app
         if (!this.state.isInitialised) {
             await this._initialiseApp();
+            return;
         }
 
-        if (this.state.isInitialised) {
-
-            // When in the login required view and home is clicked, force a login redirect
-            const isLoggedIn = await this._authenticator!.isLoggedIn();
-            if (!isLoggedIn) {
-                ApplicationEvents.publish(ApplicationEventNames.ON_LOGIN, {});
-                return;
-            }
-
-            // Force views to reload if there have been view errors
-            if (!this.state.isDataLoaded) {
-                this._onReloadData(false);
-            }
-
-            // Navigate to the home view
-            location.hash = '#';
+        // When in the login required view and home is clicked, force a login redirect
+        const isLoggedIn = await this._authenticator!.isLoggedIn();
+        if (!isLoggedIn) {
+            ApplicationEvents.publish(ApplicationEventNames.ON_LOGIN, {});
+            return;
         }
+
+        // Force views to reload if there have been view errors
+        if (!this.state.isDataLoaded) {
+            this._onReloadData(false);
+        }
+
+        // Navigate to the home view
+        location.hash = '#';
     }
 
     /*
@@ -293,7 +292,8 @@ export class App extends React.Component<any, AppState> {
         } catch (e) {
 
             // We only output logout errors to the console
-            ErrorConsoleReporter.output(e);
+            const error = ErrorHandler.getFromException(e);
+            ErrorConsoleReporter.output(error);
 
         } finally {
 

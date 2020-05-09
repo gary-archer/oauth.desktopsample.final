@@ -1,5 +1,5 @@
 import {ErrorFormatter} from './errorFormatter';
-import {ErrorHandler} from './errorHandler';
+import {UIError} from './uiError';
 
 /*
  * A utility class for errors we don't want to bother the user about
@@ -11,8 +11,7 @@ export class ErrorConsoleReporter {
      */
     public static output(error: any) {
 
-        const uiError = ErrorHandler.getFromException(error);
-        const lines = ErrorFormatter.getErrorLines(uiError);
+        const lines = ErrorFormatter.getErrorLines(error);
 
         lines.forEach((l) => {
             console.log(`${l.title}: ${l.value}`);
