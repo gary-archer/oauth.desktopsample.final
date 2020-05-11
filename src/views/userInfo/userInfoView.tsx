@@ -142,7 +142,7 @@ export class UserInfoView extends React.Component<UserInfoViewProps, UserInfoVie
         } catch (e) {
 
             const error = ErrorHandler.getFromException(e);
-            this.setState({error});
+            this.setState({claims: null, error});
             this.props.viewManager.onViewLoadFailed(error);
         }
     }
