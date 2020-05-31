@@ -49,7 +49,7 @@ class Main {
 
         // This method will be called when Electron has finished initialization and is ready to create browser windows
         // Some APIs can only be used after this event occurs
-        app.on('ready', this._createMainWindow);
+        app.on('ready', this._onReady);
 
         // Quit when all windows are closed
         app.on('window-all-closed', this._onAllWindowsClosed);
@@ -59,6 +59,18 @@ class Main {
 
         // Set this to avoid a warning and to improve performance
         app.allowRendererProcessReuse = true;
+
+        // Handle login responses or deep linking requests against the running app on Mac OS
+        app.on('open-url', this._onOpenUrl);
+
+        // For Windows or Linux we store the startup URL when provided
+        this._startupUrl = this._getDeepLinkUrl(process.argv);
+    }
+
+    /*
+     * Do initialisation after the ready event
+     */
+    private _onReady(): void {
 
         if (!app.isPackaged) {
 
@@ -74,18 +86,6 @@ class Main {
             // Register our private URI scheme for a packaged app after running 'npm run pack'
             app.setAsDefaultProtocolClient(this._customSchemeName);
         }
-
-        // Handle login responses or deep linking requests against the running app on Mac OS
-        app.on('open-url', this._onOpenUrl);
-
-        // For Windows or Linux we store the startup URL when provided
-        this._startupUrl = this._getDeepLinkUrl(process.argv);
-    }
-
-    /*
-     * Do the main window creation
-     */
-    private _createMainWindow(): void {
 
         // Create the browser window
         // Note that node integration is needed in order to use 'require' in index.html
@@ -136,7 +136,7 @@ class Main {
     private _onActivate(): void {
 
         if (this._window === null) {
-            this._createMainWindow();
+            this._onReady();
         }
     }
 
@@ -246,7 +246,7 @@ class Main {
      * Ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks() {
-        this._createMainWindow = this._createMainWindow.bind(this);
+        this._onReady = this._onReady.bind(this);
         this._onActivate = this._onActivate.bind(this);
         this._onSecondInstance = this._onSecondInstance.bind(this);
         this._onOpenUrl = this._onOpenUrl.bind(this);

@@ -12,7 +12,7 @@ import {CustomUriSchemeNotifier} from '../plumbing/events/customUriSchemeNotifie
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {LoginNavigation} from '../plumbing/oauth/login/loginNavigation';
-import {DebugProxyAgent} from '../plumbing/utilities/debugProxyAgent';
+import {HttpProxy} from '../plumbing/utilities/httpProxy';
 import {SslHelper} from '../plumbing/utilities/sslHelper';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {ErrorBoundary} from '../views/errors/errorBoundary';
@@ -99,7 +99,10 @@ export class App extends React.Component<any, AppState> {
 
             // Set up SSL Trust and HTTP debugging
             await SslHelper.configureTrust();
-            DebugProxyAgent.initialize(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
+            HttpProxy.initialize(
+                this._configuration.app.useProxy,
+                this._configuration.app.proxyHost,
+                this._configuration.app.proxyPort);
 
             // Initialise custom scheme handling
             this._customSchemeNotifier = new CustomUriSchemeNotifier(this._configuration.oauth.logoutCallbackPath);

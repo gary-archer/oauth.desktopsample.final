@@ -165,8 +165,8 @@ export class ErrorHandler {
 
         // Calculate the status code
         let statusCode = 0;
-        if (exception.statusCode) {
-            statusCode = exception.statusCode;
+        if (exception.response && exception.response.status) {
+            statusCode = exception.response.status;
         }
 
         let error = null;
@@ -201,8 +201,8 @@ export class ErrorHandler {
             error.details = this._getExceptionMessage(exception);
 
             // Override the default with a server response when received and CORS allows us to read it
-            if (exception.body && typeof exception.body === 'object') {
-                ErrorHandler._updateFromApiErrorResponse(error, exception.body);
+            if (exception.response && exception.response.data && typeof exception.response.data === 'object') {
+                ErrorHandler._updateFromApiErrorResponse(error, exception.response.data);
             }
         }
 

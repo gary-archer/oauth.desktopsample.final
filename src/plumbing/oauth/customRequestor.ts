@@ -1,7 +1,8 @@
+import axios, {AxiosRequestConfig, Method} from 'axios';
 import {Requestor} from '@openid/appauth';
-import got from 'got';
 import {ErrorHandler} from '../errors/errorHandler';
-import {DebugProxyAgent} from '../utilities/debugProxyAgent';
+import {AxiosUtils} from '../utilities/axiosUtils';
+import {HttpProxy} from '../utilities/httpProxy';
 
 /*
  * Override the requestor object of AppAuthJS, so that OAuth error codes are returned
@@ -15,31 +16,25 @@ export class CustomRequestor extends Requestor {
 
         try {
 
-            // Set base options
-            const options: any = {
-                method: settings.method,
-                agent: DebugProxyAgent.get(),
+            // Configure and send the request
+            const options: AxiosRequestConfig = {
+                url: settings.url,
+                method: settings.method as Method,
+                data: settings.data,
+                headers: settings.headers,
+                proxy: HttpProxy.get(),
             };
+            const response = await axios.request(options);
 
-            // Send data if required
-            if (settings.data) {
-                options.body = settings.data;
-            }
-
-            // Forward headers
-            if (settings.headers) {
-                options.headers = settings.headers;
-            }
-
-            // Make the request and all requests use a JSON response
-            const response = await got(settings.url, options);
-            return JSON.parse(response.body) as T;
+            // All messages use a JSON response
+            AxiosUtils.checkJson(response.data);
+            return response.data as T;
 
         } catch (e) {
 
             // If the response is an OAuth error object from the Authorization Server then throw that
-            if (e.body) {
-                throw JSON.parse(e.body);
+            if (e.response && e.response.data) {
+                throw e.response.data;
             }
 
             // Otherwise throw the technical error details

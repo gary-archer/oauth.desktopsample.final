@@ -3,6 +3,7 @@
  */
 export interface AppConfiguration {
     apiBaseUrl: string;
-    proxyUrl: string;
     useProxy: boolean;
+    proxyHost: string;
+    proxyPort: number;
 }

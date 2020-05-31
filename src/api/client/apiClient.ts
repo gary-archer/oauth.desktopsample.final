@@ -1,8 +1,9 @@
-import got from 'got';
+import axios, {AxiosRequestConfig, Method} from 'axios';
 import {Guid} from 'guid-typescript';
 import {ErrorHandler} from '../../plumbing/errors/errorHandler';
 import {Authenticator} from '../../plumbing/oauth/authenticator';
-import {DebugProxyAgent} from '../../plumbing/utilities/debugProxyAgent';
+import {AxiosUtils} from '../../plumbing/utilities/axiosUtils';
+import {HttpProxy} from '../../plumbing/utilities/httpProxy';
 import {Company} from '../entities/company';
 import {CompanyTransactions} from '../entities/companyTransactions';
 import {UserInfoClaims} from '../entities/userInfoClaims';
@@ -64,7 +65,7 @@ export class ApiClient {
      */
     private async _callApi(
         path: string,
-        method: string,
+        method: Method,
         dataToSend?: any,
         options?: ApiRequestOptions): Promise<any> {
 
@@ -107,29 +108,22 @@ export class ApiClient {
      */
     private async _callApiWithToken(
         url: string,
-        method: string,
+        method: Method,
         dataToSend: any,
         accessToken: string,
         options?: ApiRequestOptions): Promise<any> {
 
-        // Send the access token
-        const requestOptions: any = {
+        const axiosOptions: AxiosRequestConfig = {
+            url,
             method,
+            data: dataToSend,
             headers: this._getHeaders(accessToken, options),
-            json: true,
-            agent: DebugProxyAgent.get(),
-            timeout: 10000,
-            retry: 0,
+            proxy: HttpProxy.get(),
         };
 
-        // Add a payload if needed
-        if (dataToSend) {
-            requestOptions.body = dataToSend;
-        }
-
-        // Send the request
-        const response = await got(url, requestOptions);
-        return response.body;
+        const response = await axios.request(axiosOptions);
+        AxiosUtils.checkJson(response.data);
+        return response.data;
     }
 
     /*
@@ -160,6 +154,6 @@ export class ApiClient {
      * API 401s are handled via a retry with a new token
      */
     private _isApi401Error(error: any) {
-        return error.statusCode === 401;
+        return error.response && error.response.status === 401;
     }
 }
