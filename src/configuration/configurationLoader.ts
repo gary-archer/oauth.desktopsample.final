@@ -21,6 +21,7 @@ export class ConfigurationLoader {
         }
 
         // Return the configuration otherwise
+        console.log(`Config from remote side: ${data.configuration.oauth.authority}`)
         return data.configuration;
     }
 }
