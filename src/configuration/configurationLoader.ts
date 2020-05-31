@@ -11,8 +11,7 @@ export class ConfigurationLoader {
      */
     public static async load(fileName: string): Promise<Configuration> {
 
-        const filePath = `${__dirname}/../../${fileName}`;
-        const configurationBuffer = await fs.readFile(filePath);
+        const configurationBuffer = await fs.readFile(fileName);
         return JSON.parse(configurationBuffer.toString()) as Configuration;
     }
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {ErrorHandler} from '../../plumbing/errors/errorHandler';
 import {UIError} from '../../plumbing/errors/uiError';
-import {ApplicationEventNames} from '../../plumbing/events/ApplicationEventNames';
+import {ApplicationEventNames} from '../../plumbing/events/applicationEventNames';
 import {ApplicationEvents} from '../../plumbing/events/applicationEvents';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {TransactionsContainerProps} from './transactionsContainerProps';

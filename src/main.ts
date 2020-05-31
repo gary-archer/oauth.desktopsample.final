@@ -87,8 +87,7 @@ class Main {
             app.setAsDefaultProtocolClient(this._customSchemeName);
         }
 
-        // Create the browser window
-        // Note that node integration is needed in order to use 'require' in index.html
+        // For this sample we've disabled node integration and we use a preload script
         this._window = new BrowserWindow({
             width: 1024,
             height: 768,
