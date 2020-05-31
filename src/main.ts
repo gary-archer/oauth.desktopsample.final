@@ -96,6 +96,7 @@ class Main {
             minHeight: 600,
             webPreferences: {
                 nodeIntegration: true,
+                enableRemoteModule: false,
             },
         });
 
