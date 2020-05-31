@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 import {HashRouter, Route, Switch} from 'react-router-dom';
 import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
-import {ConfigurationLoader} from '../configuration/configurationLoader';
+import {ConfigurationLoaderClient} from '../configuration/configurationLoaderClient';
 import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
 import {ErrorHandler} from '../plumbing/errors/errorHandler';
 import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
@@ -95,7 +95,7 @@ export class App extends React.Component<any, AppState> {
             });
 
             // First load configuration
-            this._configuration = await ConfigurationLoader.load();
+            this._configuration = await ConfigurationLoaderClient.load();
 
             // Set up SSL Trust and HTTP debugging
             await SslHelper.configureTrust();

@@ -1,10 +1,12 @@
+import {UIError} from '../plumbing/errors/uiError';
 import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
 import {Configuration} from './configuration';
 
+
 /*
- * Load the desktop configuration file
+ * A class used by the renderer process to get configuration data
  */
-export class ConfigurationLoader {
+export class ConfigurationLoaderClient {
 
     /*
      * Call the main side of the application to read the file system
@@ -13,7 +15,7 @@ export class ConfigurationLoader {
 
         // Make the remoting call
         const api = (window as any).api;
-        const data = await api.sendIpcMessageAndGetResponse(ApplicationEventNames.ON_GET_CONFIGURATION, {});
+        const data = await api.sendIpcMessageRequestReply(ApplicationEventNames.ON_GET_CONFIGURATION, {});
 
         // See if there were errors
         if (data.error) {

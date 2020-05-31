@@ -1,0 +1,17 @@
+1. mainEvents.ts and rendererEvents.ts
+
+2. Get Opener working from main side
+
+3. Get Token Storage working
+
+4. Other occurrences - look for GJA
+
+5. Blog Updates to include:
+
+  a. Sample 1 - indicate that we'll keep JS simple
+  b. Sample 1 - explain require in index.html
+  c. Final coding points - mention concurrent refresh
+  d. Discuss security best practice in final write up overview
+  e. Discuss node integration in final write up on coding points
+  f. Mention webpack as a final sample feature
+  g. Debugging of main / renderer as a sample 1 feature

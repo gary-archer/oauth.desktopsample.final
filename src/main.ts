@@ -1,8 +1,8 @@
 import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
-import fs from 'fs-extra';
 import path from 'path';
+import {ConfigurationLoaderService} from './configuration/configurationLoaderService';
 import {ApplicationEventNames} from './plumbing/events/applicationEventNames';
 
 /*
@@ -176,13 +176,13 @@ class Main {
      */
     private async _onGetConfiguration(...args: any): Promise<void> {
 
-        const configurationBuffer = await fs.readFile(`${app.getAppPath()}/desktop.config.json`);
-        const configuration = JSON.parse(configurationBuffer.toString());
+        const filePath = `${app.getAppPath()}/desktop.config.json`;
+        const configuration = await ConfigurationLoaderService.load(filePath);
 
         const data = {
             error: null,
-            configuration: configuration,
-        }
+            configuration,
+        };
         this._window.webContents.send(ApplicationEventNames.ON_GET_CONFIGURATION, data);
     }
 
