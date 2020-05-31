@@ -2,12 +2,12 @@
   "name": "basicdesktopapp",
   "version": "2.0.0",
   "description": "A Desktop App using the AppAuth-JS security library",
-  "main": "dist/main.js",
+  "main": "main.bundle.js",
   "scripts": {
     "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}' 'scripts/*.ts'",
     "buildnative": "node_modules/.bin/electron-rebuild",
     "build": "npm run clean && npm run buildMainDev && npm run buildRendererDev",
-    "clean": "rimraf dist && copyfiles index.html desktop.config.json desktop.config.localapi.json css/* images/* dist",
+    "clean": "rimraf dist && copyfiles index.html desktop.config.json desktop.config.localapi.json css/* images/* package.json dist",
     "buildMainDev": "webpack --config webpack/webpack.config.main.dev.js",
     "buildMainProd": "webpack --config webpack/webpack.config.main.prod.js",
     "buildRendererDev": "webpack --config webpack/webpack.config.renderer.dev.js --watch",
@@ -25,7 +25,7 @@
     }
   },
   "files": [
-    "built/**"
+    "dist/**"
   ],
   "keywords": [],
   "author": "Gary Archer",
