@@ -8,7 +8,7 @@ import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
 import {ErrorHandler} from '../plumbing/errors/errorHandler';
 import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
 import {ApplicationEvents} from '../plumbing/events/applicationEvents';
-import {CustomUriSchemeNotifier} from '../plumbing/events/customUriSchemeNotifier';
+import {PrivateUriSchemeNotifier} from '../plumbing/events/privateUriSchemeNotifier';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {LoginNavigation} from '../plumbing/oauth/login/loginNavigation';
@@ -34,7 +34,7 @@ export class App extends React.Component<any, AppState> {
     private _configuration?: Configuration;
     private _authenticator?: Authenticator;
     private _apiClient?: ApiClient;
-    private _customSchemeNotifier?: CustomUriSchemeNotifier;
+    private _privateUriSchemeNotifier?: PrivateUriSchemeNotifier;
 
     /*
      * Create safe objects here and do async startup processing later
@@ -104,12 +104,12 @@ export class App extends React.Component<any, AppState> {
                 this._configuration.app.proxyHost,
                 this._configuration.app.proxyPort);
 
-            // Initialise custom scheme handling
-            this._customSchemeNotifier = new CustomUriSchemeNotifier(this._configuration.oauth.logoutCallbackPath);
-            await this._customSchemeNotifier.setDeepLinkStartupUrlIfRequired();
+            // Initialise private uri scheme handling
+            this._privateUriSchemeNotifier = new PrivateUriSchemeNotifier(this._configuration.oauth.logoutCallbackPath);
+            await this._privateUriSchemeNotifier.setDeepLinkStartupUrlIfRequired();
 
             // Initialise authentication
-            this._authenticator = new AuthenticatorImpl(this._configuration.oauth, this._customSchemeNotifier);
+            this._authenticator = new AuthenticatorImpl(this._configuration.oauth, this._privateUriSchemeNotifier);
             await this._authenticator.initialise();
 
             // Create a client to call the API and handle retries

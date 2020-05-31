@@ -10,7 +10,7 @@
     "clean": "rimraf dist && copyfiles index.html desktop.config.json desktop.config.localapi.json css/* images/* package.json dist",
     "buildMainDev": "webpack --config webpack/webpack.config.main.dev.js",
     "buildMainProd": "webpack --config webpack/webpack.config.main.prod.js",
-    "buildRendererDev": "webpack --config webpack/webpack.config.renderer.dev.js --watch",
+    "buildRendererDev": "webpack --config webpack/webpack.config.renderer.dev.js",
     "buildRendererProd": "webpack --config webpack/webpack.config.renderer.prod.js",
     "start": "node_modules/.bin/electron ./dist/main.bundle.js",
     "buildRelease": "npm run clean && npm run buildMainProd && npm run buildRendererProd",

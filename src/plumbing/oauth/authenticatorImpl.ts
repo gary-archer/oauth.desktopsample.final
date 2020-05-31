@@ -8,7 +8,7 @@ import {AuthorizationServiceConfiguration,
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorHandler} from '../errors/errorHandler';
-import {CustomUriSchemeNotifier} from '../events/customUriSchemeNotifier';
+import {PrivateUriSchemeNotifier} from '../events/privateUriSchemeNotifier';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {Authenticator} from './authenticator';
 import {CustomRequestor} from './customRequestor';
@@ -32,7 +32,7 @@ export class AuthenticatorImpl implements Authenticator {
     private _tokens: TokenData | null;
     private _isLoggedIn: boolean;
 
-    public constructor(oauthConfig: OAuthConfiguration, customSchemeNotifier: CustomUriSchemeNotifier) {
+    public constructor(oauthConfig: OAuthConfiguration, privateUriSchemeNotifier: PrivateUriSchemeNotifier) {
 
         this._oauthConfig = oauthConfig;
         this._concurrencyHandler = new ConcurrentActionHandler();
@@ -44,8 +44,8 @@ export class AuthenticatorImpl implements Authenticator {
         this._loginState = new LoginState();
         this._logoutState = new LogoutState();
 
-        // Give the custom scheme notifier access to OAuth state to enable us to resume after notifications
-        customSchemeNotifier.initialise(this._loginState, this._logoutState);
+        // Give the private uri scheme notifier access to OAuth state to enable us to resume after notifications
+        privateUriSchemeNotifier.initialise(this._loginState, this._logoutState);
     }
 
     /*
