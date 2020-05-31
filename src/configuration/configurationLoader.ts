@@ -1,5 +1,3 @@
-import {ipcRenderer} from 'electron';
-import fs from 'fs-extra';
 import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
 import {Configuration} from './configuration';
 
@@ -9,21 +7,20 @@ import {Configuration} from './configuration';
 export class ConfigurationLoader {
 
     /*
-     * Load configuration asynchronously within the renderer process
+     * Call the main side of the application to read the file system
      */
-    public static async load(fileName: string): Promise<Configuration> {
+    public static async load(): Promise<Configuration> {
 
-        return new Promise<Configuration>((resolve, reject) => {
+        // Make the remoting call
+        const api = (window as any).api;
+        const data = await api.sendIpcMessageAndGetResponse(ApplicationEventNames.ON_GET_CONFIGURATION, {});
 
-            // Get the current folder from the main side of the app
-            ipcRenderer.send(ApplicationEventNames.ON_GET_APP_LOCATION, {});
-            ipcRenderer.on(ApplicationEventNames.ON_GET_APP_LOCATION, async (event: any, currentFolder: any) => {
+        // See if there were errors
+        if (data.error) {
+            throw data.error;
+        }
 
-                // Load the configuration file at this location
-                const configurationBuffer = await fs.readFile(`${currentFolder}/${fileName}`);
-                const configuration = JSON.parse(configurationBuffer.toString()) as Configuration;
-                resolve(configuration);
-            });
-        });
+        // Return the configuration otherwise
+        return data.configuration;
     }
 }

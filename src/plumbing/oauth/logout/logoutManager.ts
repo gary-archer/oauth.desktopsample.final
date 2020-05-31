@@ -1,4 +1,4 @@
-import Opener from 'opener';
+// import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {LogoutState} from './logoutState';
@@ -57,8 +57,9 @@ export class LogoutManager {
         // Store the logout callback so that we can receive the response when we receive a browser notification
         this._state.storeLogoutCallback(callback);
 
+        // GJA
         // Invoke the browser with the logout URL
-        Opener(logoutUrl);
+        // Opener(logoutUrl);
     }
 
     /*

@@ -8,7 +8,7 @@ import {AuthorizationError,
         AuthorizationServiceConfiguration,
         BasicQueryStringUtils,
         DefaultCrypto} from '@openid/appauth';
-import Opener from 'opener';
+// import Opener from 'opener';
 import {LoginState} from './loginState';
 
 /*
@@ -53,8 +53,9 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
             // Store login state so that we can receive the response
             this._state.storeLoginCallback(request.state, callback);
 
+            // GJA
             // Invoke the browser
-            Opener(loginUrl);
+            // Opener(loginUrl);
         });
     }
 

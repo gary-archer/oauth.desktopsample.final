@@ -94,8 +94,8 @@ export class App extends React.Component<any, AppState> {
                 error: null,
             });
 
-            // First read configuration
-            this._configuration = await ConfigurationLoader.load('desktop.config.json');
+            // First load configuration
+            this._configuration = await ConfigurationLoader.load();
 
             // Set up SSL Trust and HTTP debugging
             await SslHelper.configureTrust();

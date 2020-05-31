@@ -1,6 +1,7 @@
 import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
+import fs from 'fs-extra';
 import path from 'path';
 import {ApplicationEventNames} from './plumbing/events/applicationEventNames';
 
@@ -94,8 +95,9 @@ class Main {
             minWidth: 800,
             minHeight: 600,
             webPreferences: {
-                nodeIntegration: true,
+                nodeIntegration: false,
                 enableRemoteModule: false,
+                preload: path.join(app.getAppPath(), './preload.js'),
             },
         });
 
@@ -125,7 +127,7 @@ class Main {
         this._window.on('closed', this._onClosed);
 
         // Register for event messages from the renderer process
-        ipcMain.on(ApplicationEventNames.ON_GET_APP_LOCATION, this._onGetAppPath);
+        ipcMain.on(ApplicationEventNames.ON_GET_CONFIGURATION, this._onGetConfiguration);
         ipcMain.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._onGetStartupUrl);
     }
 
@@ -170,10 +172,18 @@ class Main {
     }
 
     /*
-     * Return the application path to the renderer process
+     * Load the configuration data and return it to the renderer process
      */
-    private _onGetAppPath(...args: any): void {
-        this._window.webContents.send(ApplicationEventNames.ON_GET_APP_LOCATION, app.getAppPath());
+    private async _onGetConfiguration(...args: any): Promise<void> {
+
+        const configurationBuffer = await fs.readFile(`${app.getAppPath()}/desktop.config.json`);
+        const configuration = JSON.parse(configurationBuffer.toString());
+
+        const data = {
+            error: null,
+            configuration: configuration,
+        }
+        this._window.webContents.send(ApplicationEventNames.ON_GET_CONFIGURATION, data);
     }
 
     /*
@@ -256,7 +266,7 @@ class Main {
         this._onActivate = this._onActivate.bind(this);
         this._onSecondInstance = this._onSecondInstance.bind(this);
         this._onOpenUrl = this._onOpenUrl.bind(this);
-        this._onGetAppPath = this._onGetAppPath.bind(this);
+        this._onGetConfiguration = this._onGetConfiguration.bind(this);
         this._onGetStartupUrl = this._onGetStartupUrl.bind(this);
         this._receiveNotificationInRunningInstance = this._receiveNotificationInRunningInstance.bind(this);
         this._onClosed = this._onClosed.bind(this);

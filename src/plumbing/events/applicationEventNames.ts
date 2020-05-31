@@ -6,6 +6,9 @@ export class ApplicationEventNames {
     // The main process is called to get the app's location
     public static readonly ON_GET_APP_LOCATION = 'get_app_location';
 
+    // The main process is called to get the app's configuration
+    public static readonly ON_GET_CONFIGURATION = 'get_configuration';
+
     // The main process is called at startup to see if there is a deep link startup URL
     public static readonly ON_GET_DEEP_LINK_STARTUP_URL = 'get_startup_url';
 

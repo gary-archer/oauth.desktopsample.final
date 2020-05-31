@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+// import fs from 'fs-extra';
 
 /*
  * A helper class used at application startup to configure SSL trust
@@ -10,6 +10,7 @@ export class SslHelper {
      */
     public static async configureTrust(): Promise<void> {
 
+        /* GJA
         // Typically this environment variable is only used in development environments
         if (process.env.NODE_EXTRA_CA_CERTS) {
 
@@ -29,6 +30,6 @@ export class SslHelper {
                 this.addCACert(extraRootCerts);
                 return newPrototypeMethod;
             };
-        }
+        }*/
     }
 }

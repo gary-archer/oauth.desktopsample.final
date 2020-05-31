@@ -1,5 +1,5 @@
-import {ipcRenderer} from 'electron';
-import Url from 'url';
+// import {ipcRenderer} from 'electron';
+// import Url from 'url';
 import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
 import {ApplicationEventNames} from './applicationEventNames';
@@ -19,7 +19,9 @@ export class PrivateUriSchemeNotifier {
     public constructor(logoutCallbackPath: string) {
         this._logoutCallbackPath = logoutCallbackPath;
         this._setupCallbacks();
-        ipcRenderer.on(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, this._handleCustomSchemeUrlNotification);
+
+        // GJA
+        // ipcRenderer.on(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, this._handleCustomSchemeUrlNotification);
     }
 
     /*
@@ -38,7 +40,7 @@ export class PrivateUriSchemeNotifier {
         return new Promise<void>((resolve, reject) => {
 
             // When started via deep linking this could be a value such as x-mycompany-desktopapp:/company=2
-            ipcRenderer.send(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
+            /*ipcRenderer.send(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
 
             // Receive the response
             ipcRenderer.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, (event: any, url: any) => {
@@ -53,7 +55,7 @@ export class PrivateUriSchemeNotifier {
                 }
 
                 resolve();
-            });
+            });*/
         });
     }
 
@@ -62,6 +64,7 @@ export class PrivateUriSchemeNotifier {
      */
     private _handleCustomSchemeUrlNotification(event: any, url: any): void {
 
+        /*
         const parsedUrl = this._tryParseUrl(url);
         if (parsedUrl) {
 
@@ -80,7 +83,7 @@ export class PrivateUriSchemeNotifier {
                 // Otherwise we will treat it a deep linking request and update the hash location
                 this._handleDeepLinkingNotification(parsedUrl.path!);
             }
-        }
+        }*/
     }
 
     /*
@@ -96,6 +99,7 @@ export class PrivateUriSchemeNotifier {
     /*
      * Private URI scheme notifications could provide malformed input, so parse them safely
      */
+    /*
     private _tryParseUrl(url: string): Url.UrlWithParsedQuery | null {
 
         try {
@@ -103,13 +107,13 @@ export class PrivateUriSchemeNotifier {
         } catch (e) {
             return null;
         }
-    }
+    }*/
 
     /*
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks(): void {
         this._handleCustomSchemeUrlNotification = this._handleCustomSchemeUrlNotification.bind(this);
-        this._tryParseUrl = this._tryParseUrl.bind(this);
+        // this._tryParseUrl = this._tryParseUrl.bind(this);
     }
 }
