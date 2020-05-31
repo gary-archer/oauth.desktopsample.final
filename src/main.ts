@@ -2,7 +2,7 @@ import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
 import path from 'path';
-import {CustomSchemeEvents} from './plumbing/events/customSchemeEvents';
+import {ApplicationEventNames} from './plumbing/events/applicationEventNames';
 
 /*
  * The Electron main process entry point
@@ -74,7 +74,7 @@ class Main {
 
         if (!app.isPackaged) {
 
-            // Register our private URI scheme for a non packaged app during development
+            // During development, register our private URI scheme for a non packaged app
             // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
             app.setAsDefaultProtocolClient(
                 this._customSchemeName,
@@ -87,8 +87,7 @@ class Main {
             app.setAsDefaultProtocolClient(this._customSchemeName);
         }
 
-        // Create the browser window
-        // Note that node integration is needed in order to use 'require' in index.html
+        // Create the window and use Electron recommended security options
         this._window = new BrowserWindow({
             width: 1024,
             height: 768,
@@ -125,9 +124,9 @@ class Main {
         // Emitted when the window is closed
         this._window.on('closed', this._onClosed);
 
-        // The new instance of the app could have been started via deep linking
-        // In this case the main side of the app can receive a message from the Electron side to get the URL
-        ipcMain.on(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._onGetStartupUrl);
+        // Register for event messages from the renderer process
+        ipcMain.on(ApplicationEventNames.ON_GET_APP_LOCATION, this._onGetAppPath);
+        ipcMain.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._onGetStartupUrl);
     }
 
     /*
@@ -142,7 +141,7 @@ class Main {
     }
 
     /*
-     * If we have a custom scheme notification, forward it to the existing application instance
+     * If we have a private uri scheme notification, forward it to the existing application instance
      */
     private _onSecondInstance(event: any, argv: any) {
 
@@ -171,16 +170,22 @@ class Main {
     }
 
     /*
+     * Return the application path to the renderer process
+     */
+    private _onGetAppPath(...args: any): void {
+        this._window.webContents.send(ApplicationEventNames.ON_GET_APP_LOCATION, app.getAppPath());
+    }
+
+    /*
      * The new instance of the app could have been started via deep linking
      * In this case the Electron side of the app can send us a message to get the startup URL
      */
     private _onGetStartupUrl(...args: any): void {
-
-        this._window.webContents.send(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, this._startupUrl);
+        this._window.webContents.send(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._startupUrl);
     }
 
     /*
-     * The existing instance receives custom scheme notifications when the OS sends us a custom scheme notification
+     * When the OS sends a private uri scheme notification, the existing instance of the app receives it
      */
     private _receiveNotificationInRunningInstance(customSchemeUrl: string) {
 
@@ -188,11 +193,11 @@ class Main {
         this._bringExistingInstanceToForeground();
 
         // Send the event to the Electron app
-        this._window.webContents.send(CustomSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, customSchemeUrl);
+        this._window.webContents.send(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, customSchemeUrl);
     }
 
     /*
-     * The first instance of the app brings itself to the foreground when it receives the custom scheme notification
+     * The first instance of the app brings itself to the foreground when it receives the private uri scheme notification
      */
     private _bringExistingInstanceToForeground(): void {
 
@@ -251,6 +256,7 @@ class Main {
         this._onActivate = this._onActivate.bind(this);
         this._onSecondInstance = this._onSecondInstance.bind(this);
         this._onOpenUrl = this._onOpenUrl.bind(this);
+        this._onGetAppPath = this._onGetAppPath.bind(this);
         this._onGetStartupUrl = this._onGetStartupUrl.bind(this);
         this._receiveNotificationInRunningInstance = this._receiveNotificationInRunningInstance.bind(this);
         this._onClosed = this._onClosed.bind(this);

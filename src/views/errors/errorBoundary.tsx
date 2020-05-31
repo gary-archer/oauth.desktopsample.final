@@ -13,7 +13,7 @@ export class ErrorBoundary extends React.Component<any, ErrorBoundaryState> {
      */
     public static getDerivedStateFromError(error: any) {
         return {error: ErrorHandler.getFromRenderError(error)};
-      }
+    }
 
     /*
      * Initialise to the default state where there is no error and children are rendered

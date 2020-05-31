@@ -2,12 +2,12 @@ import {ipcRenderer} from 'electron';
 import Url from 'url';
 import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
-import {CustomSchemeEvents} from './customSchemeEvents';
+import {ApplicationEventNames} from './applicationEventNames';
 
 /*
- * A class to handle custom scheme responses from the operating system, and correlating to earlier login requests
+ * A class to handle private URI scheme notifications from the operating system
  */
-export class CustomUriSchemeNotifier {
+export class PrivateUriSchemeNotifier {
 
     private readonly _logoutCallbackPath: string;
     private _loginState!: LoginState;
@@ -19,11 +19,11 @@ export class CustomUriSchemeNotifier {
     public constructor(logoutCallbackPath: string) {
         this._logoutCallbackPath = logoutCallbackPath;
         this._setupCallbacks();
-        ipcRenderer.on(CustomSchemeEvents.ON_CUSTOM_SCHEME_URL_NOTIFICATION, this._handleCustomSchemeUrlNotification);
+        ipcRenderer.on(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, this._handleCustomSchemeUrlNotification);
     }
 
     /*
-     * State objects are used when we receive OAuth custom scheme notifications
+     * State objects are used when we receive OAuth private uri scheme notifications
      */
     public initialise(loginState: LoginState, logoutState: LogoutState): void {
         this._loginState = loginState;
@@ -38,10 +38,10 @@ export class CustomUriSchemeNotifier {
         return new Promise<void>((resolve, reject) => {
 
             // When started via deep linking this could be a value such as x-mycompany-desktopapp:/company=2
-            ipcRenderer.send(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, {});
+            ipcRenderer.send(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
 
             // Receive the response
-            ipcRenderer.on(CustomSchemeEvents.ON_GET_CUSTOM_SCHEME_STARTUP_URL, (event: any, url: any) => {
+            ipcRenderer.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, (event: any, url: any) => {
 
                 // If there was a startup URL set the hash location of the ReactJS app accordingly
                 // This ensures that we move straight to the linked page rather than rendering the default page first
