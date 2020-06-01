@@ -6,14 +6,25 @@ const {ipcRenderer} = require('electron');
 window.api = {
 
     /*
-     * Call the main process via ipcRenderer
+     * Send an instruction to the main process via ipcRenderer
      */
     sendIpcMessageOneWay(name, requestData) {
+
         ipcRenderer.send(name, requestData);
     },
 
     /*
-     * Call the main process via ipcRenderer and wait for a response
+     * Receive data from the main process via ipcRenderer
+     */
+    receiveIpcMessageOneWay(name, callback) {
+        
+        ipcRenderer.on(name, (event, responseData) => {
+            callback(responseData)
+        });
+    },
+
+    /*
+     * Send an instruction to the main process via ipcRenderer and wait for a response
      */
     async sendIpcMessageRequestReply(name, requestData) {
 

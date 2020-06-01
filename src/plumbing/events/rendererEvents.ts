@@ -10,6 +10,7 @@ export class RendererEvents {
 
     public constructor() {
         this._api = (window as any).api;
+        this._setupCallbacks();
     }
 
     /*
@@ -17,7 +18,7 @@ export class RendererEvents {
      */
     public async loadConfiguration(): Promise<Configuration> {
 
-        return await this._getData<Configuration>(ApplicationEventNames.ON_GET_CONFIGURATION, {});
+        return await this._sendRequestReply<Configuration>(ApplicationEventNames.ON_GET_CONFIGURATION, {});
     }
 
     /*
@@ -29,9 +30,19 @@ export class RendererEvents {
     }
 
     /*
+     * Register to receive IPC messages from the main process
+     */
+    public register(): void {
+
+        this._api.receiveIpcMessageOneWay(
+            ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION,
+            this._handlePrivateUriSchemeNotification);
+    }
+
+    /*
      * Do the plumbing work to make the IPC call and return data
      */
-    private async _getData<T>(eventName: string, requestData: any): Promise<T> {
+    private async _sendRequestReply<T>(eventName: string, requestData: any): Promise<T> {
 
         const result = await this._api.sendIpcMessageRequestReply(eventName, requestData);
         if (result.error) {
@@ -39,5 +50,20 @@ export class RendererEvents {
         }
 
         return result.data as T;
+    }
+
+    /*
+     * Receive URL notifications from the main side of the Electron app
+     */
+    private _handlePrivateUriSchemeNotification(data: any): void {
+        console.log('*** RENDERER RECEIVED LOGIN RESPONSE');
+        console.log(data);
+    }
+
+    /*
+     * Ensure that the this parameter is available in async callbacks
+     */
+    private _setupCallbacks() {
+        this._handlePrivateUriSchemeNotification = this._handlePrivateUriSchemeNotification.bind(this);
     }
 }

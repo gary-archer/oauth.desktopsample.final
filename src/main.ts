@@ -1,8 +1,7 @@
-import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
+import {app, BrowserWindow, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
 import path from 'path';
-import {ApplicationEventNames} from './plumbing/events/applicationEventNames';
 import {MainEvents} from './plumbing/events/mainEvents';
 
 /*
@@ -11,15 +10,15 @@ import {MainEvents} from './plumbing/events/mainEvents';
 class Main {
 
     private _window: BrowserWindow | null;
-    private _events: MainEvents | null;
+    private _events: MainEvents;
     private _startupUrl: string | null;
-    private readonly _customSchemeName!: string;
+    private readonly _privateSchemeName!: string;
 
     public constructor() {
         this._window = null;
-        this._events = null;
+        this._events = new MainEvents();
         this._startupUrl = null;
-        this._customSchemeName = 'x-mycompany-desktopapp';
+        this._privateSchemeName = 'x-mycompany-desktopapp';
         this._setupCallbacks();
     }
 
@@ -66,8 +65,11 @@ class Main {
         // Handle login responses or deep linking requests against the running app on Mac OS
         app.on('open-url', this._onOpenUrl);
 
-        // For Windows or Linux we store the startup URL when provided
-        this._startupUrl = this._getDeepLinkUrl(process.argv);
+        // For Windows or Linux we receive the startup URLas a startup parameter
+        const startupUrl = this._getDeepLinkUrl(process.argv);
+        if (startupUrl) {
+            this._events.deepLinkStartupUrl = startupUrl;
+        }
     }
 
     /*
@@ -80,14 +82,14 @@ class Main {
             // During development, register our private URI scheme for a non packaged app
             // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
             app.setAsDefaultProtocolClient(
-                this._customSchemeName,
+                this._privateSchemeName,
                 process.execPath,
                 [path.resolve('.')]);
 
         } else {
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
-            app.setAsDefaultProtocolClient(this._customSchemeName);
+            app.setAsDefaultProtocolClient(this._privateSchemeName);
         }
 
         // Create the window and use Electron recommended security options
@@ -103,8 +105,8 @@ class Main {
             },
         });
 
-        // Create an object to manage events
-        this._events = new MainEvents(this._window);
+        // Give our events object a reference
+        this._events.window = this._window;
 
         // Ensure that our window has its own menu after Electron Packager has run
         const menu = DefaultMenu(app, shell);
@@ -131,10 +133,8 @@ class Main {
         // Emitted when the window is closed
         this._window.on('closed', this._onClosed);
 
-        // Register for event messages from the renderer process
-        ipcMain.on(ApplicationEventNames.ON_GET_CONFIGURATION, this._events.loadConfiguration);
-        ipcMain.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._onGetStartupUrl);
-        ipcMain.on(ApplicationEventNames.ON_OPEN_SYSTEM_BROWSER, this._events.openSystemBrowser);
+        // Register for event based communication with the renderer process
+        this._events.register();
     }
 
     /*
@@ -162,46 +162,27 @@ class Main {
     /*
      * Handle login responses or deep linking requests against the running app on Mac OS
      */
-    private _onOpenUrl(event: any, customSchemeData: string) {
+    private _onOpenUrl(event: any, schemeData: string) {
 
         event.preventDefault();
 
         if (this._window) {
 
             // If we have a running window we can just forward the notification to it
-            this._receiveNotificationInRunningInstance(customSchemeData);
+            this._receiveNotificationInRunningInstance(schemeData);
         } else {
 
             // If this is a startup deep linking message we need to store it until after startup
-            this._startupUrl = customSchemeData;
+            this._events.deepLinkStartupUrl = schemeData;
         }
-    }
-
-    /*
-     * The new instance of the app could have been started via deep linking
-     * In this case the Electron side of the app can send us a message to get the startup URL
-     */
-    private _onGetStartupUrl(...args: any): void {
-        this._window!.webContents.send(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._startupUrl);
     }
 
     /*
      * When the OS sends a private uri scheme notification, the existing instance of the app receives it
      */
-    private _receiveNotificationInRunningInstance(customSchemeUrl: string) {
+    private _receiveNotificationInRunningInstance(privateSchemeUrl: string) {
 
-        // The existing instance must bring itself to the foreground
-        this._bringExistingInstanceToForeground();
-
-        // Send the event to the Electron app
-        this._window!.webContents.send(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, customSchemeUrl);
-    }
-
-    /*
-     * The first instance of the app brings itself to the foreground when it receives the private uri scheme notification
-     */
-    private _bringExistingInstanceToForeground(): void {
-
+        // The existing instance of the app brings itself to the foreground
         if (this._window) {
 
             if (this._window.isMinimized()) {
@@ -210,18 +191,20 @@ class Main {
 
             this._window.focus();
         }
+
+        // Send the event to the renderer side of the app
+        this._events.sendPrivateSchemeNotificationUrl(privateSchemeUrl)
     }
 
     /*
      * Look for a deep linked URL as a command line parameter
      * Note also that Chromium may add its own parameters
      */
-
     private _getDeepLinkUrl(argv: any): string | null {
 
         for (const arg of argv) {
             const value = arg as string;
-            if (value.indexOf(this._customSchemeName) !== -1) {
+            if (value.indexOf(this._privateSchemeName) !== -1) {
                 return value;
             }
         }
@@ -257,7 +240,6 @@ class Main {
         this._onActivate = this._onActivate.bind(this);
         this._onSecondInstance = this._onSecondInstance.bind(this);
         this._onOpenUrl = this._onOpenUrl.bind(this);
-        this._onGetStartupUrl = this._onGetStartupUrl.bind(this);
         this._receiveNotificationInRunningInstance = this._receiveNotificationInRunningInstance.bind(this);
         this._onClosed = this._onClosed.bind(this);
         this._onAllWindowsClosed = this._onAllWindowsClosed.bind(this);

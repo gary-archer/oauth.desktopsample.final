@@ -1,5 +1,4 @@
-import {app, BrowserWindow} from 'electron';
-import log from 'electron-log';
+import {app, BrowserWindow, ipcMain} from 'electron';
 import fs from 'fs-extra';
 import Opener from 'opener';
 import {ApplicationEventNames} from './applicationEventNames';
@@ -9,17 +8,49 @@ import {ApplicationEventNames} from './applicationEventNames';
  */
 export class MainEvents {
 
-    private _window: BrowserWindow;
+    private _window: BrowserWindow | null;
+    private _deepLinkStartupUrl: string | null;
 
-    public constructor(window: BrowserWindow) {
-        this._window = window;
+    public constructor() {
+        this._window = null;
+        this._deepLinkStartupUrl = null;
         this._setupCallbacks();
+    }
+
+    /*
+     * Set the window once available
+     */
+    public set window(window: BrowserWindow) {
+        this._window = window;
+    }
+
+    /*
+     * Set a deep link startup URL if applicable
+     */
+    public set deepLinkStartupUrl(startupUrl: string) {
+        this._deepLinkStartupUrl = startupUrl;
+    }
+
+    /*
+     * Register to receive IPC messages from the renderer process
+     */
+    public register(): void {
+        ipcMain.on(ApplicationEventNames.ON_GET_CONFIGURATION, this._loadConfiguration);
+        ipcMain.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
+        ipcMain.on(ApplicationEventNames.ON_OPEN_SYSTEM_BROWSER, this._openSystemBrowser);
+    }
+
+    /*
+     * When a login response or deep link is received, forward it to the renderer process
+     */
+    public sendPrivateSchemeNotificationUrl(url: string) {
+        this._window!.webContents.send(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, url);
     }
 
     /*
      * Load the configuration data
      */
-    public async loadConfiguration(): Promise<void> {
+    private async _loadConfiguration(): Promise<void> {
 
         try {
             // Do the work of loading configuration
@@ -36,9 +67,17 @@ export class MainEvents {
     }
 
     /*
+     * The app could have been started via deep linking
+     * In this case the renderer side of the app can send us a message to get the startup URL
+     */
+    private _getDeepLinkStartupUrl(): void {
+        this._sendResponse(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._deepLinkStartupUrl, null);
+    }
+
+    /*
      * Open the system browser at the supplied URL
      */
-    public openSystemBrowser(...args: any[]): void {
+    private _openSystemBrowser(...args: any[]): void {
         Opener(args[1]);
     }
 
@@ -46,13 +85,14 @@ export class MainEvents {
      * Send the response to the renderer side of the application
      */
     private _sendResponse(eventName: string, data: any, error: any) {
-        this._window.webContents.send(eventName, {data, error});
+        this._window!.webContents.send(eventName, {data, error});
     }
 
     /*
      * Ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks() {
-        this.loadConfiguration = this.loadConfiguration.bind(this);
+        this._loadConfiguration = this._loadConfiguration.bind(this);
+        this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
     }
 }

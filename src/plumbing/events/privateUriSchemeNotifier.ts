@@ -2,7 +2,6 @@
 // import Url from 'url';
 import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
-import {ApplicationEventNames} from './applicationEventNames';
 
 /*
  * A class to handle private URI scheme notifications from the operating system
@@ -19,9 +18,6 @@ export class PrivateUriSchemeNotifier {
     public constructor(logoutCallbackPath: string) {
         this._logoutCallbackPath = logoutCallbackPath;
         this._setupCallbacks();
-
-        // GJA
-        // ipcRenderer.on(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, this._handleCustomSchemeUrlNotification);
     }
 
     /*
@@ -64,10 +60,9 @@ export class PrivateUriSchemeNotifier {
     /*
      * Receive URL notifications from the main side of the Electron app
      */
-    private _handleCustomSchemeUrlNotification(event: any, url: any): void {
+    private _handlePrivateUriSchemeNotification(url: string): void {
 
-        /*
-        const parsedUrl = this._tryParseUrl(url);
+        /*const parsedUrl = this._tryParseUrl(url);
         if (parsedUrl) {
 
             if (parsedUrl.path === this._logoutCallbackPath) {
@@ -115,7 +110,7 @@ export class PrivateUriSchemeNotifier {
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks(): void {
-        this._handleCustomSchemeUrlNotification = this._handleCustomSchemeUrlNotification.bind(this);
+        this._handlePrivateUriSchemeNotification = this._handlePrivateUriSchemeNotification.bind(this);
         // this._tryParseUrl = this._tryParseUrl.bind(this);
     }
 }

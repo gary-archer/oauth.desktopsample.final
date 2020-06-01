@@ -57,8 +57,9 @@ export class App extends React.Component<any, AppState> {
         this._viewManager = new ViewManager(this._onLoginRequired, this._onLoadStateChanged);
         this._viewManager.setViewCount(2);
 
-        // Create a class to manage sending events to the main side of the app
+        // Create a class to manage IPC events
         this._events = new RendererEvents();
+        this._events.register();
 
         // Initialise the modal dialog system used for error popups
         Modal.setAppElement('#root');
