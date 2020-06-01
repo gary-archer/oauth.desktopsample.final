@@ -8,7 +8,6 @@ import {AuthorizationServiceConfiguration,
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorHandler} from '../errors/errorHandler';
-import {PrivateUriSchemeNotifier} from '../events/privateUriSchemeNotifier';
 import {RendererEvents} from '../events/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {Authenticator} from './authenticator';
@@ -25,21 +24,19 @@ import {TokenStorage} from './tokenStorage';
  */
 export class AuthenticatorImpl implements Authenticator {
 
-    private readonly _oauthConfig: OAuthConfiguration;
+    private readonly _configuration: OAuthConfiguration;
     private readonly _events: RendererEvents;
     private readonly _concurrencyHandler: ConcurrentActionHandler;
-    private _metadata: any = null;
     private readonly _loginState: LoginState;
     private readonly _logoutState: LogoutState;
+    private _metadata: any = null;
     private _tokens: TokenData | null;
     private _isLoggedIn: boolean;
 
-    public constructor(
-        oauthConfig: OAuthConfiguration,
-        events: RendererEvents,
-        privateUriSchemeNotifier: PrivateUriSchemeNotifier) {
+    public constructor(configuration: OAuthConfiguration, events: RendererEvents) {
 
-        this._oauthConfig = oauthConfig;
+        // Initialise properties
+        this._configuration = configuration;
         this._events = events;
         this._concurrencyHandler = new ConcurrentActionHandler();
         this._tokens = null;
@@ -49,9 +46,7 @@ export class AuthenticatorImpl implements Authenticator {
         // Initialise state, used to correlate responses from the system browser to the original request
         this._loginState = new LoginState();
         this._logoutState = new LogoutState();
-
-        // Give the private uri scheme notifier access to OAuth state to enable us to resume after notifications
-        privateUriSchemeNotifier.initialise(this._loginState, this._logoutState);
+        this._events.setOAuthDetails(this._loginState, this._logoutState, this._configuration.logoutCallbackPath);
     }
 
     /*
@@ -127,13 +122,13 @@ export class AuthenticatorImpl implements Authenticator {
             // Download metadata from the Authorization server if required
             if (!this._metadata) {
                 this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                    this._oauthConfig.authority,
+                    this._configuration.authority,
                     new CustomRequestor());
             }
 
             // Do the work of the login
             const loginManager = new LoginManager(
-                this._oauthConfig,
+                this._configuration,
                 this._metadata,
                 this._loginState,
                 this._events,
@@ -167,7 +162,7 @@ export class AuthenticatorImpl implements Authenticator {
 
                 // Start the logout redirect to remove the authorization server's session cookie
                 const logout = new LogoutManager(
-                    this._oauthConfig,
+                    this._configuration,
                     this._logoutState,
                     this._events,
                     idToken);
@@ -220,8 +215,8 @@ export class AuthenticatorImpl implements Authenticator {
         const requestJson = {
             grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
             code: authorizationCode,
-            redirect_uri: this._oauthConfig.redirectUri,
-            client_id: this._oauthConfig.clientId,
+            redirect_uri: this._configuration.redirectUri,
+            client_id: this._configuration.clientId,
             extras,
         } as TokenRequestJson;
         const tokenRequest = new TokenRequest(requestJson);
@@ -255,19 +250,19 @@ export class AuthenticatorImpl implements Authenticator {
             // Download metadata from the Authorization server if required
             if (!this._metadata) {
                 this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                    this._oauthConfig.authority,
+                    this._configuration.authority,
                     new CustomRequestor());
             }
 
             // Supply the scope for access tokens
             const extras: StringMap = {
-                scope: this._oauthConfig.scope,
+                scope: this._configuration.scope,
             };
 
             // Create the token request
             const requestJson = {
                 grant_type: GRANT_TYPE_REFRESH_TOKEN,
-                client_id: this._oauthConfig.clientId,
+                client_id: this._configuration.clientId,
                 refresh_token: this._tokens!.refreshToken,
                 extras,
             } as TokenRequestJson;

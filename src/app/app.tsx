@@ -7,7 +7,6 @@ import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
 import {ErrorHandler} from '../plumbing/errors/errorHandler';
 import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
 import {ApplicationEvents} from '../plumbing/events/applicationEvents';
-import {PrivateUriSchemeNotifier} from '../plumbing/events/privateUriSchemeNotifier';
 import {RendererEvents} from '../plumbing/events/rendererEvents';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
@@ -35,7 +34,6 @@ export class App extends React.Component<any, AppState> {
     private _configuration?: Configuration;
     private _authenticator?: Authenticator;
     private _apiClient?: ApiClient;
-    private _privateUriSchemeNotifier?: PrivateUriSchemeNotifier;
 
     /*
      * Create safe objects here and do async startup processing later
@@ -108,19 +106,15 @@ export class App extends React.Component<any, AppState> {
                 this._configuration.app.proxyHost,
                 this._configuration.app.proxyPort);
 
-            // Initialise private uri scheme handling
-            this._privateUriSchemeNotifier = new PrivateUriSchemeNotifier(this._configuration.oauth.logoutCallbackPath);
-            await this._privateUriSchemeNotifier.setDeepLinkStartupUrlIfRequired();
-
             // Initialise authentication
-            this._authenticator = new AuthenticatorImpl(
-                this._configuration.oauth,
-                this._events,
-                this._privateUriSchemeNotifier);
+            this._authenticator = new AuthenticatorImpl(this._configuration.oauth, this._events);
             await this._authenticator.initialise();
 
             // Create a client to call the API and handle retries
             this._apiClient = new ApiClient(this._configuration.app.apiBaseUrl, this._authenticator);
+
+            // If we were started via a deep link, navigate to that location
+            await this._events.setDeepLinkStartupUrlIfRequired();
 
             // Update state
             this.setState({

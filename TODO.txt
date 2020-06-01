@@ -1,6 +1,6 @@
-0. View all source files for commented out stuff
-
-1. Login to get working, and improve PrivateUriSchemeNotifier
+0. Login to get working
+   
+1. Renames to ipcEvents etc
 
 2. Tokens stored in memory and working
 

@@ -1,4 +1,7 @@
+import urlparse from 'url-parse';
 import {Configuration} from '../../configuration/configuration';
+import {LoginState} from '../oauth/login/loginState';
+import {LogoutState} from '../oauth/logout/logoutState';
 import {ApplicationEventNames} from './applicationEventNames';
 
 /*
@@ -7,26 +10,16 @@ import {ApplicationEventNames} from './applicationEventNames';
 export class RendererEvents {
 
     private readonly _api: any;
+    private _loginState: LoginState | null;
+    private _logoutState: LogoutState | null;
+    private _logoutCallbackPath: string | null;
 
     public constructor() {
         this._api = (window as any).api;
+        this._loginState = null;
+        this._logoutState = null;
+        this._logoutCallbackPath = null;
         this._setupCallbacks();
-    }
-
-    /*
-     * Call the main side of the application to read the file system
-     */
-    public async loadConfiguration(): Promise<Configuration> {
-
-        return await this._sendRequestReply<Configuration>(ApplicationEventNames.ON_GET_CONFIGURATION, {});
-    }
-
-    /*
-     * Call the main side of the application to open the system browser
-     */
-    public openSystemBrowser(url: string): void {
-
-        this._api.sendIpcMessageOneWay(ApplicationEventNames.ON_OPEN_SYSTEM_BROWSER, url);
     }
 
     /*
@@ -40,7 +33,50 @@ export class RendererEvents {
     }
 
     /*
-     * Do the plumbing work to make the IPC call and return data
+     * Receive details from the authenticator to enable us to process OAuth responses
+     */
+    public setOAuthDetails(loginState: LoginState, logoutState: LogoutState, logoutCallbackPath: string) {
+        this._loginState = loginState;
+        this._logoutState = logoutState;
+        this._logoutCallbackPath = logoutCallbackPath;
+    }
+
+    /*
+     * Call the main side of the application to read the file system
+     */
+    public async loadConfiguration(): Promise<Configuration> {
+
+        return await this._sendRequestReply<Configuration>(ApplicationEventNames.ON_GET_CONFIGURATION, {});
+    }
+
+    /*
+     * If the app was started via a deep link then set the startup URL
+     */
+    public async setDeepLinkStartupUrlIfRequired(): Promise<void> {
+
+        // See if the app was started by a deep link
+        const url = await this._sendRequestReply<string>(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
+
+        // If there was a startup URL set the hash location of the ReactJS app accordingly
+        // This ensures that we move straight to the linked page rather than rendering the default page first
+        if (url) {
+            const parsedUrl = this._tryParseUrl(url);
+            if (parsedUrl) {
+                this._handleDeepLinkingNotification(parsedUrl.pathname);
+            }
+        }
+    }
+
+    /*
+     * Call the main side of the application to open the system browser
+     */
+    public openSystemBrowser(url: string): void {
+
+        this._api.sendIpcMessageOneWay(ApplicationEventNames.ON_OPEN_SYSTEM_BROWSER, url);
+    }
+
+    /*
+     * Encapsulate making an IPC call and returning data
      */
     private async _sendRequestReply<T>(eventName: string, requestData: any): Promise<T> {
 
@@ -56,8 +92,48 @@ export class RendererEvents {
      * Receive URL notifications from the main side of the Electron app
      */
     private _handlePrivateUriSchemeNotification(data: any): void {
-        console.log('*** RENDERER RECEIVED LOGIN RESPONSE');
-        console.log(data);
+
+        const parsedUrl = this._tryParseUrl(data as string);
+        if (parsedUrl) {
+
+            if (parsedUrl.pathname === this._logoutCallbackPath) {
+
+                // Handle logout responses
+                this._logoutState!.handleLogoutResponse(parsedUrl.query);
+
+            } else if (parsedUrl.query.state) {
+
+                // Otherwise, if there is a state parameter we will classify this as a login response
+                this._loginState!.handleLoginResponse(parsedUrl.query);
+
+            } else {
+
+                // Otherwise we will treat it a deep linking request and update the hash location
+                this._handleDeepLinkingNotification(parsedUrl.pathname);
+            }
+        }
+    }
+
+    /*
+     * Handle deep linking data originating from a URL like x-mycompany-desktopapp:/company=2
+     * For our sample this method receives /company=2 and updates it to #company=2
+     */
+    private _handleDeepLinkingNotification(deepLinkingPath: string): void {
+
+        const deepLinkedHashLocation = '#' + deepLinkingPath.substring(1);
+        location.hash = deepLinkedHashLocation;
+    }
+
+    /*
+     * Private URI scheme notifications could provide malformed input, so parse them safely
+     */
+    private _tryParseUrl(url: string): urlparse | null {
+
+        try {
+            return urlparse(url, true);
+        } catch (e) {
+            return null;
+        }
     }
 
     /*

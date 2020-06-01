@@ -13,7 +13,7 @@ export class ApplicationEventNames {
     public static readonly ON_GET_DEEP_LINK_STARTUP_URL = 'get_startup_url';
 
     // The main process calls the renderer process to deliver private uri scheme notifications
-    public static readonly ON_PRIVATE_URI_SCHEME_NOTIFICATION = 'custom_scheme_url_notification';
+    public static readonly ON_PRIVATE_URI_SCHEME_NOTIFICATION = 'private_scheme_url';
 
     // The UI sends requests to the login required page
     public static readonly ON_LOGIN = 'login';
