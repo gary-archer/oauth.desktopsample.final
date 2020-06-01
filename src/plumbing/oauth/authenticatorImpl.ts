@@ -17,7 +17,6 @@ import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
 import {TokenData} from './tokenData';
-import {TokenStorage} from './tokenStorage';
 
 /*
  * The entry point class for login and token related requests
@@ -54,7 +53,7 @@ export class AuthenticatorImpl implements Authenticator {
      */
     public async initialise(): Promise<void> {
 
-        this._tokens = await TokenStorage.load();
+        this._tokens = await this._events.loadTokens();
         this._isLoggedIn = !!this._tokens;
     }
 
@@ -72,7 +71,7 @@ export class AuthenticatorImpl implements Authenticator {
 
         // Load tokens from secure storage if required
         if (!this._tokens) {
-            this._tokens = await TokenStorage.load();
+            this._tokens = await this._events.loadTokens();
         }
 
         // Return the existing token if present
@@ -157,7 +156,7 @@ export class AuthenticatorImpl implements Authenticator {
                 // Reset state
                 const idToken = this._tokens!.idToken;
                 this._tokens = null;
-                await TokenStorage.delete();
+                await this._events.deleteTokens();
                 this._isLoggedIn = false;
 
                 // Start the logout redirect to remove the authorization server's session cookie
@@ -184,7 +183,7 @@ export class AuthenticatorImpl implements Authenticator {
 
         if (this._tokens && this._tokens.accessToken) {
             this._tokens.accessToken = 'x' + this._tokens.accessToken + 'x';
-            await TokenStorage.save(this._tokens);
+            await this._events.saveTokens(this._tokens);
         }
     }
 
@@ -197,7 +196,7 @@ export class AuthenticatorImpl implements Authenticator {
         if (this._tokens && this._tokens.refreshToken) {
             this._tokens.refreshToken = 'x' + this._tokens.refreshToken + 'x';
             this._tokens.accessToken = null;
-            await TokenStorage.save(this._tokens);
+            await this._events.saveTokens(this._tokens);
         }
     }
 
@@ -237,7 +236,7 @@ export class AuthenticatorImpl implements Authenticator {
 
         // Update tokens in memory and secure storage
         this._tokens = newTokenData;
-        await TokenStorage.save(this._tokens);
+        await this._events.saveTokens(this._tokens);
     }
 
     /*
@@ -290,7 +289,7 @@ export class AuthenticatorImpl implements Authenticator {
 
             // Update tokens in memory and secure storage
             this._tokens = newTokenData;
-            await TokenStorage.save(this._tokens);
+            await this._events.saveTokens(this._tokens);
 
         } catch (e) {
 
@@ -298,7 +297,7 @@ export class AuthenticatorImpl implements Authenticator {
 
                 // For invalid_grant errors, clear token data and return success, to force a login redirect
                 this._tokens = null;
-                await TokenStorage.delete();
+                await this._events.deleteTokens();
                 this._isLoggedIn = false;
 
             } else {

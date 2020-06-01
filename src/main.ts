@@ -65,7 +65,7 @@ class Main {
         // Handle login responses or deep linking requests against the running app on Mac OS
         app.on('open-url', this._onOpenUrl);
 
-        // For Windows or Linux we receive the startup URLas a startup parameter
+        // For Windows or Linux we receive the startup URL as a startup parameter
         const startupUrl = this._getDeepLinkUrl(process.argv);
         if (startupUrl) {
             this._events.deepLinkStartupUrl = startupUrl;
@@ -76,21 +76,6 @@ class Main {
      * Do initialisation after the ready event
      */
     private _onReady(): void {
-
-        if (!app.isPackaged) {
-
-            // During development, register our private URI scheme for a non packaged app
-            // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
-            app.setAsDefaultProtocolClient(
-                this._privateSchemeName,
-                process.execPath,
-                [path.resolve('.')]);
-
-        } else {
-
-            // Register our private URI scheme for a packaged app after running 'npm run pack'
-            app.setAsDefaultProtocolClient(this._privateSchemeName);
-        }
 
         // Create the window and use Electron recommended security options
         this._window = new BrowserWindow({
@@ -108,6 +93,9 @@ class Main {
         // Give our events object a reference
         this._events.window = this._window;
 
+        // Register for private URI scheme notifications
+        this._registerPrivateUriScheme();
+
         // Ensure that our window has its own menu after Electron Packager has run
         const menu = DefaultMenu(app, shell);
         Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
@@ -115,31 +103,21 @@ class Main {
         // Load the index.html of the app from the file system
         this._window.loadFile('./index.html');
 
-        // Open the developer tools at startup if required
-        // this._window.webContents.openDevTools();
-
-        // Remove the 'Origin: file://' deault header which Okta rejected for security reasons with this message:
-        // 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
-        const headerCallback = (details: any, callback: any) => {
-
-            if (details.requestHeaders.Origin) {
-                delete details.requestHeaders.Origin;
-            }
-
-            callback({cancel: false, requestHeaders: details.requestHeaders});
-        };
-        session.defaultSession!.webRequest.onBeforeSendHeaders({urls: []} as any, headerCallback);
+        // Configure HTTP headers
+        this._initialiseOutgoingHttpRequestHeaders();
 
         // Emitted when the window is closed
         this._window.on('closed', this._onClosed);
 
         // Register for event based communication with the renderer process
         this._events.register();
+
+        // Open the developer tools at startup if required
+        // this._window.webContents.openDevTools();
     }
 
     /*
-     * On macOS it's common to re-create a window in the app when the
-     * dock icon is clicked and there are no other windows open
+     * On macOS the window is recreated when the dock icon is clicked and there are no other windows open
      */
     private _onActivate(): void {
 
@@ -157,6 +135,44 @@ class Main {
         if (url) {
             this._receiveNotificationInRunningInstance(url);
         }
+    }
+
+    /*
+     * Handle private URI scheme registration
+     */
+    private _registerPrivateUriScheme() {
+
+        if (!app.isPackaged) {
+
+            // During development, register our private URI scheme for a non packaged app
+            // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
+            app.setAsDefaultProtocolClient(
+                this._privateSchemeName,
+                process.execPath,
+                [path.resolve('.')]);
+
+        } else {
+
+            // Register our private URI scheme for a packaged app after running 'npm run pack'
+            app.setAsDefaultProtocolClient(this._privateSchemeName);
+        }
+    }
+
+    /*
+     * Remove the 'Origin: file://' deault header which Okta rejected for security reasons with this message
+     * 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
+     */
+    private _initialiseOutgoingHttpRequestHeaders() {
+
+        const headerCallback = (details: any, callback: any) => {
+
+            if (details.requestHeaders.Origin) {
+                delete details.requestHeaders.Origin;
+            }
+
+            callback({cancel: false, requestHeaders: details.requestHeaders});
+        };
+        session.defaultSession!.webRequest.onBeforeSendHeaders({urls: []} as any, headerCallback);
     }
 
     /*

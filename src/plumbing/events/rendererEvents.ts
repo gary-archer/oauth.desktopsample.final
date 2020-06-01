@@ -3,6 +3,7 @@ import {Configuration} from '../../configuration/configuration';
 import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
 import {IpcEventNames} from './ipcEventNames';
+import { TokenData } from '../oauth/tokenData';
 
 /*
  * A class to encapsulate IPC calls on the renderer side of our app
@@ -27,7 +28,7 @@ export class RendererEvents {
      */
     public register(): void {
 
-        this._api.receiveIpcMessageOneWay(
+        this._api.receiveIpcMessage(
             IpcEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION,
             this._handlePrivateUriSchemeNotification);
     }
@@ -46,7 +47,7 @@ export class RendererEvents {
      */
     public async loadConfiguration(): Promise<Configuration> {
 
-        return await this._sendRequestReply<Configuration>(IpcEventNames.ON_GET_CONFIGURATION, {});
+        return await this._sendIpcMessage(IpcEventNames.ON_GET_CONFIGURATION, {});
     }
 
     /*
@@ -55,7 +56,7 @@ export class RendererEvents {
     public async setDeepLinkStartupUrlIfRequired(): Promise<void> {
 
         // See if the app was started by a deep link
-        const url = await this._sendRequestReply<string>(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
+        const url = await this._sendIpcMessage(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
 
         // If there was a startup URL set the hash location of the ReactJS app accordingly
         // This ensures that we move straight to the linked page rather than rendering the default page first
@@ -70,22 +71,46 @@ export class RendererEvents {
     /*
      * Call the main side of the application to open the system browser
      */
-    public openSystemBrowser(url: string): void {
+    public async openSystemBrowser(url: string): Promise<void> {
 
-        this._api.sendIpcMessageOneWay(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, url);
+        await this._sendIpcMessage(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, url);
+    }
+
+    /*
+     * Call the main side of the application to load tokens
+     */
+    public async loadTokens(): Promise<TokenData | null> {
+
+        return await this._sendIpcMessage(IpcEventNames.ON_LOAD_TOKENS, {});
+    }
+
+    /*
+     * Call the main side of the application to save tokens
+     */
+    public async saveTokens(tokenData: TokenData): Promise<void> {
+
+        await this._sendIpcMessage(IpcEventNames.ON_SAVE_TOKENS, tokenData);
+    }
+
+    /*
+     * Call the main side of the application to remove tokens
+     */
+    public async deleteTokens(): Promise<void> {
+
+        await this._sendIpcMessage(IpcEventNames.ON_DELETE_TOKENS, {});
     }
 
     /*
      * Encapsulate making an IPC call and returning data
      */
-    private async _sendRequestReply<T>(eventName: string, requestData: any): Promise<T> {
+    private async _sendIpcMessage(eventName: string, requestData: any): Promise<any> {
 
-        const result = await this._api.sendIpcMessageRequestReply(eventName, requestData);
+        const result = await this._api.sendIpcMessage(eventName, requestData);
         if (result.error) {
             throw result.error;
         }
 
-        return result.data as T;
+        return result.data;
     }
 
     /*

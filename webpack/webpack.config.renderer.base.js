@@ -19,11 +19,6 @@ module.exports = {
         test: /\.(ts|tsx)$/,
         use: 'ts-loader',
         exclude: /node_modules/
-      },
-      {
-        // Work around the issue here: https://github.com/atom/node-keytar/issues/59
-        test: /\.node$/,
-        loader: 'node-loader'
       }
     ]
   },

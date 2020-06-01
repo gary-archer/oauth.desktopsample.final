@@ -1,12 +1,10 @@
-1. Tokens stored in memory and working
+0. Exception handling for Opener calls not working
 
-2. main.ts extra functions
+1. SSL / Proxy -> may need node integration in this special case???
 
-3. SSL / Proxy -> may need node integration in this special case
+2. Other Electron security settings
 
-4. Other Electron security settings
-
-5. Test on Windows and Linux
+3. Test on Windows and Linux, including deep links
 
 BLOG UPDATES
 ------------

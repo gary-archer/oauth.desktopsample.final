@@ -14,4 +14,13 @@ export class IpcEventNames {
 
     // The main process calls the renderer process to deliver private uri scheme notifications
     public static readonly ON_PRIVATE_URI_SCHEME_NOTIFICATION = 'private_scheme_url';
+
+    // Load tokens from persistent storage
+    public static readonly ON_LOAD_TOKENS = 'load_tokens';
+
+    // Save tokens to persistent storage
+    public static readonly ON_SAVE_TOKENS = 'save_tokens';
+
+    // Remove tokens from persistent storage
+    public static readonly ON_DELETE_TOKENS = 'remove_tokens';
 }

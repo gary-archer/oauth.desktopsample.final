@@ -1,5 +1,5 @@
-/*import KeyTar from 'keytar';
-import OperatingSystemUserName from 'username';*/
+import KeyTar from 'keytar';
+import OperatingSystemUserName from 'username';
 import {TokenData} from './tokenData';
 
 /*
@@ -20,7 +20,6 @@ export class TokenStorage {
      */
     public static async load(): Promise<TokenData | null> {
 
-        /*
         // Get the operating system user name on the first call
         if (!TokenStorage._userName) {
             TokenStorage._userName = await OperatingSystemUserName();
@@ -38,7 +37,7 @@ export class TokenStorage {
             accessToken: null,
             refreshToken,
             idToken,
-        };*/
+        };
 
         return null;
     }
@@ -48,10 +47,8 @@ export class TokenStorage {
      */
     public static async save(data: TokenData): Promise<void> {
 
-        /*
         await KeyTar.setPassword(APP_STORAGE_REFRESH_TOKEN, this._userName, data.refreshToken!);
         await KeyTar.setPassword(APP_STORAGE_ID_TOKEN, this._userName, data.idToken!);
-        */
     }
 
     /*
@@ -59,10 +56,8 @@ export class TokenStorage {
      */
     public static async delete(): Promise<void> {
 
-        /*
         await KeyTar.deletePassword(APP_STORAGE_ID_TOKEN, this._userName);
         await KeyTar.deletePassword(APP_STORAGE_REFRESH_TOKEN, this._userName);
-        */
     }
 
     /*

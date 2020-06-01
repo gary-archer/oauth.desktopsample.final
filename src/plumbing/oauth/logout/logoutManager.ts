@@ -47,9 +47,6 @@ export class LogoutManager {
      */
     private async _startLogout(onSuccess: () => void, onError: (e: any) => void): Promise<void> {
 
-        // First build the logout URL
-        const logoutUrl = this._getLogoutUrlBuilder().buildUrl();
-
         // Create a callback to wait for completion
         const callback = (queryParams: any) => {
 
@@ -57,11 +54,21 @@ export class LogoutManager {
             onSuccess();
         };
 
-        // Store the logout callback so that we can receive the response when we receive a browser notification
-        this._state.storeLogoutCallback(callback);
+        try {
+            // First build the logout URL
+            const logoutUrl = this._getLogoutUrlBuilder().buildUrl();
 
-        // Ask the main side of the app to open the system browser
-        this._events.openSystemBrowser(logoutUrl);
+            // Store the logout callback so that we can receive the response when we receive a browser notification
+            this._state.storeLogoutCallback(callback);
+
+            // Ask the main side of the app to open the system browser
+            await this._events.openSystemBrowser(logoutUrl);
+
+        } catch (e) {
+
+            // Capture errors
+            onError(e);
+        }
     }
 
     /*
