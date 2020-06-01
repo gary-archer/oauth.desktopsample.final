@@ -168,8 +168,9 @@ export class AuthenticatorImpl implements Authenticator {
                 // Start the logout redirect to remove the authorization server's session cookie
                 const logout = new LogoutManager(
                     this._oauthConfig,
-                    idToken,
-                    this._logoutState);
+                    this._logoutState,
+                    this._events,
+                    idToken);
                 await logout.start();
             }
 

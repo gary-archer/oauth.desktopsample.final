@@ -1,13 +1,19 @@
-1. mainEvents.ts and rendererEvents.ts
+0. View all source files for commented out stuff
 
-2. Get Opener working from main side
+1. Login to get working, and improve PrivateUriSchemeNotifier
 
-3. Get Token Storage working
+2. Tokens stored in memory and working
 
-4. Other occurrences - look for GJA
+3. SSL / Proxy -> may need node integration in this special case
 
-5. Blog Updates to include:
+4. Logout to get working
 
+5. Get Token Storage working
+
+6. Other Electron security settings
+
+BLOG UPDATES
+------------
   a. Sample 1 - indicate that we'll keep JS simple
   b. Sample 1 - explain require in index.html
   c. Final coding points - mention concurrent refresh

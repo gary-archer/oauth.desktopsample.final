@@ -1,5 +1,5 @@
-// import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
+import {RendererEvents} from '../../events/rendererEvents';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {LogoutState} from './logoutState';
 import {LogoutUrlBuilder} from './logoutUrlBuilder';
@@ -12,16 +12,19 @@ export class LogoutManager {
 
     private readonly _configuration: OAuthConfiguration;
     private readonly _state: LogoutState;
+    private readonly _events: RendererEvents;
     private readonly _idToken: string;
 
     public constructor(
         configuration: OAuthConfiguration,
-        idToken: string,
-        state: LogoutState) {
+        state: LogoutState,
+        events: RendererEvents,
+        idToken: string) {
 
         this._configuration = configuration;
-        this._idToken = idToken;
         this._state = state;
+        this._events = events;
+        this._idToken = idToken;
     }
 
     /*
@@ -57,9 +60,8 @@ export class LogoutManager {
         // Store the logout callback so that we can receive the response when we receive a browser notification
         this._state.storeLogoutCallback(callback);
 
-        // GJA
-        // Invoke the browser with the logout URL
-        // Opener(logoutUrl);
+        // Ask the main side of the app to open the system browser
+        this._events.openSystemBrowser(logoutUrl);
     }
 
     /*
