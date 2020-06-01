@@ -134,6 +134,7 @@ class Main {
         // Register for event messages from the renderer process
         ipcMain.on(ApplicationEventNames.ON_GET_CONFIGURATION, this._events.loadConfiguration);
         ipcMain.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._onGetStartupUrl);
+        ipcMain.on(ApplicationEventNames.ON_OPEN_SYSTEM_BROWSER, this._events.openSystemBrowser);
     }
 
     /*

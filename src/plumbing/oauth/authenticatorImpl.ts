@@ -9,6 +9,7 @@ import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorHandler} from '../errors/errorHandler';
 import {PrivateUriSchemeNotifier} from '../events/privateUriSchemeNotifier';
+import {RendererEvents} from '../events/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {Authenticator} from './authenticator';
 import {CustomRequestor} from './customRequestor';
@@ -25,6 +26,7 @@ import {TokenStorage} from './tokenStorage';
 export class AuthenticatorImpl implements Authenticator {
 
     private readonly _oauthConfig: OAuthConfiguration;
+    private readonly _events: RendererEvents;
     private readonly _concurrencyHandler: ConcurrentActionHandler;
     private _metadata: any = null;
     private readonly _loginState: LoginState;
@@ -32,9 +34,13 @@ export class AuthenticatorImpl implements Authenticator {
     private _tokens: TokenData | null;
     private _isLoggedIn: boolean;
 
-    public constructor(oauthConfig: OAuthConfiguration, privateUriSchemeNotifier: PrivateUriSchemeNotifier) {
+    public constructor(
+        oauthConfig: OAuthConfiguration,
+        events: RendererEvents,
+        privateUriSchemeNotifier: PrivateUriSchemeNotifier) {
 
         this._oauthConfig = oauthConfig;
+        this._events = events;
         this._concurrencyHandler = new ConcurrentActionHandler();
         this._tokens = null;
         this._isLoggedIn = false;
@@ -130,6 +136,7 @@ export class AuthenticatorImpl implements Authenticator {
                 this._oauthConfig,
                 this._metadata,
                 this._loginState,
+                this._events,
                 this._swapAuthorizationCodeForTokens);
             await loginManager.login();
 

@@ -1,7 +1,7 @@
 import {app, BrowserWindow} from 'electron';
+import log from 'electron-log';
 import fs from 'fs-extra';
-import {ErrorHandler} from '../errors/errorHandler';
-import {UIError} from '../errors/uiError';
+import Opener from 'opener';
 import {ApplicationEventNames} from './applicationEventNames';
 
 /*
@@ -17,7 +17,7 @@ export class MainEvents {
     }
 
     /*
-     * Load the confioguration data
+     * Load the configuration data
      */
     public async loadConfiguration(): Promise<void> {
 
@@ -31,21 +31,22 @@ export class MainEvents {
         } catch (e) {
 
             // Return an error on failure
-            const error = ErrorHandler.getFromException(e);
-            this._sendResponse(ApplicationEventNames.ON_GET_CONFIGURATION, null, error);
+            this._sendResponse(ApplicationEventNames.ON_GET_CONFIGURATION, null, e);
         }
+    }
+
+    /*
+     * Open the system browser at the supplied URL
+     */
+    public openSystemBrowser(...args: any[]): void {
+        Opener(args[1]);
     }
 
     /*
      * Send the response to the renderer side of the application
      */
-    private _sendResponse(eventName: string, data: any, error: UIError | null) {
-
-        const result = {
-            error,
-            data,
-        };
-        this._window.webContents.send(eventName, result);
+    private _sendResponse(eventName: string, data: any, error: any) {
+        this._window.webContents.send(eventName, {data, error});
     }
 
     /*

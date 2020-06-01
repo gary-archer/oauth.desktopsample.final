@@ -8,6 +8,7 @@ import {AuthorizationError,
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../../errors/errorCodes';
 import {ErrorHandler} from '../../errors/errorHandler';
+import {RendererEvents} from '../../events/rendererEvents';
 import {BrowserLoginRequestHandler} from './browserLoginRequestHandler';
 import {LoginState} from './loginState';
 
@@ -19,17 +20,20 @@ export class LoginManager {
     private readonly _configuration: OAuthConfiguration;
     private readonly _metadata: AuthorizationServiceConfiguration;
     private readonly _state: LoginState;
+    private readonly _events: RendererEvents;
     private readonly _onCodeReceived: (code: string, verifier: string) => void;
 
     public constructor(
         configuration: OAuthConfiguration,
         metadata: AuthorizationServiceConfiguration,
         state: LoginState,
+        events: RendererEvents,
         onCodeReceived: (code: string, verifier: string) => void) {
 
         this._configuration = configuration;
         this._metadata = metadata;
         this._state = state;
+        this._events = events;
         this._onCodeReceived = onCodeReceived;
     }
 
@@ -82,7 +86,7 @@ export class LoginManager {
         });
 
         // Start the login on a custom browser handler
-        const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
+        const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state, this._events);
         browserLoginRequestHandler.setAuthorizationNotifier(notifier);
         browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
     }

@@ -112,7 +112,10 @@ export class App extends React.Component<any, AppState> {
             await this._privateUriSchemeNotifier.setDeepLinkStartupUrlIfRequired();
 
             // Initialise authentication
-            this._authenticator = new AuthenticatorImpl(this._configuration.oauth, this._privateUriSchemeNotifier);
+            this._authenticator = new AuthenticatorImpl(
+                this._configuration.oauth,
+                this._events,
+                this._privateUriSchemeNotifier);
             await this._authenticator.initialise();
 
             // Create a client to call the API and handle retries

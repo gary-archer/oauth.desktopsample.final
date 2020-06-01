@@ -16,19 +16,28 @@ export class RendererEvents {
      * Call the main side of the application to read the file system
      */
     public async loadConfiguration(): Promise<Configuration> {
-        return await this._getData(ApplicationEventNames.ON_GET_CONFIGURATION, {});
+
+        return await this._getData<Configuration>(ApplicationEventNames.ON_GET_CONFIGURATION, {});
+    }
+
+    /*
+     * Call the main side of the application to open the system browser
+     */
+    public openSystemBrowser(url: string): void {
+
+        this._api.sendIpcMessageOneWay(ApplicationEventNames.ON_OPEN_SYSTEM_BROWSER, url);
     }
 
     /*
      * Do the plumbing work to make the IPC call and return data
      */
-    private async _getData(eventName: string, requestData: any): Promise<any> {
+    private async _getData<T>(eventName: string, requestData: any): Promise<T> {
 
         const result = await this._api.sendIpcMessageRequestReply(eventName, requestData);
         if (result.error) {
             throw result.error;
         }
 
-        return result.data;
+        return result.data as T;
     }
 }

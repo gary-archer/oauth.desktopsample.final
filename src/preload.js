@@ -8,19 +8,19 @@ window.api = {
     /*
      * Call the main process via ipcRenderer
      */
-    sendIpcMessageOneWay(name, args) {
-        ipcRenderer.send(name, args);
+    sendIpcMessageOneWay(name, requestData) {
+        ipcRenderer.send(name, requestData);
     },
 
     /*
      * Call the main process via ipcRenderer and wait for a response
      */
-    async sendIpcMessageRequestReply(name, args) {
+    async sendIpcMessageRequestReply(name, requestData) {
 
         return new Promise((resolve, reject) => {
-            ipcRenderer.send(name, args);
-            ipcRenderer.on(name, (event, data) => {
-                resolve(data)
+            ipcRenderer.send(name, requestData);
+            ipcRenderer.on(name, (event, responseData) => {
+                resolve(responseData)
             });
         });
     }

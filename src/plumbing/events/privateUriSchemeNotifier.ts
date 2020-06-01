@@ -39,6 +39,8 @@ export class PrivateUriSchemeNotifier {
 
         return new Promise<void>((resolve, reject) => {
 
+            resolve();
+
             // When started via deep linking this could be a value such as x-mycompany-desktopapp:/company=2
             /*ipcRenderer.send(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
 

@@ -8,7 +8,7 @@ import {AuthorizationError,
         AuthorizationServiceConfiguration,
         BasicQueryStringUtils,
         DefaultCrypto} from '@openid/appauth';
-// import Opener from 'opener';
+import {RendererEvents} from '../../events/rendererEvents';
 import {LoginState} from './loginState';
 
 /*
@@ -17,12 +17,14 @@ import {LoginState} from './loginState';
 export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
 
     private readonly _state: LoginState;
+    private readonly _events: RendererEvents;
     private _authorizationPromise: Promise<AuthorizationRequestResponse> | null;
 
-    public constructor(state: LoginState) {
+    public constructor(state: LoginState, events: RendererEvents) {
 
         super(new BasicQueryStringUtils(), new DefaultCrypto());
         this._state = state;
+        this._events = events;
         this._authorizationPromise = null;
     }
 
@@ -53,9 +55,8 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
             // Store login state so that we can receive the response
             this._state.storeLoginCallback(request.state, callback);
 
-            // GJA
-            // Invoke the browser
-            // Opener(loginUrl);
+            // Ask the main side of the app to open the system browser
+            this._events.openSystemBrowser(loginUrl);
         });
     }
 
