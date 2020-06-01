@@ -11,13 +11,11 @@ class Main {
 
     private _window: BrowserWindow | null;
     private _events: MainEvents;
-    private _startupUrl: string | null;
-    private readonly _privateSchemeName!: string;
+    private readonly _privateSchemeName: string;
 
     public constructor() {
         this._window = null;
         this._events = new MainEvents();
-        this._startupUrl = null;
         this._privateSchemeName = 'x-mycompany-desktopapp';
         this._setupCallbacks();
     }
@@ -229,9 +227,7 @@ class Main {
     }
 
     /*
-     * Dereference the window object, usually you would store windows
-     * in an array if your app supports multi windows, this is the time
-     * when you should delete the corresponding element
+     * Dereference any window objects here
      */
     private _onClosed(): void {
         this._window = null;
@@ -239,10 +235,10 @@ class Main {
 
     /*
      * Quit when all windows are closed
+     * On macOS, applications and their menu bar stay active until the user quits explicitly with Cmd + Q
      */
     private _onAllWindowsClosed(): void {
 
-        // On macOS, applications and their menu bar stay active until the user quits explicitly with Cmd + Q
         if (process.platform !== 'darwin') {
             app.quit();
         }
