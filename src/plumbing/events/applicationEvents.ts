@@ -1,7 +1,7 @@
-import {EventItem} from './eventItem';
+import {ApplicationEventItem} from './applicationEventItem';
 
 /*
- * A simple event emitter class
+ * A simple event emitter class for the UI
  */
 export class ApplicationEvents {
 
@@ -48,5 +48,5 @@ export class ApplicationEvents {
         }
     }
 
-    private static _events: EventItem[] = [];
+    private static _events: ApplicationEventItem[] = [];
 }

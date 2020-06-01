@@ -1,7 +1,7 @@
 import {app, BrowserWindow, ipcMain} from 'electron';
 import fs from 'fs-extra';
 import Opener from 'opener';
-import {ApplicationEventNames} from './applicationEventNames';
+import {IpcEventNames} from './ipcEventNames';
 
 /*
  * A class to encapsulate IPC calls on the main side of our app
@@ -35,16 +35,16 @@ export class MainEvents {
      * Register to receive IPC messages from the renderer process
      */
     public register(): void {
-        ipcMain.on(ApplicationEventNames.ON_GET_CONFIGURATION, this._loadConfiguration);
-        ipcMain.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
-        ipcMain.on(ApplicationEventNames.ON_OPEN_SYSTEM_BROWSER, this._openSystemBrowser);
+        ipcMain.on(IpcEventNames.ON_GET_CONFIGURATION, this._loadConfiguration);
+        ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
+        ipcMain.on(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, this._openSystemBrowser);
     }
 
     /*
      * When a login response or deep link is received, forward it to the renderer process
      */
     public sendPrivateSchemeNotificationUrl(url: string) {
-        this._window!.webContents.send(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, url);
+        this._window!.webContents.send(IpcEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, url);
     }
 
     /*
@@ -57,12 +57,12 @@ export class MainEvents {
             const filePath = `${app.getAppPath()}/desktop.config.json`;
             const configurationBuffer = await fs.readFile(filePath);
             const configuration = JSON.parse(configurationBuffer.toString());
-            this._sendResponse(ApplicationEventNames.ON_GET_CONFIGURATION, configuration, null);
+            this._sendResponse(IpcEventNames.ON_GET_CONFIGURATION, configuration, null);
 
         } catch (e) {
 
             // Return an error on failure
-            this._sendResponse(ApplicationEventNames.ON_GET_CONFIGURATION, null, e);
+            this._sendResponse(IpcEventNames.ON_GET_CONFIGURATION, null, e);
         }
     }
 
@@ -71,7 +71,7 @@ export class MainEvents {
      * In this case the renderer side of the app can send us a message to get the startup URL
      */
     private _getDeepLinkStartupUrl(): void {
-        this._sendResponse(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._deepLinkStartupUrl, null);
+        this._sendResponse(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._deepLinkStartupUrl, null);
     }
 
     /*

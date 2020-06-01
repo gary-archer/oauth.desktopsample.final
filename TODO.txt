@@ -1,16 +1,12 @@
-0. Login to get working
-   
-1. Renames to ipcEvents etc
+1. Tokens stored in memory and working
 
-2. Tokens stored in memory and working
+2. main.ts extra functions
 
 3. SSL / Proxy -> may need node integration in this special case
 
-4. Logout to get working
+4. Other Electron security settings
 
-5. Get Token Storage working
-
-6. Other Electron security settings
+5. Test on Windows and Linux
 
 BLOG UPDATES
 ------------

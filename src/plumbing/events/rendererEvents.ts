@@ -2,7 +2,7 @@ import urlparse from 'url-parse';
 import {Configuration} from '../../configuration/configuration';
 import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
-import {ApplicationEventNames} from './applicationEventNames';
+import {IpcEventNames} from './ipcEventNames';
 
 /*
  * A class to encapsulate IPC calls on the renderer side of our app
@@ -28,7 +28,7 @@ export class RendererEvents {
     public register(): void {
 
         this._api.receiveIpcMessageOneWay(
-            ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION,
+            IpcEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION,
             this._handlePrivateUriSchemeNotification);
     }
 
@@ -46,7 +46,7 @@ export class RendererEvents {
      */
     public async loadConfiguration(): Promise<Configuration> {
 
-        return await this._sendRequestReply<Configuration>(ApplicationEventNames.ON_GET_CONFIGURATION, {});
+        return await this._sendRequestReply<Configuration>(IpcEventNames.ON_GET_CONFIGURATION, {});
     }
 
     /*
@@ -55,7 +55,7 @@ export class RendererEvents {
     public async setDeepLinkStartupUrlIfRequired(): Promise<void> {
 
         // See if the app was started by a deep link
-        const url = await this._sendRequestReply<string>(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
+        const url = await this._sendRequestReply<string>(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
 
         // If there was a startup URL set the hash location of the ReactJS app accordingly
         // This ensures that we move straight to the linked page rather than rendering the default page first
@@ -72,7 +72,7 @@ export class RendererEvents {
      */
     public openSystemBrowser(url: string): void {
 
-        this._api.sendIpcMessageOneWay(ApplicationEventNames.ON_OPEN_SYSTEM_BROWSER, url);
+        this._api.sendIpcMessageOneWay(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, url);
     }
 
     /*
