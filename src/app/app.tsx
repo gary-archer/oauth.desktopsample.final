@@ -3,12 +3,12 @@ import Modal from 'react-modal';
 import {HashRouter, Route, Switch} from 'react-router-dom';
 import {ApiClient} from '../api/client/apiClient';
 import {Configuration} from '../configuration/configuration';
-import {ConfigurationLoaderClient} from '../configuration/configurationLoaderClient';
 import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
 import {ErrorHandler} from '../plumbing/errors/errorHandler';
 import {ApplicationEventNames} from '../plumbing/events/applicationEventNames';
 import {ApplicationEvents} from '../plumbing/events/applicationEvents';
 import {PrivateUriSchemeNotifier} from '../plumbing/events/privateUriSchemeNotifier';
+import {RendererEvents} from '../plumbing/events/rendererEvents';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {LoginNavigation} from '../plumbing/oauth/login/loginNavigation';
@@ -31,6 +31,7 @@ import {AppState} from './appState';
 export class App extends React.Component<any, AppState> {
 
     private _viewManager: ViewManager;
+    private _events: RendererEvents;
     private _configuration?: Configuration;
     private _authenticator?: Authenticator;
     private _apiClient?: ApiClient;
@@ -52,9 +53,12 @@ export class App extends React.Component<any, AppState> {
         // Make callbacks available
         this._setupCallbacks();
 
-        // Create a helper class to do multiple view coordination
+        // Create a helper class to coordinate multiple views that get data together
         this._viewManager = new ViewManager(this._onLoginRequired, this._onLoadStateChanged);
         this._viewManager.setViewCount(2);
+
+        // Create a class to manage sending events to the main side of the app
+        this._events = new RendererEvents();
 
         // Initialise the modal dialog system used for error popups
         Modal.setAppElement('#root');
@@ -76,7 +80,6 @@ export class App extends React.Component<any, AppState> {
      * Do the initial load when the application starts up
      */
     public async componentDidMount(): Promise<void> {
-
         await this._initialiseApp();
     }
 
@@ -95,7 +98,7 @@ export class App extends React.Component<any, AppState> {
             });
 
             // First load configuration
-            this._configuration = await ConfigurationLoaderClient.load();
+            this._configuration = await this._events.loadConfiguration();
 
             // Set up SSL Trust and HTTP debugging
             await SslHelper.configureTrust();

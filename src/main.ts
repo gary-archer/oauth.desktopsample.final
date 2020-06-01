@@ -2,20 +2,22 @@ import {app, BrowserWindow, ipcMain, Menu, session, shell} from 'electron';
 import DefaultMenu from 'electron-default-menu';
 import log from 'electron-log';
 import path from 'path';
-import {ConfigurationLoaderService} from './configuration/configurationLoaderService';
 import {ApplicationEventNames} from './plumbing/events/applicationEventNames';
+import {MainEvents} from './plumbing/events/mainEvents';
 
 /*
  * The Electron main process entry point
  */
 class Main {
 
-    private _window: any;
+    private _window: BrowserWindow | null;
+    private _events: MainEvents | null;
     private _startupUrl: string | null;
     private readonly _customSchemeName!: string;
 
     public constructor() {
         this._window = null;
+        this._events = null;
         this._startupUrl = null;
         this._customSchemeName = 'x-mycompany-desktopapp';
         this._setupCallbacks();
@@ -101,6 +103,9 @@ class Main {
             },
         });
 
+        // Create an object to manage events
+        this._events = new MainEvents(this._window);
+
         // Ensure that our window has its own menu after Electron Packager has run
         const menu = DefaultMenu(app, shell);
         Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
@@ -127,7 +132,7 @@ class Main {
         this._window.on('closed', this._onClosed);
 
         // Register for event messages from the renderer process
-        ipcMain.on(ApplicationEventNames.ON_GET_CONFIGURATION, this._onGetConfiguration);
+        ipcMain.on(ApplicationEventNames.ON_GET_CONFIGURATION, this._events.loadConfiguration);
         ipcMain.on(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._onGetStartupUrl);
     }
 
@@ -172,26 +177,11 @@ class Main {
     }
 
     /*
-     * Load the configuration data and return it to the renderer process
-     */
-    private async _onGetConfiguration(...args: any): Promise<void> {
-
-        const filePath = `${app.getAppPath()}/desktop.config.json`;
-        const configuration = await ConfigurationLoaderService.load(filePath);
-
-        const data = {
-            error: null,
-            configuration,
-        };
-        this._window.webContents.send(ApplicationEventNames.ON_GET_CONFIGURATION, data);
-    }
-
-    /*
      * The new instance of the app could have been started via deep linking
      * In this case the Electron side of the app can send us a message to get the startup URL
      */
     private _onGetStartupUrl(...args: any): void {
-        this._window.webContents.send(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._startupUrl);
+        this._window!.webContents.send(ApplicationEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._startupUrl);
     }
 
     /*
@@ -203,7 +193,7 @@ class Main {
         this._bringExistingInstanceToForeground();
 
         // Send the event to the Electron app
-        this._window.webContents.send(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, customSchemeUrl);
+        this._window!.webContents.send(ApplicationEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, customSchemeUrl);
     }
 
     /*
@@ -266,7 +256,6 @@ class Main {
         this._onActivate = this._onActivate.bind(this);
         this._onSecondInstance = this._onSecondInstance.bind(this);
         this._onOpenUrl = this._onOpenUrl.bind(this);
-        this._onGetConfiguration = this._onGetConfiguration.bind(this);
         this._onGetStartupUrl = this._onGetStartupUrl.bind(this);
         this._receiveNotificationInRunningInstance = this._receiveNotificationInRunningInstance.bind(this);
         this._onClosed = this._onClosed.bind(this);
