@@ -51,7 +51,6 @@ export class LoginManager {
             } catch (e) {
 
                 // Handle any error conditions
-
                 reject(e);
             }
         });
