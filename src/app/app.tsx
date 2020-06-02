@@ -12,7 +12,6 @@ import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {LoginNavigation} from '../plumbing/oauth/login/loginNavigation';
 import {HttpProxy} from '../plumbing/utilities/httpProxy';
-import {SslHelper} from '../plumbing/utilities/sslHelper';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {ErrorBoundary} from '../views/errors/errorBoundary';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
@@ -99,8 +98,7 @@ export class App extends React.Component<any, AppState> {
             // First load configuration
             this._configuration = await this._events.loadConfiguration();
 
-            // Set up SSL Trust and HTTP debugging
-            await SslHelper.configureTrust();
+            // Set up HTTP debugging of API and AppAuth-JS requests
             HttpProxy.initialize(
                 this._configuration.app.useProxy,
                 this._configuration.app.proxyHost,

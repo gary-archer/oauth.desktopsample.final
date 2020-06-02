@@ -11,11 +11,13 @@ import {IpcEventNames} from './ipcEventNames';
 export class MainEvents {
 
     private _window: BrowserWindow | null;
+    private _configurationFileName: string | null;
     private _deepLinkStartupUrl: string | null;
 
     public constructor() {
         this._window = null;
         this._deepLinkStartupUrl = null;
+        this._configurationFileName = null;
         this._setupCallbacks();
     }
 
@@ -24,6 +26,13 @@ export class MainEvents {
      */
     public set window(window: BrowserWindow) {
         this._window = window;
+    }
+
+    /*
+     * Set a deep link startup URL if applicable
+     */
+    public set configurationFileName(fileName: string) {
+        this._configurationFileName = fileName;
     }
 
     /*
@@ -59,7 +68,7 @@ export class MainEvents {
 
         try {
             // Do the work of loading configuration
-            const filePath = `${app.getAppPath()}/desktop.config.json`;
+            const filePath = `${app.getAppPath()}/${this._configurationFileName}`;
             const configurationBuffer = await fs.readFile(filePath);
             const configuration = JSON.parse(configurationBuffer.toString());
             this._sendResponse(IpcEventNames.ON_GET_CONFIGURATION, configuration, null);

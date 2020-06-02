@@ -66,15 +66,12 @@ class Main {
         // For Windows or Linux we receive the startup URL as a startup parameter
         const startupUrl = this._getDeepLinkUrl(process.argv);
         if (startupUrl) {
-            log.info(`*** MAIN startup url is ${startupUrl}`);
             this._events.deepLinkStartupUrl = startupUrl;
-        } else {
-            log.info(`*** MAIN no startup url`);
         }
     }
 
     /*
-     * Do initialisation after the ready event
+     * Do initialisation after the ready eventF
      */
     private _onReady(): void {
 
@@ -91,8 +88,9 @@ class Main {
             },
         });
 
-        // Give our events object a reference
+        // Set values against the events instance
         this._events.window = this._window;
+        this._events.configurationFileName = 'desktop.config.json';
 
         // Register for private URI scheme notifications
         this._registerPrivateUriScheme();
@@ -145,18 +143,14 @@ class Main {
 
         if (!app.isPackaged) {
 
-            log.info(`*** MAIN registering, NOT packaged`);
-
             // During development, register our private URI scheme for a non packaged app
             // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
             app.setAsDefaultProtocolClient(
                 this._privateSchemeName,
                 process.execPath,
-                [path.resolve('.')]);
+                [app.getAppPath()]);
 
         } else {
-
-            log.info(`*** MAIN registering, packaged`);
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
             app.setAsDefaultProtocolClient(this._privateSchemeName);

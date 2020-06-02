@@ -1,19 +1,20 @@
 1. Test cases for each OS
 
 * open x-mycompany-desktopapp:/company=2
-* Remove proxy setting + localapi config file before checkin
-* delete SSLHelper after testing
 
 1a. Mac OS results
 
+* Basics                              --> GOOD
 * Okta and SSL debugging              --> GOOD
 * startup deep link, not packaged     --> Opens Electron
 * deep link, not packaged             --> GOOD
 * startup deep link, packaged         --> GOOD
 * deep link, packaged                 --> GOOD
+* RETEST after electron ./dist and _registerPrivateUriScheme to use ./dist -->
 
 1b. Windows results (merge once done)
 
+* Basics                              --> GOOD
 * Okta and SSL debugging              -->
 * startup deep link, not packaged     -->
 * deep link, not packaged             -->
