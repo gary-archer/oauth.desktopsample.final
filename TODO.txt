@@ -1,15 +1,42 @@
-1. SSL / Proxy -> may need node integration in this special case???
+1. Test cases for each OS
+
+* open x-mycompany-desktopapp:/company=2
+* Remove proxy setting + localapi config file before checkin
+* delete SSLHelper after testing
+
+1a. Mac OS results
+
+* Okta and SSL debugging              --> GOOD
+* startup deep link, not packaged     --> Opens Electron
+* deep link, not packaged             --> GOOD
+* startup deep link, packaged         --> GOOD
+* deep link, packaged                 --> GOOD
+
+1b. Windows results (merge once done)
+
+* Okta and SSL debugging              -->
+* startup deep link, not packaged     -->
+* deep link, not packaged             -->
+* startup deep link, packaged         -->
+* deep link, packaged                 -->
+
+1c. Linux results
+
+* Okta and SSL debugging              -->
+* startup deep link, not packaged     -->
+* deep link, not packaged             -->
+* startup deep link, packaged         -->
+* deep link, packaged                 -->
 
 2. Other Electron security settings
-
-3. Test on Windows and Linux, including deep links
 
 BLOG UPDATES
 ------------
   a. Sample 1 - indicate that we'll keep JS simple
-  b. Sample 1 - explain require in index.html
+  b. Sample 1 - explain require in index.html and use of node integration
   c. Final coding points - mention concurrent refresh
   d. Discuss security best practice in final write up overview
   e. Discuss node integration in final write up on coding points
   f. Mention webpack as a final sample feature
   g. Debugging of main / renderer as a sample 1 feature
+  h. Startup deep links require a packaged app

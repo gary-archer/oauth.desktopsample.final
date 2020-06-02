@@ -61,10 +61,13 @@ export class RendererEvents {
         // If there was a startup URL set the hash location of the ReactJS app accordingly
         // This ensures that we move straight to the linked page rather than rendering the default page first
         if (url) {
+            console.log(`*** RENDERER startup url is ${url}`);
             const parsedUrl = this._tryParseUrl(url);
             if (parsedUrl) {
                 this._handleDeepLinkingNotification(parsedUrl.pathname);
             }
+        } else {
+            console.log(`*** RENDERER no startup url`);
         }
     }
 
