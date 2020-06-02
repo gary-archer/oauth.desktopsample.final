@@ -35,8 +35,12 @@ export class LogoutManager {
         return new Promise<void>(async (resolve, reject) => {
 
             try {
+
+                // Try to start the logout
                 await this._startLogout(resolve, reject);
             } catch (e) {
+
+                // Handle any error conditions
                 reject(e);
             }
         });

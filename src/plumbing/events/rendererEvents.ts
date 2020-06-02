@@ -3,7 +3,7 @@ import {Configuration} from '../../configuration/configuration';
 import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
 import {IpcEventNames} from './ipcEventNames';
-import { TokenData } from '../oauth/tokenData';
+import {TokenData} from '../oauth/tokenData';
 
 /*
  * A class to encapsulate IPC calls on the renderer side of our app

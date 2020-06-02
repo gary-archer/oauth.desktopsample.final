@@ -45,8 +45,13 @@ export class LoginManager {
         return new Promise<void>(async (resolve, reject) => {
 
             try {
+                // Try to start a login
                 await this._startLogin(resolve, reject);
+
             } catch (e) {
+
+                // Handle any error conditions
+
                 reject(e);
             }
         });
@@ -76,19 +81,22 @@ export class LoginManager {
             response: AuthorizationResponse | null,
             error: AuthorizationError | null) => {
 
-                // When we receive the result, handle it and complete the callback
                 try {
+                    // When we receive the result, handle it and complete the callback
                     await this._handleLoginResponse(request, response, error);
                     onSuccess();
+
                 } catch (e) {
+
+                    // Handle any error conditions
                     onError(e);
                 }
         });
 
-        // Start the login on a custom browser handler
+        // Create a custom browser handler and try to start a login
         const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state, this._events);
         browserLoginRequestHandler.setAuthorizationNotifier(notifier);
-        browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
+        await browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
     }
 
     /*
@@ -114,6 +122,7 @@ export class LoginManager {
 
         } catch (e) {
 
+            // Handle any error conditions
             throw ErrorHandler.getFromTokenError(e, ErrorCodes.authorizationCodeGrantFailed);
         }
     }

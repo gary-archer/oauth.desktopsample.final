@@ -1,5 +1,3 @@
-0. Exception handling for Opener calls not working
-
 1. SSL / Proxy -> may need node integration in this special case???
 
 2. Other Electron security settings

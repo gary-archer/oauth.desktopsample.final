@@ -31,9 +31,9 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
     /*
      * Use the AppAuth class to form the OAuth URL, then make the login request on the system browser
      */
-    public performAuthorizationRequest(
+    public async performAuthorizationRequest(
         metadata: AuthorizationServiceConfiguration,
-        request: AuthorizationRequest): void {
+        request: AuthorizationRequest): Promise<void> {
 
         // Create a promise to receive the response from the browser
         this._authorizationPromise = new Promise<AuthorizationRequestResponse>(async (resolve, reject) => {
@@ -49,23 +49,15 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
                 this.completeAuthorizationRequestIfPossible();
             };
 
-            try {
-                // Form the OAuth request using AppAuth libraries
-                const loginUrl = this.buildRequestUrl(metadata, request);
-
-                // Store login state so that we can receive the response
-                this._state.storeLoginCallback(request.state, callback);
-
-                // Ask the main side of the app to open the system browser
-                await this._events.openSystemBrowser(loginUrl);
-
-            } catch (e) {
-
-                // Capture errors
-                console.log('*** rejecting');
-                reject(e);
-            }
+            // Store login state so that we can receive the response
+            this._state.storeLoginCallback(request.state, callback);
         });
+
+        // Form the OAuth request using AppAuth libraries
+        const loginUrl = this.buildRequestUrl(metadata, request);
+
+        // Ask the main side of the app to open the system browser
+        await this._events.openSystemBrowser(loginUrl);
     }
 
     /*
