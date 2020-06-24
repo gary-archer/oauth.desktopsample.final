@@ -1,0 +1,17 @@
+{
+    "app": {
+        "apiBaseUrl":               "https://api.authguidance-examples.com/api",
+        "useProxy":                 false,
+        "proxyHost":                "http://127.0.0.1",
+        "proxyPort":                8888
+    },
+    "oauth": {
+        "authority":                "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_mZ3NBYpTo",
+        "clientId":                 "76nlopdg790upkrdhb9512u8ac",
+        "redirectUri":              "https://web.authguidance-examples.com/desktop/postlogin.html",
+        "scope":                    "openid profile email",
+        "logoutEndpoint":           "https://login.authguidance-examples.com/logout",
+        "postLogoutRedirectUri":    "https://web.authguidance-examples.com/desktop/postlogout.html",
+        "logoutCallbackPath":       "/logoutcallback"
+    }
+}
