@@ -139,27 +139,6 @@ class Main {
     }
 
     /*
-     * Handle private URI scheme registration
-     */
-    private _registerPrivateUriScheme() {
-
-        if (!app.isPackaged) {
-
-            // During development, register our private URI scheme for a non packaged app
-            // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
-            app.setAsDefaultProtocolClient(
-                this._privateSchemeName,
-                process.execPath,
-                [app.getAppPath()]);
-
-        } else {
-
-            // Register our private URI scheme for a packaged app after running 'npm run pack'
-            app.setAsDefaultProtocolClient(this._privateSchemeName);
-        }
-    }
-
-    /*
      * Remove the 'Origin: file://' deault header which Okta rejected for security reasons with this message
      * 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
      */
@@ -233,6 +212,8 @@ class Main {
      * Dereference any window objects here
      */
     private _onClosed(): void {
+
+        this._unregisterPrivateUriScheme();
         this._window = null;
     }
 
@@ -244,6 +225,45 @@ class Main {
 
         if (process.platform !== 'darwin') {
             app.quit();
+        }
+    }
+
+    /*
+     * Handle private URI scheme registration
+     */
+    private _registerPrivateUriScheme() {
+
+        if (!app.isPackaged) {
+
+            // During development, register our private URI scheme for a non packaged app
+            // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
+            app.setAsDefaultProtocolClient(
+                this._privateSchemeName,
+                process.execPath,
+                [app.getAppPath()]);
+
+        } else {
+
+            // Register our private URI scheme for a packaged app after running 'npm run pack'
+            app.setAsDefaultProtocolClient(this._privateSchemeName);
+        }
+    }
+
+    /*
+     * Avoid leaving the registration in place so that we can switch between packaged and non packaged builds
+     */
+    private _unregisterPrivateUriScheme() {
+
+        if (!app.isPackaged && process.platform === 'win32') {
+
+            app.removeAsDefaultProtocolClient(
+                this._privateSchemeName,
+                process.execPath,
+                [app.getAppPath()]);
+
+        } else {
+
+            app.removeAsDefaultProtocolClient(this._privateSchemeName);
         }
     }
 

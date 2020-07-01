@@ -21,8 +21,7 @@ export class ErrorDetailsView extends React.Component<ErrorDetailsViewProps> {
         return  (
                     <div className='card border-0'>
                         <div className='row'>
-                            <div className='col-2'>
-                            </div>
+                            <div className='col-2' />
                             <div className='col-8 errorcolor largetext text-center'>
                                     {this.props.title}
                             </div>
