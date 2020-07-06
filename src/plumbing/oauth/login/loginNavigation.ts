@@ -10,16 +10,9 @@ export class LoginNavigation {
      */
     public static navigateToLoginRequired() {
 
-        if (location.hash.length > 1) {
-
-            // Record the previous main location unless we are already in login required
-            location.hash = `#/loginrequired&return=${encodeURIComponent(location.hash)}`;
-
-        } else {
-
-            // Default to an empty return location
-            location.hash = '#/loginrequired';
-        }
+        // Record the previous main location unless we are already in login required
+        location.hash = location.hash.length > 1 ? `#loginrequired&return=${encodeURIComponent(location.hash)}`
+                                                 : '#loginrequired';
     }
 
     /*

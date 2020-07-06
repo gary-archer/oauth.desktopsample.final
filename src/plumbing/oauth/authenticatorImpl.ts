@@ -217,7 +217,7 @@ export class AuthenticatorImpl implements Authenticator {
             redirect_uri: this._configuration.redirectUri,
             client_id: this._configuration.clientId,
             extras,
-        } as TokenRequestJson;
+        };
         const tokenRequest = new TokenRequest(requestJson);
 
         // Execute the request to swap the code for tokens
@@ -230,9 +230,9 @@ export class AuthenticatorImpl implements Authenticator {
         // Set values from the response
         const newTokenData = {
             accessToken: tokenResponse.accessToken,
-            idToken: tokenResponse.idToken,
-            refreshToken: tokenResponse.refreshToken,
-        } as TokenData;
+            refreshToken: tokenResponse.refreshToken ? tokenResponse.refreshToken : null,
+            idToken: tokenResponse.idToken ? tokenResponse.idToken : null,
+        };
 
         // Update tokens in memory and secure storage
         this._tokens = newTokenData;
@@ -262,9 +262,10 @@ export class AuthenticatorImpl implements Authenticator {
             const requestJson = {
                 grant_type: GRANT_TYPE_REFRESH_TOKEN,
                 client_id: this._configuration.clientId,
-                refresh_token: this._tokens!.refreshToken,
+                refresh_token: this._tokens!.refreshToken!,
+                redirect_uri: '',
                 extras,
-            } as TokenRequestJson;
+            };
             const tokenRequest = new TokenRequest(requestJson);
 
             // Execute the request to send the refresh token and get new tokens
@@ -275,9 +276,9 @@ export class AuthenticatorImpl implements Authenticator {
             // Set values from the response, which may include a new rolling refresh token
             const newTokenData = {
                 accessToken: tokenResponse.accessToken,
-                idToken: tokenResponse.idToken,
-                refreshToken: tokenResponse.refreshToken,
-            } as TokenData;
+                refreshToken: tokenResponse.refreshToken ? tokenResponse.refreshToken : null,
+                idToken: tokenResponse.idToken ? tokenResponse.idToken : null,
+            };
 
             // Maintain existing details if required
             if (!newTokenData.refreshToken) {

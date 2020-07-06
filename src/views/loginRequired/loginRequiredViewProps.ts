@@ -9,4 +9,5 @@ export interface LoginRequiredViewProps {
     authenticator: Authenticator;
 
     // Inform the main view when a login completes
-    onLoginCompleted: () => void;}
+    onLoginCompleted: () => void;
+}

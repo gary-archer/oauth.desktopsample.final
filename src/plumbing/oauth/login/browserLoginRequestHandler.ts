@@ -98,7 +98,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
                 error_description: errorDescription,
                 error_uri: errorUri,
                 state,
-            } as AuthorizationErrorJson;
+            };
             authorizationError = new AuthorizationError(errorJson);
 
         } else {
@@ -116,6 +116,6 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
             request,
             response: authorizationResponse,
             error: authorizationError,
-        } as AuthorizationRequestResponse;
+        };
     }
 }

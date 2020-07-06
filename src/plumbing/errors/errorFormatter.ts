@@ -50,8 +50,8 @@ export class ErrorFormatter {
         }
 
         // In debug builds render the stack trace as a long string
-         // We can then look up results at https://sourcemaps.info
-         if (SHOW_STACK_TRACE) {
+        // We can then look up results at https://sourcemaps.info
+        if (SHOW_STACK_TRACE) {
             if (error.stack) {
                 lines.push(ErrorFormatter._createErrorLine(++count, 'Stack', error.stack));
             }
@@ -69,6 +69,6 @@ export class ErrorFormatter {
             id,
             title,
             value,
-        } as ErrorLine;
+        };
     }
 }

@@ -47,7 +47,7 @@ export class RendererEvents {
      */
     public async loadConfiguration(): Promise<Configuration> {
 
-        return await this._sendIpcMessage(IpcEventNames.ON_GET_CONFIGURATION, {});
+        return this._sendIpcMessage(IpcEventNames.ON_GET_CONFIGURATION, {});
     }
 
     /*
@@ -81,7 +81,7 @@ export class RendererEvents {
      */
     public async loadTokens(): Promise<TokenData | null> {
 
-        return await this._sendIpcMessage(IpcEventNames.ON_LOAD_TOKENS, {});
+        return this._sendIpcMessage(IpcEventNames.ON_LOAD_TOKENS, {});
     }
 
     /*
