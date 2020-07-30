@@ -5,6 +5,8 @@
 * The final desktop code sample using OAuth 2.0 and Open Id Connect, referenced in my blog at https://authguidance.com
 * **The goal of this sample is to implement Open Id Connect desktop logins with best usability and reliability**
 
+[![Known Vulnerabilities](https://snyk.io/test/github/gary-archer/authguidance.desktopsample.final/badge.svg)](https://snyk.io/test/github/gary-archer/authguidance.desktopsample.final)
+
 ### Details
 
 * See the [Final Desktop Sample Overview](https://authguidance.com/2018/01/26/final-desktop-sample-overview/) for a feature overview and how to run the code
