@@ -1,17 +1,17 @@
 {
     "app": {
         "apiBaseUrl":               "https://api.authsamples.com/api",
-        "useProxy":                 false,
+        "useProxy":                 true,
         "proxyHost":                "http://127.0.0.1",
         "proxyPort":                8888
     },
     "oauth": {
         "authority":                "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_qqJgVeuTn",
         "clientId":                 "49onjnhrr56v4thun3fljdji5",
-        "redirectUri":              "https://mobile.authsamples.com/desktopscheme/postlogin.html",
+        "redirectUri":              "https://mobile.authsamples.com/html/finaldesktopapp/postlogin.html",
         "scope":                    "openid profile email",
         "logoutEndpoint":           "https://login.authsamples.com/logout",
-        "postLogoutRedirectUri":    "https://mobile.authsamples.com/desktopscheme/postlogout.html",
+        "postLogoutRedirectUri":    "https://mobile.authsamples.com/html/finaldesktopapp/postlogout.html",
         "logoutCallbackPath":       "/logoutcallback"
     }
 }
