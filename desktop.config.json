@@ -8,10 +8,10 @@
     "oauth": {
         "authority":                "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_qqJgVeuTn",
         "clientId":                 "49onjnhrr56v4thun3fljdji5",
-        "redirectUri":              "https://mobile.authsamples.com/html/finaldesktopapp/postlogin.html",
+        "redirectUri":              "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
         "scope":                    "openid profile email",
         "logoutEndpoint":           "https://login.authsamples.com/logout",
-        "postLogoutRedirectUri":    "https://mobile.authsamples.com/html/finaldesktopapp/postlogout.html",
+        "postLogoutRedirectUri":    "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
         "logoutCallbackPath":       "/logoutcallback"
     }
 }

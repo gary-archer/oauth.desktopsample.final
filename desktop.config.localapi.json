@@ -8,10 +8,10 @@
     "oauth": {
         "authority":                "https://dev-843469.oktapreview.com/oauth2/default",
         "clientId":                 "0oad9rqa0ryU4ROtx0h7",
-        "redirectUri":              "https://web.authsamples.com/desktopscheme/postlogin.html",
+        "redirectUri":              "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
         "scope":                    "openid profile email offline_access",
         "logoutEndpoint":           "v1/logout",
-        "postLogoutRedirectUri":    "https://web.authsamples.com/desktopscheme/postlogout.html",
+        "postLogoutRedirectUri":    "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
         "logoutCallbackPath":       "/logoutcallback"
     }
 }
