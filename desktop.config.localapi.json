@@ -1,0 +1,17 @@
+{
+    "app": {
+        "apiBaseUrl":               "https://api.mycompany.com:444/api",
+        "useProxy":                 false,
+        "proxyHost":                "http://127.0.0.1",
+        "proxyPort":                8888
+    },
+    "oauth": {
+        "authority":                "https://dev-843469.oktapreview.com/oauth2/default",
+        "clientId":                 "0oad9rqa0ryU4ROtx0h7",
+        "redirectUri":              "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
+        "scope":                    "openid profile email offline_access",
+        "logoutEndpoint":           "v1/logout",
+        "postLogoutRedirectUri":    "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
+        "logoutCallbackPath":       "/logoutcallback"
+    }
+}
