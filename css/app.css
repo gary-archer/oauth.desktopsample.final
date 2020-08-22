@@ -2,9 +2,9 @@
 {
     margin-top: 5px;
 }
-.signingincolor
+.imageRow
 {
-    color:green;
+    height: 80px;
 }
 .valuecolor
 {
@@ -14,9 +14,9 @@
 {
     color:green;
 }
-.largetext
+.signingincolor
 {
-    font-size: larger;
+    color:green;
 }
 .errorcolor
 {
@@ -25,6 +25,10 @@
 .errorlinecolor
 {
     color:darkblue;
+}
+.largetext
+{
+    font-size: larger;
 }
 .sessionid
 {
@@ -40,6 +44,6 @@
 {
     body
     {
-        font-size: 0.9em;
+        font-size: 0.85em;
     }
 }
