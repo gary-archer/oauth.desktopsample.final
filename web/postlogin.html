@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-<head>
     <head>
         <!-- Uses the technique from the extended AppAuth sample 
             https://github.com/iainmcgin/AppAuth-Demo -->
@@ -10,7 +9,7 @@
 
         <script>
             window.addEventListener('DOMContentLoaded', function() {
-                
+
                 // Update the error state
                 if (window.location.search.indexOf('error=') !== -1) {
                     var result = document.getElementById('result');
@@ -23,7 +22,7 @@
                 if (window.location.search) {
                     redirectUri += window.location.search;
                 }
-                document.getElementById('continueButton').onclick = () => {
+                document.getElementById('continueButton').onclick = function() {
                     window.location.href = redirectUri;
                 };
             });

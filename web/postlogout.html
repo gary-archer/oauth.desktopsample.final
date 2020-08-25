@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-<head>
     <head>
         <!-- Uses the technique from the extended AppAuth sample 
             https://github.com/iainmcgin/AppAuth-Demo -->
@@ -13,7 +12,7 @@
                 
                 // Forward the logout URL to our app
                 var redirectUri = "x-mycompany-desktopapp:/logoutcallback";
-                document.getElementById('continueButton').onclick = () => {
+                document.getElementById('continueButton').onclick = function() {
                     window.location.href = redirectUri;
                 };
             });
