@@ -6,6 +6,6 @@ Type=Application
 Encoding=UTF-8
 Name=Basic Desktop App
 Comment=OAuth 2.x Private URI Scheme Sample Application
-Exec=/home/gary/projects/authguidance.desktopsample.final/desktop/dist/basicdesktopapp-linux-x64/basicdesktopapp %U
+Exec=/home/gary/projects/authguidance.desktopsample.final/package/basicdesktopapp-linux-x64/basicdesktopapp %U
 Terminal=false
 MimeType=text/html;x-scheme-handler/x-mycompany-desktopapp
