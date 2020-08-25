@@ -212,8 +212,6 @@ class Main {
      * Dereference any window objects here
      */
     private _onClosed(): void {
-
-        this._unregisterPrivateUriScheme();
         this._window = null;
     }
 
@@ -231,11 +229,11 @@ class Main {
     /*
      * Handle private URI scheme registration
      */
-    private _registerPrivateUriScheme() {
+    private async _registerPrivateUriScheme(): Promise<void> {
 
-        if (!app.isPackaged) {
+        if (process.platform === 'win32') {
 
-            // During development, register our private URI scheme for a non packaged app
+            // Register the private URI scheme differently for Windows
             // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
             app.setAsDefaultProtocolClient(
                 this._privateSchemeName,
@@ -246,24 +244,6 @@ class Main {
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
             app.setAsDefaultProtocolClient(this._privateSchemeName);
-        }
-    }
-
-    /*
-     * Avoid leaving the registration in place so that we can switch between packaged and non packaged builds
-     */
-    private _unregisterPrivateUriScheme() {
-
-        if (!app.isPackaged && process.platform === 'win32') {
-
-            app.removeAsDefaultProtocolClient(
-                this._privateSchemeName,
-                process.execPath,
-                [app.getAppPath()]);
-
-        } else {
-
-            app.removeAsDefaultProtocolClient(this._privateSchemeName);
         }
     }
 
