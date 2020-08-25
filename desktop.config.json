@@ -1,7 +1,7 @@
 {
     "app": {
         "apiBaseUrl":               "https://api.authsamples.com/api",
-        "useProxy":                 true,
+        "useProxy":                 false,
         "proxyHost":                "http://127.0.0.1",
         "proxyPort":                8888
     },
