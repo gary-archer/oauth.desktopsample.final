@@ -90,13 +90,11 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         if (error) {
 
             // Handle error responses if required
-            const errorUri = authFields.error_uri;
-            const errorDescription = authFields.error_description;
-
+            const errorDescription = authFields.error_description?.replace(/\+/g, ' ');
             const errorJson = {
                 error,
                 error_description: errorDescription,
-                error_uri: errorUri,
+                error_uri: authFields.error_uri,
                 state,
             };
             authorizationError = new AuthorizationError(errorJson);
