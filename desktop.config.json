@@ -7,7 +7,7 @@
     },
     "oauth": {
         "authority":                "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_qqJgVeuTn",
-        "clientId":                 "49onjnhrr56v4thun3fljdji5",
+        "clientId":                 "1h8pildfi6a4bmfv2alj3fs6va",
         "redirectUri":              "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
         "scope":                    "openid profile email",
         "logoutEndpoint":           "https://login.authsamples.com/logout",
