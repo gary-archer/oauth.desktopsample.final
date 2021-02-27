@@ -7,7 +7,7 @@
     "lint": "npx eslint . --ext .ts,.tsx",
     "buildnative": "node_modules/.bin/electron-rebuild",
     "build": "npm run clean && npm run buildMainDev && npm run buildRendererDev && npm run copypreload",
-    "clean": "rimraf dist && copyfiles index.html desktop*.json css/* images/* package.json dist",
+    "clean": "rimraf dist && copyfiles index.html desktop*.json css/* package.json dist",
     "buildMainDev": "webpack --config webpack/webpack.config.main.dev.js",
     "buildMainProd": "webpack --config webpack/webpack.config.main.prod.js",
     "buildRendererDev": "webpack --config webpack/webpack.config.renderer.dev.js",
