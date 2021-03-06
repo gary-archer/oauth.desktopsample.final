@@ -1,4 +1,4 @@
-# authguidance.desktopsample.final
+# oauth.desktopsample.final
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/c795f06c1c5b416f92d8ba8d4257ff3c)](https://www.codacy.com/gh/gary-archer/authguidance.desktopsample.final/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gary-archer/authguidance.desktopsample.final&amp;utm_campaign=Badge_Grade)
 
