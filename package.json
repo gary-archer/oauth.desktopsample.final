@@ -60,7 +60,7 @@
     "@typescript-eslint/parser": "^4.16.1",
     "copyfiles": "^2.3.0",
     "electron": "11.2.3",
-    "electron-packager": "^15.1.0",
+    "electron-packager": "^15.2.0",
     "electron-rebuild": "^2.3.2",
     "eslint": "^7.15.0",
     "eslint-plugin-react": "^7.21.5",
