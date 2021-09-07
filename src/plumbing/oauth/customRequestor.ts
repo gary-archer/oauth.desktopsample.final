@@ -28,7 +28,7 @@ export class CustomRequestor extends Requestor {
             AxiosUtils.checkJson(response.data);
             return response.data as T;
 
-        } catch (e) {
+        } catch (e: any) {
 
             // If the response is an OAuth error object from the Authorization Server then throw that
             if (e.response && e.response.data) {

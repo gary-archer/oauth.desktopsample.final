@@ -292,7 +292,7 @@ export class AuthenticatorImpl implements Authenticator {
             this._tokens = newTokenData;
             await this._events.saveTokens(this._tokens);
 
-        } catch (e) {
+        } catch (e: any) {
 
             if (e.error === ErrorCodes.refreshTokenExpired) {
 
