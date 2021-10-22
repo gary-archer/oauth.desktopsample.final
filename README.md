@@ -6,8 +6,8 @@
 
 ### Overview
 
-* The final desktop code sample using OAuth and Open Id Connect, referenced in my blog at https://authguidance.com
-* **The goal of this sample is to implement Open Id Connect desktop logins with best usability and reliability**
+* The final desktop code sample using OAuth and OpenID Connect, referenced in my blog at https://authguidance.com
+* **The goal of this sample is to implement OpenID Connect desktop logins with best usability and reliability**
 
 ### Details
 
