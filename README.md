@@ -1,4 +1,4 @@
-# oauth.desktopsample.final
+# Final OAuth Desktop App
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/c795f06c1c5b416f92d8ba8d4257ff3c)](https://www.codacy.com/gh/gary-archer/oauth.desktopsample.final/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gary-archer/oauth.desktopsample.final&amp;utm_campaign=Badge_Grade)
 
