@@ -50,7 +50,7 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
         return (
             <>
                 <p className='signingincolor'>
-                    Please Sign In via your browser, then click Continue to return here ...
+                    Please sign in via your browser, then click continue to return here ...
                 </p>
             </>
         );

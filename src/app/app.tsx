@@ -78,6 +78,8 @@ export function App(props: AppProps): JSX.Element {
      * Redirect to the login required view when we need to sign in
      */
     function onLoginRequired(): void {
+
+        model.apiViewEvents.clearState();
         LoginNavigation.navigateToLoginRequired();
     }
 
@@ -131,7 +133,6 @@ export function App(props: AppProps): JSX.Element {
             await model.authenticator.login();
 
             // Move back to the location that took us to login required
-            model.apiViewEvents.clearState();
             LoginNavigation.restorePreLoginLocation();
 
         } catch (e) {
@@ -319,7 +320,7 @@ export function App(props: AppProps): JSX.Element {
                     <Switch>
                         <Route exact={true} path='/'            render={renderCompaniesView} />
                         <Route exact={true} path='/company=:id' render={renderTransactionsView} />
-                        <Route exact={true} path='/loggedout'   render={renderLoginRequiredView} />
+                        <Route exact={true} path='/loggedout*'  render={renderLoginRequiredView} />
                         <Route path='*'                         render={renderCompaniesView} />
                     </Switch>
                 </HashRouter>

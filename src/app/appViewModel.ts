@@ -46,9 +46,12 @@ export class AppViewModel {
         this._authenticator = null;
         this._apiClient = null;
 
-        // Create the event bus for communicating between views
+        // Create the event bus for messages between views
         this._eventBus = new EventBus();
+
+        // Register to receive Electron events from the main side of the app
         this._ipcEvents = new RendererEvents();
+        this._ipcEvents.register();
 
         // Create a helper class to notify us about views that make API calls
         // This will enable us to only trigger any login redirects once, after all views have tried to load

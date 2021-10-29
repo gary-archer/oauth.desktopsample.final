@@ -13,12 +13,12 @@ import {MainEvents} from './plumbing/ipc/mainEvents';
 class Main {
 
     private _window: BrowserWindow | null;
-    private _events: MainEvents;
+    private _ipcEvents: MainEvents;
     private _configuration: Configuration | null;
 
     public constructor() {
         this._window = null;
-        this._events = new MainEvents();
+        this._ipcEvents = new MainEvents();
         this._configuration = null;
         this._setupCallbacks();
     }
@@ -52,7 +52,7 @@ class Main {
 
         // First load configuration
         this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
-        this._events.configuration = this._configuration;
+        this._ipcEvents.configuration = this._configuration;
 
         // This method will be called when Electron has finished initialization and is ready to create browser windows
         // Some APIs can only be used after this event occurs
@@ -73,7 +73,7 @@ class Main {
         // For Windows or Linux we receive a startup deep link URL as a command line parameter
         const startupUrl = this._getDeepLinkUrl(process.argv);
         if (startupUrl) {
-            this._events.deepLinkStartupUrl = startupUrl;
+            this._ipcEvents.deepLinkStartupUrl = startupUrl;
         }
     }
 
@@ -99,7 +99,7 @@ class Main {
         });
 
         // Set values against the events instance
-        this._events.window = this._window;
+        this._ipcEvents.window = this._window;
 
         // Register for private URI scheme notifications
         this._registerPrivateUriScheme();
@@ -118,7 +118,7 @@ class Main {
         this._window.on('closed', this._onClosed);
 
         // Register for event based communication with the renderer process
-        this._events.register();
+        this._ipcEvents.register();
 
         // Open the developer tools at startup if required
         // this._window.webContents.openDevTools();
@@ -176,7 +176,7 @@ class Main {
         } else {
 
             // If this is a startup deep linking message we need to store it until after startup
-            this._events.deepLinkStartupUrl = schemeData;
+            this._ipcEvents.deepLinkStartupUrl = schemeData;
         }
     }
 
@@ -196,7 +196,7 @@ class Main {
         }
 
         // Send the event to the renderer side of the app
-        this._events.sendPrivateSchemeNotificationUrl(privateSchemeUrl);
+        this._ipcEvents.sendPrivateSchemeNotificationUrl(privateSchemeUrl);
     }
 
     /*
