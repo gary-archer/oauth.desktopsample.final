@@ -58,7 +58,7 @@ export class RendererEvents {
         // See if the app was started by a deep link
         const url = await this._sendIpcMessage(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
 
-        // If there was a startup URL set the hash location of the ReactJS app accordingly
+        // If there was a startup URL set the hash location of the React app accordingly
         // This ensures that we move straight to the linked page rather than rendering the default page first
         if (url) {
             const parsedUrl = this._tryParseUrl(url);

@@ -20,7 +20,7 @@ export class CustomRequestor extends Requestor {
                 url: settings.url,
                 method: settings.method as Method,
                 data: settings.data,
-                headers: settings.headers,
+                headers: settings.headers as any,
             };
             const response = await axios.request(options);
 

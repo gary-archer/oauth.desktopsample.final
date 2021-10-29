@@ -15,7 +15,7 @@
 
 ### Programming Languages
 
-* Electron, TypeScript and ReactJS are used to implement the Cross Platform Desktop App
+* Electron, TypeScript and React are used to implement the Cross Platform Desktop App
 
 ### Desktop Middleware Used
 

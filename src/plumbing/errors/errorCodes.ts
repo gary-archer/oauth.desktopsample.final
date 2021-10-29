@@ -37,7 +37,7 @@ export class ErrorCodes {
     // An error response fropm the API
     public static readonly apiResponseError = 'api_response_error';
 
-    // An error rendering a ReactJs view
+    // An error rendering a React view
     public static readonly renderError = 'react_render_error';
 
     // Returned by the API when the user edits the browser URL and ties to access an unauthorised company
