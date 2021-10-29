@@ -1,0 +1,3 @@
+1. Desktop sample 1 may now have a warning around customRequester.ts
+
+2. LoginRequiredView needs to subscribe to an event I think

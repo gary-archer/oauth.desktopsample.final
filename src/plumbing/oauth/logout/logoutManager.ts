@@ -1,6 +1,6 @@
 import {AuthorizationServiceConfiguration} from '@openid/appauth';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
-import {RendererEvents} from '../../events/rendererEvents';
+import {RendererEvents} from '../../ipc/rendererEvents';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {LogoutState} from './logoutState';
 import {LogoutUrlBuilder} from './logoutUrlBuilder';
@@ -43,6 +43,7 @@ export class LogoutManager {
 
                 // Try to start the logout
                 await this._startLogout(resolve, reject);
+
             } catch (e) {
 
                 // Handle any error conditions
@@ -54,10 +55,10 @@ export class LogoutManager {
     /*
      * Do the work to start the logout
      */
-    /* eslint-disable @typescript-eslint/no-unused-vars */
     private async _startLogout(onSuccess: () => void, onError: (e: any) => void): Promise<void> {
 
         // Create a callback to wait for completion
+        /* eslint-disable @typescript-eslint/no-unused-vars */
         const callback = (queryParams: any) => {
 
             // Complete the promise when the callback is invoked

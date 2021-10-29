@@ -9,7 +9,7 @@ import {
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../../errors/errorCodes';
 import {ErrorHandler} from '../../errors/errorHandler';
-import {RendererEvents} from '../../events/rendererEvents';
+import {RendererEvents} from '../../ipc/rendererEvents';
 import {BrowserLoginRequestHandler} from './browserLoginRequestHandler';
 import {LoginState} from './loginState';
 

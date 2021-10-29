@@ -9,7 +9,7 @@ import {
     AuthorizationServiceConfiguration,
     BasicQueryStringUtils,
     DefaultCrypto} from '@openid/appauth';
-import {RendererEvents} from '../../events/rendererEvents';
+import {RendererEvents} from '../../ipc/rendererEvents';
 import {LoginState} from './loginState';
 
 /*

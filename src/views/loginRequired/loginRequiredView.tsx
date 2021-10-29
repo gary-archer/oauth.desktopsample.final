@@ -1,62 +1,51 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import {EventNames} from '../../plumbing/events/eventNames';
+import {LoginStartedEvent} from '../../plumbing/events/loginStartedEvent';
+import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {LoginRequiredViewProps} from './loginRequiredViewProps';
 import {LoginRequiredViewState} from './loginRequiredViewState';
 
 /*
- * Render the simple login required view
+ * Render the login required view
  */
-export class LoginRequiredView extends React.Component<LoginRequiredViewProps, LoginRequiredViewState> {
+export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
 
-    /*
-     * When the signing in state changes during login we update the view's state
-     */
-    public static getDerivedStateFromProps(
-        nextProps: LoginRequiredViewProps,
-        prevState: LoginRequiredViewState): LoginRequiredViewState | null {
+    const [state, setState] = useState<LoginRequiredViewState>({
+        isSigningIn: false,
+    });
 
-        // Return updated state
-        if (nextProps.isSigningIn !== prevState.isSigningIn) {
-            return {...prevState, isSigningIn: nextProps.isSigningIn};
-        }
+    useEffect(() => {
+        startup();
+        return () => cleanup();
+    }, []);
 
-        // Indicate no changes to state
-        return null;
+    function startup() {
+
+        // Inform other parts of the app that the main view is no longer active
+        props.eventBus.emit(EventNames.Navigate, null, new NavigateEvent(false));
+
+        // Subscribe to the login started event, triggered when a header button is clicked
+        props.eventBus.on(EventNames.LoginStarted, onLoginStarted);
     }
 
-    /*
-     * Initialise state when constructed
-     */
-    public constructor(props: any) {
-
-        super(props);
-        props.onLoading();
-
-        this.state = {
-            isSigningIn: false,
-        };
+    function cleanup() {
+        props.eventBus.detach(EventNames.LoginStarted, onLoginStarted);
     }
 
-    /*
-     * Render the simple logout view
-     */
-    public render(): React.ReactNode {
-
-        return  (
-            <div className='row'>
-                <div className='col-12 text-center mx-auto loginrequired'>
-                    <h5>
-                        You are logged out - click HOME to sign in ...
-                    </h5>
-                    {this.state.isSigningIn && this._renderSigningIn()}
-                </div>
-            </div>
-        );
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    function onLoginStarted(_event: LoginStartedEvent) {
+        setState((s) => {
+            return {
+                ...s,
+                isSigningIn: true,
+            };
+        });
     }
 
     /*
      * When sign in is clicked we show some green text while the user waits
      */
-    private _renderSigningIn(): React.ReactNode {
+    function renderSigningIn(): JSX.Element {
 
         return (
             <>
@@ -66,4 +55,15 @@ export class LoginRequiredView extends React.Component<LoginRequiredViewProps, L
             </>
         );
     }
+
+    return  (
+        <div className='row'>
+            <div className='col-12 text-center mx-auto'>
+                <h6>
+                    You are logged out - click HOME to sign in ...
+                </h6>
+                {state.isSigningIn && renderSigningIn()}
+            </div>
+        </div>
+    );
 }

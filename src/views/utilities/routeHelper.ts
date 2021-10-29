@@ -14,6 +14,6 @@ export class RouteHelper {
      * Return true if we are in the login required view
      */
     public static isInLoginRequiredView(): boolean {
-        return (location.hash.indexOf('loggedout') !== -1);
+        return location.hash.indexOf('loggedout') !== -1;
     }
 }

@@ -1,13 +1,9 @@
-import {ApiClient} from '../../api/client/apiClient';
+import EventBus from 'js-event-bus';
 
 /*
  * Input to the session view
  */
 export interface SessionViewProps {
-
-    // Visibility
-    isVisible: boolean;
-
-    // The API client provides the footer session id
-    apiClient: ApiClient;
+    sessionId: string;
+    eventBus: EventBus;
 }

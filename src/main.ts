@@ -5,7 +5,7 @@ import path from 'path';
 import {Configuration} from './configuration/configuration';
 import {ConfigurationLoader} from './configuration/configurationLoader';
 import {ErrorHandler} from './plumbing/errors/errorHandler';
-import {MainEvents} from './plumbing/events/mainEvents';
+import {MainEvents} from './plumbing/ipc/mainEvents';
 
 /*
  * The Electron main process entry point
