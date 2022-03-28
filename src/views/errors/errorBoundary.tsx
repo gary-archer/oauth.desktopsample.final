@@ -1,12 +1,13 @@
 import React, {ErrorInfo} from 'react';
 import {ErrorFactory} from '../../plumbing/errors/errorFactory';
+import {ErrorBoundaryProps} from './errorBoundaryProps';
 import {ErrorBoundaryState} from './errorBoundaryState';
 import {ErrorSummaryView} from './errorSummaryView';
 
 /*
  * Manages catching of rendering errors anywhere in the tree view
  */
-export class ErrorBoundary extends React.Component<any, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
     /*
      * Update state so the next render will show the fallback UI
