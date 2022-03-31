@@ -99,7 +99,7 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
     return  (
         <>
             <ErrorSummaryView {...errorProps}/>
-            <CompaniesView {...childProps}/>
+            {state.companies.length > 0 && <CompaniesView {...childProps}/>}
         </>
     );
 
