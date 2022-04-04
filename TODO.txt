@@ -1,0 +1,4 @@
+1. Login navigation is not right yet
+
+2. RendererEvents needs to be given the hashHistory, but this is a view lifecycle object.
+   Currently RendererEvents is managed by the view model.

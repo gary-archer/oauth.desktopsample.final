@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {useParams} from 'react-router-dom';
 import {CompanyTransactions} from '../../api/entities/companyTransactions';
 import {UIError} from '../../plumbing/errors/uiError';
 import {EventNames} from '../../plumbing/events/eventNames';
@@ -16,7 +17,8 @@ import {TransactionsView} from './transactionsView';
 export function TransactionsContainer(props: TransactionsContainerProps): JSX.Element {
 
     const model = props.viewModel;
-    const companyId = props.match.params.id;
+    const params = useParams();
+    const companyId = params.id!;
     const [state, setState] = useState<TransactionsContainerState>({
         data: null,
     });
@@ -75,7 +77,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
             if (isExpected) {
 
                 // For 'expected' errors, return to the home view
-                location.hash = '#';
+                props.history.push('/');
 
             } else {
 

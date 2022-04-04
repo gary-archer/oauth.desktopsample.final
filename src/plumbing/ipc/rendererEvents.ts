@@ -140,8 +140,7 @@ export class RendererEvents {
     }
 
     /*
-     * Handle deep linking data originating from a URL like x-mycompany-desktopapp:/company=2
-     * For our sample this method receives /company=2 and updates it to #company=2
+     * Handle deep linking data originating from a URL like x-mycompany-desktopapp:/companies/2
      */
     private _handleDeepLinkingNotification(deepLinkingPath: string): void {
 

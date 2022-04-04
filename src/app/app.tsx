@@ -1,12 +1,13 @@
+import {createHashHistory} from 'history';
 import React, {useEffect, useState} from 'react';
 import Modal from 'react-modal';
-import {HashRouter, Route, Switch} from 'react-router-dom';
+import {Route, Routes} from 'react-router-dom';
 import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
 import {ErrorFactory} from '../plumbing/errors/errorFactory';
 import {EventNames} from '../plumbing/events/eventNames';
 import {LoginStartedEvent} from '../plumbing/events/loginStartedEvent';
 import {SetErrorEvent} from '../plumbing/events/setErrorEvent';
-import {LoginNavigation} from '../plumbing/oauth/login/loginNavigation';
+import {LoginNavigator} from '../plumbing/oauth/login/loginNavigator';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {ErrorBoundary} from '../views/errors/errorBoundary';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
@@ -15,7 +16,7 @@ import {SessionView} from '../views/headings/sessionView';
 import {TitleView} from '../views/headings/titleView';
 import {LoginRequiredView} from '../views/loginRequired/loginRequiredView';
 import {TransactionsContainer} from '../views/transactions/transactionsContainer';
-import {RouteHelper} from '../views/utilities/routeHelper';
+import {CustomRouter} from '../views/utilities/customRouter';
 import {AppProps} from './appProps';
 import {AppState} from './appState';
 
@@ -35,6 +36,10 @@ export function App(props: AppProps): JSX.Element {
         startup();
         return () => cleanup();
     }, []);
+
+    // Set up React Router navigation
+    const hashHistory = createHashHistory();
+    const loginNavigator = new LoginNavigator(hashHistory);
 
     /*
      * Run the app's startup logic
@@ -79,8 +84,8 @@ export function App(props: AppProps): JSX.Element {
      */
     function onLoginRequired(): void {
 
-        model.apiViewEvents.clearState();
-        LoginNavigation.navigateToLoginRequired();
+        model.apiViewEvents.clearState();;
+        loginNavigator.navigateToLoginRequired();
     }
 
     /*
@@ -96,7 +101,7 @@ export function App(props: AppProps): JSX.Element {
 
         if (state.isInitialised) {
 
-            if (RouteHelper.isInLoginRequiredView()) {
+            if (hashHistory.location.pathname === '/loggedout') {
 
                 // Trigger a login when the Home button is clicked in the Login Required view
                 const isLoggedIn = await model.authenticator.isLoggedIn();
@@ -106,7 +111,7 @@ export function App(props: AppProps): JSX.Element {
                 }
             }
 
-            if (RouteHelper.isInHomeView()) {
+            if (hashHistory.location.pathname === '/') {
 
                 // Force a reload of the main view if we are already in the home view
                 model.reloadMainView();
@@ -114,7 +119,7 @@ export function App(props: AppProps): JSX.Element {
             } else {
 
                 // Otherwise navigate to the Home View
-                location.hash = '#';
+                hashHistory.push('/');
             }
         }
     }
@@ -134,7 +139,7 @@ export function App(props: AppProps): JSX.Element {
             await model.authenticator.login();
 
             // Move back to the location that took us to login required
-            LoginNavigation.restorePreLoginLocation();
+            loginNavigator.restorePreLoginLocation();
 
         } catch (e) {
 
@@ -162,7 +167,7 @@ export function App(props: AppProps): JSX.Element {
         } finally {
 
             // Move to the logged out view upon completion
-            location.hash = '#loggedout';
+            hashHistory.push('/loggedout');
         }
     }
 
@@ -283,21 +288,16 @@ export function App(props: AppProps): JSX.Element {
 
         const transactionsViewProps = {
             viewModel: model.getTransactionsViewModel(),
+            history: hashHistory,
         };
 
         const loginRequiredProps = {
             eventBus: model.eventBus,
         };
 
-        // Callbacks to prevent multi line JSX warnings
-        const renderCompaniesView = () =>
-            <CompaniesContainer {...companiesViewProps} />;
-
-        const renderTransactionsView = (routeProps: any) =>
-            <TransactionsContainer {...routeProps} {...transactionsViewProps} />;
-
-        const renderLoginRequiredView = () =>
-            <LoginRequiredView {...loginRequiredProps} />;
+        const routerProps = {
+            history: hashHistory
+        };
 
         // Render the tree view
         return (
@@ -306,14 +306,14 @@ export function App(props: AppProps): JSX.Element {
                 <HeaderButtonsView {...headerButtonProps} />
                 <ErrorSummaryView {...errorProps} />
                 <SessionView {...sessionProps} />
-                <HashRouter hashType='noslash'>
-                    <Switch>
-                        <Route exact={true} path='/'            render={renderCompaniesView} />
-                        <Route exact={true} path='/company=:id' render={renderTransactionsView} />
-                        <Route exact={true} path='/loggedout*'  render={renderLoginRequiredView} />
-                        <Route path='*'                         render={renderCompaniesView} />
-                    </Switch>
-                </HashRouter>
+                <CustomRouter {...routerProps}>
+                    <Routes>
+                        <Route path='/'              element={<CompaniesContainer {...companiesViewProps} />} />
+                        <Route path='/companies/:id' element={<TransactionsContainer {...transactionsViewProps} />} />
+                        <Route path='/loggedout'     element={<LoginRequiredView {...loginRequiredProps} />} />
+                        <Route path='*'              element={<CompaniesContainer {...companiesViewProps} />} />
+                    </Routes>
+                </CustomRouter>
             </ErrorBoundary>
         );
     }
