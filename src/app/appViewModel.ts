@@ -50,7 +50,7 @@ export class AppViewModel {
         this._eventBus = new EventBus();
 
         // Register to receive Electron events from the main side of the app
-        this._ipcEvents = new RendererEvents();
+        this._ipcEvents = new RendererEvents(this._eventBus);
         this._ipcEvents.register();
 
         // Create a helper class to notify us about views that make API calls

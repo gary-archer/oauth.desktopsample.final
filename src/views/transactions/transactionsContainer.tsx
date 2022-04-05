@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useParams} from 'react-router-dom';
+import {useLocation, useParams} from 'react-router-dom';
 import {CompanyTransactions} from '../../api/entities/companyTransactions';
 import {UIError} from '../../plumbing/errors/uiError';
 import {EventNames} from '../../plumbing/events/eventNames';
@@ -7,6 +7,7 @@ import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {ReloadMainViewEvent} from '../../plumbing/events/reloadMainViewEvent';
 import {SetErrorEvent} from '../../plumbing/events/setErrorEvent';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
+import {CurrentLocation} from '../utilities/currentLocation';
 import {TransactionsContainerProps} from './transactionsContainerProps';
 import {TransactionsContainerState} from './transactionsContainerState';
 import {TransactionsView} from './transactionsView';
@@ -28,13 +29,14 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
         return () => cleanup();
     }, [companyId]);
 
+    CurrentLocation.path = useLocation().pathname;
+
     /*
      * Load data then listen for the reload event
      */
     async function startup(): Promise<void> {
 
         // Inform other parts of the app which view is active
-        console.log('*** Transactions');
         model.eventBus.emit(EventNames.Navigate, null, new NavigateEvent(true));
 
         // Subscribe for reload events
@@ -78,7 +80,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
             if (isExpected) {
 
                 // For 'expected' errors, return to the home view
-                props.history.push('/');
+                props.navigate('/');
 
             } else {
 
