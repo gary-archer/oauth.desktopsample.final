@@ -38,7 +38,6 @@ export function App(props: AppProps): JSX.Element {
     }, []);
 
     // Set up React Router navigation
-    //const hashHistory = createHashHistory();
     const navigate = useNavigate();
     const loginNavigator = new LoginNavigator(navigate);
 
