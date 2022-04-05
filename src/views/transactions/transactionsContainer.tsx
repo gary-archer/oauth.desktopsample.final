@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {useLocation, useParams} from 'react-router-dom';
 import {CompanyTransactions} from '../../api/entities/companyTransactions';
 import {UIError} from '../../plumbing/errors/uiError';
 import {EventNames} from '../../plumbing/events/eventNames';
@@ -6,6 +7,7 @@ import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {ReloadMainViewEvent} from '../../plumbing/events/reloadMainViewEvent';
 import {SetErrorEvent} from '../../plumbing/events/setErrorEvent';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
+import {CurrentLocation} from '../utilities/currentLocation';
 import {TransactionsContainerProps} from './transactionsContainerProps';
 import {TransactionsContainerState} from './transactionsContainerState';
 import {TransactionsView} from './transactionsView';
@@ -16,7 +18,8 @@ import {TransactionsView} from './transactionsView';
 export function TransactionsContainer(props: TransactionsContainerProps): JSX.Element {
 
     const model = props.viewModel;
-    const companyId = props.match.params.id;
+    const params = useParams();
+    const companyId = params.id!;
     const [state, setState] = useState<TransactionsContainerState>({
         data: null,
     });
@@ -25,6 +28,8 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
         startup();
         return () => cleanup();
     }, [companyId]);
+
+    CurrentLocation.path = useLocation().pathname;
 
     /*
      * Load data then listen for the reload event
@@ -75,7 +80,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
             if (isExpected) {
 
                 // For 'expected' errors, return to the home view
-                location.hash = '#';
+                props.navigate('/');
 
             } else {
 

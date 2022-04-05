@@ -1,14 +1,14 @@
-import {RouteComponentProps} from 'react-router-dom';
+import {NavigateFunction} from 'react-router-dom';
 import {TransactionsContainerViewModel} from './transactionsContainerViewModel';
 
 /*
  * Input to the transactions container
  */
-export interface TransactionsContainerProps extends RouteComponentProps<{id: string}> {
-
-    // Path parameters
-    params?: {id: string};
+export interface TransactionsContainerProps {
 
     // The view model
-    viewModel: TransactionsContainerViewModel
+    viewModel: TransactionsContainerViewModel;
+
+    // A navigate function
+    navigate: NavigateFunction;
 }

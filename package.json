@@ -33,7 +33,7 @@
   "license": "MIT",
   "dependencies": {
     "@openid/appauth": "^1.3.0",
-    "axios": "^0.23.0",
+    "axios": "^0.26.0",
     "electron-default-menu": "^1.0.2",
     "electron-log": "^4.3.0",
     "fs-extra": "^9.0.1",
@@ -45,8 +45,8 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-modal": "^3.14.3",
-    "react-router-dom": "^5.2.0",
-    "url-parse": "1.5.9",
+    "react-router-dom": "^6.2.2",
+    "url-parse": "1.5.10",
     "username": "^5.1.0"
   },
   "devDependencies": {
@@ -55,7 +55,6 @@
     "@types/react": "^17.0.13",
     "@types/react-dom": "^17.0.8",
     "@types/react-modal": "^3.12.0",
-    "@types/react-router-dom": "^5.1.7",
     "@types/url-parse": "^1.4.4",
     "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",

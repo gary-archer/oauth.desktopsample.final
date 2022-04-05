@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import Modal from 'react-modal';
-import {HashRouter, Route, Switch} from 'react-router-dom';
+import {Route, Routes, useNavigate} from 'react-router-dom';
 import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
 import {ErrorFactory} from '../plumbing/errors/errorFactory';
+import {DeepLinkEvent} from '../plumbing/events/deepLinkEvent';
 import {EventNames} from '../plumbing/events/eventNames';
 import {LoginStartedEvent} from '../plumbing/events/loginStartedEvent';
 import {SetErrorEvent} from '../plumbing/events/setErrorEvent';
-import {LoginNavigation} from '../plumbing/oauth/login/loginNavigation';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {ErrorBoundary} from '../views/errors/errorBoundary';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
@@ -15,7 +15,8 @@ import {SessionView} from '../views/headings/sessionView';
 import {TitleView} from '../views/headings/titleView';
 import {LoginRequiredView} from '../views/loginRequired/loginRequiredView';
 import {TransactionsContainer} from '../views/transactions/transactionsContainer';
-import {RouteHelper} from '../views/utilities/routeHelper';
+import {CurrentLocation} from '../views/utilities/currentLocation';
+import {LoginNavigator} from '../views/utilities/loginNavigator';
 import {AppProps} from './appProps';
 import {AppState} from './appState';
 
@@ -36,6 +37,11 @@ export function App(props: AppProps): JSX.Element {
         return () => cleanup();
     }, []);
 
+    // Set up React Router navigation
+    //const hashHistory = createHashHistory();
+    const navigate = useNavigate();
+    const loginNavigator = new LoginNavigator(navigate);
+
     /*
      * Run the app's startup logic
      */
@@ -51,6 +57,7 @@ export function App(props: AppProps): JSX.Element {
 
             // Subscribe to application events
             model.eventBus.on(EventNames.LoginRequired, onLoginRequired);
+            model.eventBus.on(EventNames.DeepLink, onDeepLink);
 
             // Update state
             setState((s) => {
@@ -72,6 +79,7 @@ export function App(props: AppProps): JSX.Element {
 
         // Unsubscribe from application events
         model.eventBus.detach(EventNames.LoginRequired, onLoginRequired);
+        model.eventBus.detach(EventNames.DeepLink, onDeepLink);
     }
 
     /*
@@ -80,7 +88,7 @@ export function App(props: AppProps): JSX.Element {
     function onLoginRequired(): void {
 
         model.apiViewEvents.clearState();
-        LoginNavigation.navigateToLoginRequired();
+        loginNavigator.navigateToLoginRequired();
     }
 
     /*
@@ -96,7 +104,7 @@ export function App(props: AppProps): JSX.Element {
 
         if (state.isInitialised) {
 
-            if (RouteHelper.isInLoginRequiredView()) {
+            if (CurrentLocation.path === '/loggedout') {
 
                 // Trigger a login when the Home button is clicked in the Login Required view
                 const isLoggedIn = await model.authenticator.isLoggedIn();
@@ -106,7 +114,7 @@ export function App(props: AppProps): JSX.Element {
                 }
             }
 
-            if (RouteHelper.isInHomeView()) {
+            if (CurrentLocation.path === '/') {
 
                 // Force a reload of the main view if we are already in the home view
                 model.reloadMainView();
@@ -114,9 +122,16 @@ export function App(props: AppProps): JSX.Element {
             } else {
 
                 // Otherwise navigate to the Home View
-                location.hash = '#';
+                navigate('/');
             }
         }
+    }
+
+    /*
+     * Navigate to deep links when received
+     */
+    function onDeepLink(event: DeepLinkEvent): void {
+        navigate(event.path);
     }
 
     /*
@@ -134,7 +149,15 @@ export function App(props: AppProps): JSX.Element {
             await model.authenticator.login();
 
             // Move back to the location that took us to login required
-            LoginNavigation.restorePreLoginLocation();
+            loginNavigator.restorePreLoginLocation();
+
+            // Reset the re-render flag
+            setState((s) => {
+                return {
+                    ...s,
+                    rerender: false,
+                };
+            });
 
         } catch (e) {
 
@@ -162,7 +185,7 @@ export function App(props: AppProps): JSX.Element {
         } finally {
 
             // Move to the logged out view upon completion
-            location.hash = '#loggedout';
+            navigate('/loggedout');
         }
     }
 
@@ -283,21 +306,12 @@ export function App(props: AppProps): JSX.Element {
 
         const transactionsViewProps = {
             viewModel: model.getTransactionsViewModel(),
+            navigate,
         };
 
         const loginRequiredProps = {
             eventBus: model.eventBus,
         };
-
-        // Callbacks to prevent multi line JSX warnings
-        const renderCompaniesView = () =>
-            <CompaniesContainer {...companiesViewProps} />;
-
-        const renderTransactionsView = (routeProps: any) =>
-            <TransactionsContainer {...routeProps} {...transactionsViewProps} />;
-
-        const renderLoginRequiredView = () =>
-            <LoginRequiredView {...loginRequiredProps} />;
 
         // Render the tree view
         return (
@@ -306,14 +320,12 @@ export function App(props: AppProps): JSX.Element {
                 <HeaderButtonsView {...headerButtonProps} />
                 <ErrorSummaryView {...errorProps} />
                 <SessionView {...sessionProps} />
-                <HashRouter hashType='noslash'>
-                    <Switch>
-                        <Route exact={true} path='/'            render={renderCompaniesView} />
-                        <Route exact={true} path='/company=:id' render={renderTransactionsView} />
-                        <Route exact={true} path='/loggedout*'  render={renderLoginRequiredView} />
-                        <Route path='*'                         render={renderCompaniesView} />
-                    </Switch>
-                </HashRouter>
+                <Routes>
+                    <Route path='/'              element={<CompaniesContainer {...companiesViewProps} />} />
+                    <Route path='/companies/:id' element={<TransactionsContainer {...transactionsViewProps} />} />
+                    <Route path='/loggedout'     element={<LoginRequiredView {...loginRequiredProps} />} />
+                    <Route path='*'              element={<CompaniesContainer {...companiesViewProps} />} />
+                </Routes>
             </ErrorBoundary>
         );
     }

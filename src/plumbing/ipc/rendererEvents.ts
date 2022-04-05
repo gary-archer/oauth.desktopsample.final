@@ -1,5 +1,8 @@
+import EventBus from 'js-event-bus';
 import urlparse from 'url-parse';
 import {Configuration} from '../../configuration/configuration';
+import {DeepLinkEvent} from '../../plumbing/events/deepLinkEvent';
+import {EventNames} from '../../plumbing/events/eventNames';
 import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
 import {IpcEventNames} from './ipcEventNames';
@@ -10,12 +13,14 @@ import {TokenData} from '../oauth/tokenData';
  */
 export class RendererEvents {
 
+    private readonly _eventBus: EventBus;
     private readonly _api: any;
     private _loginState: LoginState | null;
     private _logoutState: LogoutState | null;
     private _logoutCallbackPath: string | null;
 
-    public constructor() {
+    public constructor(eventBus: EventBus) {
+        this._eventBus = eventBus;
         this._api = (window as any).api;
         this._loginState = null;
         this._logoutState = null;
@@ -140,13 +145,10 @@ export class RendererEvents {
     }
 
     /*
-     * Handle deep linking data originating from a URL like x-mycompany-desktopapp:/company=2
-     * For our sample this method receives /company=2 and updates it to #company=2
+     * Handle deep linking data originating from a URL like x-mycompany-desktopapp:/companies/2
      */
-    private _handleDeepLinkingNotification(deepLinkingPath: string): void {
-
-        const deepLinkedHashLocation = '#' + deepLinkingPath.substring(1);
-        location.hash = deepLinkedHashLocation;
+    private _handleDeepLinkingNotification(path: string): void {
+        this._eventBus.emit(EventNames.DeepLink, null, new DeepLinkEvent(path));
     }
 
     /*
@@ -166,5 +168,6 @@ export class RendererEvents {
      */
     private _setupCallbacks() {
         this._handlePrivateUriSchemeNotification = this._handlePrivateUriSchemeNotification.bind(this);
+        this._handleDeepLinkingNotification = this._handleDeepLinkingNotification.bind(this);
     }
 }

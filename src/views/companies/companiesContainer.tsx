@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {useLocation} from 'react-router-dom';
 import {Company} from '../../api/entities/company';
 import {UIError} from '../../plumbing/errors/uiError';
 import {EventNames} from '../../plumbing/events/eventNames';
@@ -6,6 +7,7 @@ import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {ReloadMainViewEvent} from '../../plumbing/events/reloadMainViewEvent';
 import {SetErrorEvent} from '../../plumbing/events/setErrorEvent';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
+import {CurrentLocation} from '../utilities/currentLocation';
 import {CompaniesContainerProps} from './companiesContainerProps';
 import {CompaniesContainerState} from './companiesContainerState';
 import {CompaniesView} from './companiesView';
@@ -24,6 +26,8 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
         startup();
         return () => cleanup();
     }, []);
+
+    CurrentLocation.path = useLocation().pathname;
 
     /*
      * Load data then listen for the reload event

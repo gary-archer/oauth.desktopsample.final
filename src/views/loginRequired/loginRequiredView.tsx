@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from 'react';
+import {useLocation} from 'react-router-dom';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {LoginStartedEvent} from '../../plumbing/events/loginStartedEvent';
 import {NavigateEvent} from '../../plumbing/events/navigateEvent';
+import {CurrentLocation} from '../utilities/currentLocation';
 import {LoginRequiredViewProps} from './loginRequiredViewProps';
 import {LoginRequiredViewState} from './loginRequiredViewState';
 
@@ -18,6 +20,8 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
         startup();
         return () => cleanup();
     }, []);
+
+    CurrentLocation.path = useLocation().pathname;
 
     function startup() {
 
