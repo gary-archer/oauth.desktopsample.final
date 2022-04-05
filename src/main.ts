@@ -121,7 +121,7 @@ class Main {
         this._ipcEvents.register();
 
         // Open the developer tools at startup if required
-        // this._window.webContents.openDevTools();
+        this._window.webContents.openDevTools();
     }
 
     /*

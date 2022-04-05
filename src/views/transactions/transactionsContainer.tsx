@@ -34,6 +34,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
     async function startup(): Promise<void> {
 
         // Inform other parts of the app which view is active
+        console.log('*** Transactions');
         model.eventBus.emit(EventNames.Navigate, null, new NavigateEvent(true));
 
         // Subscribe for reload events

@@ -29,6 +29,7 @@ export function App(props: AppProps): JSX.Element {
     const model = props.viewModel;
     const [state, setState] = useState<AppState>({
         isInitialised: model.isInitialised,
+        rerender: false,
     });
 
     // Startup runs only once
@@ -47,6 +48,7 @@ export function App(props: AppProps): JSX.Element {
     async function startup(): Promise<void> {
 
         // Initialise the modal dialog system used for error popups
+        console.log('*** Create app');
         Modal.setAppElement('#root');
 
         try {
@@ -84,8 +86,17 @@ export function App(props: AppProps): JSX.Element {
      */
     function onLoginRequired(): void {
 
+        console.log('*** app receiving onLoginRequired');
         model.apiViewEvents.clearState();;
         loginNavigator.navigateToLoginRequired();
+
+        // Force a rerender since history.push does not work after receiving an event
+        setState((s) => {
+            return {
+                ...s,
+                rerender: true,
+            };
+        });
     }
 
     /*
@@ -140,6 +151,14 @@ export function App(props: AppProps): JSX.Element {
 
             // Move back to the location that took us to login required
             loginNavigator.restorePreLoginLocation();
+
+            // Reset the re-render flag
+            setState((s) => {
+                return {
+                    ...s,
+                    rerender: false,
+                };
+            });
 
         } catch (e) {
 
