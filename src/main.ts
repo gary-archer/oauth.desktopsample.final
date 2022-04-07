@@ -119,7 +119,7 @@ class Main {
 
         // Open the developer tools at startup if required
         if (this._allowDevTools) {
-           this._window.webContents.openDevTools();
+            this._window.webContents.openDevTools();
         }
     }
 
