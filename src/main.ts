@@ -164,10 +164,17 @@ class Main {
         // This prevents show dev tools from working, so control this via a property that can be set during development
         session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 
-            if (!this._allowDevTools) {
+            let policy = '';
+            if (this._allowDevTools) {
 
+                // The insecure CSP is used when using Electron devtools
+                policy += "script-src 'self' 'unsafe-eval'";
+
+            } else {
+
+                // The secure CSP is used otherwise
                 const trustedHosts = this._configuration!.app.trustedHosts.join(' ');
-                let policy = "default-src 'none';";
+                policy += "default-src 'none';";
                 policy += " script-src 'self';";
                 policy += ` connect-src 'self' ${trustedHosts};`;
                 policy += " child-src 'self';";
@@ -177,14 +184,14 @@ class Main {
                 policy += " frame-ancestors 'none';";
                 policy += " base-uri 'self';";
                 policy += " form-action 'self'";
-
-                callback({
-                    responseHeaders: {
-                        ...details.responseHeaders,
-                        'Content-Security-Policy': [policy],
-                    },
-                });
             }
+
+            callback({
+                responseHeaders: {
+                    ...details.responseHeaders,
+                    'Content-Security-Policy': [policy],
+                },
+            });
         });
     }
 
