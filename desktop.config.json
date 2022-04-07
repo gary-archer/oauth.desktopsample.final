@@ -1,6 +1,11 @@
 {
     "app": {
-        "apiBaseUrl":               "https://api.authsamples.com/api"
+        "apiBaseUrl":               "https://api.authsamples.com/api",
+        "trustedHosts": [
+                                    "https://api.authsamples.com",
+                                    "https://login.authsamples.com",
+                                    "https://cognito-idp.eu-west-2.amazonaws.com"
+        ]
     },
     "oauth": {
         "authority":                "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_qqJgVeuTn",

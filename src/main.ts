@@ -1,5 +1,4 @@
-import {app, BrowserWindow, Menu, session, shell} from 'electron';
-import DefaultMenu from 'electron-default-menu';
+import {app, BrowserWindow, session} from 'electron';
 import log from 'electron-log';
 import path from 'path';
 import {Configuration} from './configuration/configuration';
@@ -15,11 +14,13 @@ class Main {
     private _window: BrowserWindow | null;
     private _ipcEvents: MainEvents;
     private _configuration: Configuration | null;
+    private _allowDevTools: boolean;
 
     public constructor() {
         this._window = null;
         this._ipcEvents = new MainEvents();
         this._configuration = null;
+        this._allowDevTools = false;
         this._setupCallbacks();
     }
 
@@ -104,15 +105,11 @@ class Main {
         // Register for private URI scheme notifications
         this._registerPrivateUriScheme();
 
-        // Ensure that our window has its own menu after Electron Packager has run
-        const menu = DefaultMenu(app, shell);
-        Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
-
         // Load the index.html of the app from the file system
         this._window.loadFile('./index.html');
 
         // Configure HTTP headers
-        this._initialiseOutgoingHttpRequestHeaders();
+        this._initialiseHttpHeaders();
 
         // Emitted when the window is closed
         this._window.on('closed', this._onClosed);
@@ -121,7 +118,9 @@ class Main {
         this._ipcEvents.register();
 
         // Open the developer tools at startup if required
-        // this._window.webContents.openDevTools();
+        if (this._allowDevTools) {
+           this._window.webContents.openDevTools();
+        }
     }
 
     /*
@@ -146,20 +145,47 @@ class Main {
     }
 
     /*
-     * Remove the 'Origin: file://' default header which may be rejected for security reasons with this message
-     * 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
+     * Set required or recommended headers
      */
-    private _initialiseOutgoingHttpRequestHeaders() {
+    private _initialiseHttpHeaders() {
 
-        const headerCallback = (details: any, callback: any) => {
+        // Remove the 'Origin: file://' default header which may be rejected for security reasons with this message
+        // 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
+        session.defaultSession.webRequest.onBeforeSendHeaders({urls: []} as any, (details, callback) => {
 
             if (details.requestHeaders.Origin) {
                 delete details.requestHeaders.Origin;
             }
 
             callback({cancel: false, requestHeaders: details.requestHeaders});
-        };
-        session.defaultSession.webRequest.onBeforeSendHeaders({urls: []} as any, headerCallback);
+        });
+
+        // Set a content security policy as a security best practice
+        // This prevents show dev tools from working, so control this via a property that can be set during development
+        session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+
+            if (!this._allowDevTools) {
+
+                const trustedHosts = this._configuration!.app.trustedHosts.join(' ');
+                let policy = "default-src 'none';";
+                policy += " script-src 'self';";
+                policy += ` connect-src 'self' ${trustedHosts};`;
+                policy += " child-src 'self';";
+                policy += " img-src 'self';";
+                policy += " style-src 'self';";
+                policy += " object-src 'none';";
+                policy += " frame-ancestors 'none';";
+                policy += " base-uri 'self';";
+                policy += " form-action 'self'";
+
+                callback({
+                    responseHeaders: {
+                        ...details.responseHeaders,
+                        'Content-Security-Policy': [policy],
+                    },
+                });
+            }
+        });
     }
 
     /*

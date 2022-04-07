@@ -3,4 +3,5 @@
  */
 export interface AppConfiguration {
     apiBaseUrl: string;
+    trustedHosts: string[];
 }
