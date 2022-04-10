@@ -1,0 +1,12 @@
+{
+  "name": "dependabot-fix",
+  "version": "1.0.0",
+  "description": "Temp checkin to prevent warnings",
+  "keywords": [],
+  "author": "Gary Archer",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
