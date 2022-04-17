@@ -4,7 +4,7 @@
 
 [![Known Vulnerabilities](https://snyk.io/test/github/gary-archer/oauth.desktopsample.final/badge.svg)](https://snyk.io/test/github/gary-archer/oauth.desktopsample.final)
 
-### Overvieww
+### Overview
 
 * The final OpenID Connect desktop code sample, referenced in my blog at https://authguidance.com
 * **The goal is to implement OpenID Connect desktop logins with best usability and reliability**
