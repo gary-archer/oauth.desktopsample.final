@@ -1,13 +1,12 @@
 import React, {ErrorInfo} from 'react';
 import {ErrorFactory} from '../../plumbing/errors/errorFactory';
-import {ErrorBoundaryProps} from './errorBoundaryProps';
 import {ErrorBoundaryState} from './errorBoundaryState';
-import {ErrorSummaryView} from './errorSummaryView';
+import {ErrorDetailsView} from './errorDetailsView';
 
 /*
  * Manages catching of rendering errors anywhere in the tree view
  */
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<any, ErrorBoundaryState> {
 
     /*
      * Update state so the next render will show the fallback UI
@@ -32,30 +31,24 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
      */
     public render(): React.ReactNode {
 
+        // Render children by default
         if (!this.state.error) {
             return this.props.children;
         }
 
-        const errorProps = {
-            eventBus: this.props.eventBus,
-            containingViewName: 'boundary',
-            hyperlinkMessage: 'Problem Encountered Rendering Views',
-            dialogTitle: 'Rendering Error',
-            centred: true,
+        // Otherwise render a worst case fallback error view
+        const errorDetailsProps = {
+            title: 'Problem Encountered Rendering Views',
+            error: this.state.error,
         };
-        return (
-            <div className='row'>
-                <div className='col-6 text-center mx-auto'>
-                    <ErrorSummaryView {...errorProps}/>
-                </div>
-            </div>
-        );
+        return <ErrorDetailsView {...errorDetailsProps}/>;
     }
 
     /*
-     * Catch errors and translate for display
+     * Catch errors and update state ready for display
      */
     public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+
         const details = ErrorFactory.fromRenderError(error, errorInfo.componentStack);
         this.setState({error: details});
     }

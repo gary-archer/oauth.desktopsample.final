@@ -12,5 +12,5 @@ export interface ErrorDetailsViewProps {
     error: UIError;
 
     // Call back the summary view to close the dialog
-    handleClose: () => void;
+    handleClose?: () => void;
 }
