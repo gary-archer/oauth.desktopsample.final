@@ -65,9 +65,6 @@ class Main {
         // Handle reactivation
         app.on('activate', this._onActivate);
 
-        // Set this to avoid a warning and to improve performance
-        app.allowRendererProcessReuse = true;
-
         // Handle login responses or deep linking requests against the running app on Mac OS
         app.on('open-url', this._onOpenUrl);
 
@@ -92,9 +89,7 @@ class Main {
             minHeight: 600,
             webPreferences: {
                 nodeIntegration: false,
-                enableRemoteModule: false,
                 contextIsolation: true,
-                worldSafeExecuteJavaScript: true,
                 preload: path.join(app.getAppPath(), './preload.js'),
             },
         });
