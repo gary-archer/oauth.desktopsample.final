@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
 Name=Final Desktop App Scheme Handler
-Exec=/home/gary/dev/oauth.desktopsample.final/node_modules/.bin/electron /home/gary/dev/oauth.desktopsample.final/dist %U
+Exec=$APP_PATH/node_modules/.bin/electron $APP_PATH/dist %U
 StartupNotify=false
 MimeType=x-scheme-handler/x-mycompany-desktopapp
