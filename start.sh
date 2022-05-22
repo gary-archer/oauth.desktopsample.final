@@ -29,7 +29,7 @@ fi
 #
 # Build the code
 #
-#npm run build
+npm run build
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the desktop app'
   exit
