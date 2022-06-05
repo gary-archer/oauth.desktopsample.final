@@ -7,6 +7,23 @@
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 #
+# Get the platform
+#
+case "$(uname -s)" in
+
+  Darwin)
+    PLATFORM="MACOS"
+ 	;;
+
+  MINGW64*)
+    PLATFORM="WINDOWS"
+	;;
+  Linux)
+    PLATFORM="LINUX"
+	;;
+esac
+
+#
 # Download dependencies
 #
 if [ ! -d 'node_modules' ]; then
@@ -20,14 +37,18 @@ fi
 #
 # Build native code used by keytar to store tokens on the device
 #
-npm run buildnative
+if [ "$PLATFORM" == 'WINDOWS' ]; then
+  bash node_modules/.bin/electron-rebuild
+else
+  node_modules/.bin/electron-rebuild
+fi
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building native code'
   exit
 fi
 
 #
-# Build the code
+# Build the application's Typescript code
 #
 npm run build
 if [ $? -ne 0 ]; then
@@ -54,9 +75,13 @@ if [ "$(uname -s)" == 'Linux' ]; then
 fi
 
 #
-# Run the desktop app
+# Run differently depending on the platform
 #
-npm start 2>/dev/null
+if [ "$PLATFORM" == 'WINDOWS' ]; then
+  bash node_modules/.bin/electron ./dist
+else
+  node_modules/.bin/electron ./dist
+fi
 if [ $? -ne 0 ]; then
   echo 'Problem encountered running the desktop app'
   exit
