@@ -5,7 +5,7 @@
   "main": "main.bundle.js",
   "scripts": {
     "lint": "npx eslint . --ext .ts,.tsx",
-    "buildnative": "node_modules/.bin/electron-rebuild",
+    "buildnative": "bash node_modules/.bin/electron-rebuild",
     "build": "npm run clean && npm run buildMainDev && npm run buildRendererDev && npm run copypreload",
     "clean": "rimraf dist && copyfiles index.html desktop*.json css/* package.json dist",
     "buildMainDev": "webpack --config webpack/webpack.config.main.dev.js",
@@ -13,7 +13,7 @@
     "buildRendererDev": "webpack --config webpack/webpack.config.renderer.dev.js",
     "buildRendererProd": "webpack --config webpack/webpack.config.renderer.prod.js",
     "copypreload": "copyfiles -u 1 src/preload.js dist",
-    "start": "node_modules/.bin/electron ./dist",
+    "start": "bash node_modules/.bin/electron ./dist",
     "buildRelease": "npm run clean && npm run buildMainProd && npm run buildRendererProd && npm run copypreload",
     "pack": "npm run buildRelease && rimraf package && electron-packager ./dist --out=package"
   },

@@ -11,10 +11,10 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 #
 if [ ! -d 'node_modules' ]; then
   npm install
-fi
-if [ $? -ne 0 ]; then
-  echo 'Problem encountered downloading dependencies'
-  exit
+  if [ $? -ne 0 ]; then
+    echo 'Problem encountered downloading dependencies'
+    exit
+  fi
 fi
 
 #
@@ -60,11 +60,4 @@ npm start 2>/dev/null
 if [ $? -ne 0 ]; then
   echo 'Problem encountered running the desktop app'
   exit
-fi
-
-#
-# Prevent automatic terminal closure on Linux
-#
-if [ "$(uname -s)" == 'Linux' ]; then
-  read -n 1
 fi
