@@ -53,5 +53,6 @@ Further architecture and non-functional details are described starting in the [F
 * A Private URI Scheme is used by the system browser to return to the app after login
 
 ## Hosting
+
 * AWS API Gateway is used to host the Desktop App's OAuth Secured API
 * AWS Cognito is used as the default Authorization Server for the UI and API
