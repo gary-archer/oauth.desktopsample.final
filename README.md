@@ -24,7 +24,8 @@ Build and run the app via this command, which will trigger the OpenID Connect de
 ./start.sh
 ```
 
-A private URI scheme login URL of `x-mycompany-desktopapp:/callback` is used to trigger a login in the system browser:
+A login is triggered in the system browser, so that the app cannot access the user's credentials.\
+A private URI scheme URL of `x-mycompany-desktopapp:/callback` is used to receive the login response:
 
 ![Desktop App Login](./doc/login.png)
 
