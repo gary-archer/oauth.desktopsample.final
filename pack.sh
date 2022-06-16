@@ -58,7 +58,7 @@ if [ "$PLATFORM" == 'MACOS' ]; then
 
 elif [ "$PLATFORM" == 'WINDOWS' ]; then
 
-  echo 'Running Windows app'
+  start ./package/finaldesktopapp-win32-x64/finaldesktopapp.exe
 
 elif [ "$PLATFORM" == 'LINUX' ]; then
 
