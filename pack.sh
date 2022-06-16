@@ -62,5 +62,5 @@ elif [ "$PLATFORM" == 'WINDOWS' ]; then
 
 elif [ "$PLATFORM" == 'LINUX' ]; then
 
-  echo 'Running Linux app'
+  xdg-open ./package/finaldesktopapp-linux-x64/finaldesktopapp
 fi
