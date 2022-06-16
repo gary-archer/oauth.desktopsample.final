@@ -18,69 +18,35 @@ case "$(uname -s)" in
   MINGW64*)
     PLATFORM="WINDOWS"
 	;;
+
   Linux)
     PLATFORM="LINUX"
 	;;
 esac
 
 #
-# Download dependencies
-#
-if [ ! -d 'node_modules' ]; then
-  npm install
-  if [ $? -ne 0 ]; then
-    echo 'Problem encountered downloading dependencies'
-    exit
-  fi
-fi
-
-#
-# Build native code used by keytar to store tokens on the device
-#
-if [ "$PLATFORM" == 'WINDOWS' ]; then
-  bash node_modules/.bin/electron-rebuild
-else
-  node_modules/.bin/electron-rebuild
-fi
-if [ $? -ne 0 ]; then
-  echo 'Problem encountered building native code'
-  exit
-fi
-
-#
 # Build the application's Typescript code
 #
-npm run build
+./build.sh
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the desktop app'
   exit
 fi
 
 #
-# If running on Linux then deploy the Gnome .desktop file needed for private URI schemes to work
+# If running on Linux then register the app with the Gnome desktop system
 #
-if [ "$(uname -s)" == 'Linux' ]; then
-
-  APP_REGISTRATION_PATH=~/.local/share/applications/finaldesktopapp.desktop
-  if [ ! -f "$APP_REGISTRATION_PATH" ]; then
-
-    # Set absolute paths to the Electron executable
-    export APP_PATH=$(pwd)
-    envsubst < linux/finaldesktopapp.desktop.template > linux/finaldesktopapp.desktop
-    
-    # Then install the .desktop file
-    cp linux/finaldesktopapp.desktop $APP_REGISTRATION_PATH
-    xdg-mime default finaldesktopapp.desktop x-scheme-handler/x-mycompany-desktopapp
-  fi
+if [ "$PLATFORM" == 'LINUX' ]; then
+  ./linux/register.sh
 fi
 
 #
-# Run differently depending on the platform
+# Run the Electron app
 #
 if [ "$PLATFORM" == 'WINDOWS' ]; then
-  bash node_modules/.bin/electron ./dist
+  bash ./node_modules/.bin/electron ./dist
 else
-  node_modules/.bin/electron ./dist
+  ./node_modules/.bin/electron ./dist
 fi
 if [ $? -ne 0 ]; then
   echo 'Problem encountered running the desktop app'

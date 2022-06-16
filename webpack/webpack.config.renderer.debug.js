@@ -5,7 +5,7 @@ const baseConfig = require('./webpack.config.renderer.base.js');
 
 module.exports = merge(baseConfig, {
 
-  // Let webpack know this is a development build
+  // Let webpack know this is a debug build
   mode: 'development',
 
   // Output source maps to enable debugging of browser code
