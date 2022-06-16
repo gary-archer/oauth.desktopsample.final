@@ -62,5 +62,5 @@ elif [ "$PLATFORM" == 'WINDOWS' ]; then
 
 elif [ "$PLATFORM" == 'LINUX' ]; then
 
-  xdg-open ./package/finaldesktopapp-linux-x64/finaldesktopapp
+  ./package/finaldesktopapp-linux-x64/finaldesktopapp
 fi
