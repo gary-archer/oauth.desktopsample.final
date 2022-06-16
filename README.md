@@ -40,7 +40,7 @@ You can then test all lifecycle operations, including token refresh, expiry even
 
 ## Further Information
 
-Further architecture and non-functional details are described starting in the [Final Desktop Sample Overview](https://authguidance.com/2018/01/26/final-desktop-sample-overview/) blog post.
+Further architecture and non-functional details are described starting in the [Final Desktop Sample Overview](https://authguidance.com/2018/01/26/final-desktop-sample-overview/).
 
 
 ## Programming Languages
