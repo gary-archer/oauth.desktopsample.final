@@ -50,7 +50,7 @@
     "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",
     "copyfiles": "^2.3.0",
-    "electron": "^19.0.8",
+    "electron": "^20.0.1",
     "electron-packager": "^15.5.0",
     "electron-rebuild": "^3.2.3",
     "eslint": "^8.16.0",
