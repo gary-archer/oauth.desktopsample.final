@@ -1,0 +1,66 @@
+{
+  "name": "finaldesktopapp",
+  "version": "2.0.0",
+  "description": "The Final Desktop App using the AppAuth-JS security library to implement OpenID Connect",
+  "main": "main.bundle.js",
+  "scripts": {
+    "lint": "npx eslint . --ext .ts,.tsx",
+    "build": "bash ./build.sh",
+    "start": "bash ./start.sh",
+    "pack": "bash ./pack.sh"
+  },
+  "build": {
+    "protocols": {
+      "name": "finaldesktopapp",
+      "schemes": [
+        "x-mycompany-desktopapp"
+      ]
+    }
+  },
+  "files": [
+    "dist/**"
+  ],
+  "keywords": [],
+  "author": "Gary Archer",
+  "license": "MIT",
+  "dependencies": {
+    "@openid/appauth": "^1.3.1",
+    "axios": "^0.27.2",
+    "electron-log": "^4.3.0",
+    "fs-extra": "^9.0.1",
+    "guid-typescript": "^1.0.9",
+    "js-event-bus": "^1.1.1",
+    "keytar": "^7.9.0",
+    "moment": "2.29.4",
+    "opener": "^1.5.1",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0",
+    "react-modal": "^3.14.4",
+    "react-router-dom": "^6.3.0",
+    "url-parse": "1.5.10",
+    "username": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.4",
+    "@types/node": "^14.14.10",
+    "@types/react": "^18.0.9",
+    "@types/react-dom": "^18.0.5",
+    "@types/react-modal": "^3.13.1",
+    "@types/url-parse": "^1.4.4",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "copyfiles": "^2.3.0",
+    "electron": "^21.3.1",
+    "electron-packager": "^17.1.1",
+    "electron-rebuild": "^3.2.3",
+    "eslint": "^8.16.0",
+    "eslint-plugin-react": "^7.30.0",
+    "node-loader": "^1.0.2",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.7.2",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2",
+    "webpack-merge": "^5.8.0"
+  }
+}

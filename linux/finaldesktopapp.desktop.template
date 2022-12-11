@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Final Desktop App Scheme Handler
+Exec=$APP_PATH/node_modules/.bin/electron $APP_PATH/dist %U
+StartupNotify=false
+MimeType=x-scheme-handler/x-mycompany-desktopapp
