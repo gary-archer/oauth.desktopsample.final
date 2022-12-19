@@ -50,6 +50,14 @@ if [ $? -ne 0 ]; then
 fi
 
 #
+# Register the app to use the packed command
+#
+if [ "$PLATFORM" == 'LINUX' ]; then
+  export APP_COMMAND="$(pwd)/package/finaldesktopapp-linux-x64/finaldesktopapp"
+  ./linux/register.sh
+fi
+
+#
 # Run the app
 #
 if [ "$PLATFORM" == 'MACOS' ]; then

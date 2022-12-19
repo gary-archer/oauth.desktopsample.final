@@ -13,11 +13,8 @@ if [ -f "$APP_REGISTRATION_PATH" ]; then
 fi
 
 #
-# Set absolute paths to the Electron executable
+# Set the executable command
 #
-cd ..
-export APP_PATH=$(pwd)
-cd linux
 envsubst < finaldesktopapp.desktop.template > finaldesktopapp.desktop
 
 #

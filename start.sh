@@ -34,9 +34,10 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# If running on Linux then register the app with the Gnome desktop system
+# Register the app to use the Electron command to run the built files in the dist folder
 #
 if [ "$PLATFORM" == 'LINUX' ]; then
+  export APP_COMMAND="$(pwd)/node_modules/.bin/electron $(pwd)/dist"
   ./linux/register.sh
 fi
 
