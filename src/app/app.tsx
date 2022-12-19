@@ -49,13 +49,14 @@ export function App(props: AppProps): JSX.Element {
         Modal.setAppElement('#root');
 
         try {
-            // Initialise the view model if required
-            await model.initialise();
-            setError(null);
 
             // Subscribe to application events
             model.eventBus.on(EventNames.LoginRequired, onLoginRequired);
             model.eventBus.on(EventNames.DeepLink, onDeepLink);
+
+            // Initialise the view model if required
+            await model.initialise();
+            setError(null);
 
             // Update state
             setState((s) => {
@@ -126,10 +127,17 @@ export function App(props: AppProps): JSX.Element {
     }
 
     /*
-     * Navigate to deep links when received
+     * Navigate to deep links such as x-mycompany-desktopapp:/companies/2
      */
     function onDeepLink(event: DeepLinkEvent): void {
-        navigate(event.path);
+
+        console.log(`*** Received: ${event.path}`);
+
+        const prefix = `${props.viewModel.configuration.oauth.privateSchemeName}:`;
+        const reactLocation = event.path.replace(prefix, '');
+
+        console.log(`*** Navigating to: ${reactLocation}`);
+        navigate(reactLocation);
     }
 
     /*
