@@ -1,16 +1,17 @@
-const path = require('path');
+import path from 'path';
 
-module.exports = {
+const dirname = process.cwd();
+export default {
 
   // Indicate that we're building for the Electron Main process
-  target: 'electron-main',
+  target: ['electron-main'],
   
   node: {
     global: true
   },
 
   // Set the working folder
-  context: path.resolve(__dirname, '../src'),
+  context: path.resolve(dirname, './src'),
 
   entry: {
     // Pull in all dependencies starting from the main file
@@ -40,7 +41,7 @@ module.exports = {
   output: {
     
     // Output bundles to the dist folder
-    path: path.resolve(__dirname, '../dist'),
+    path: path.resolve(dirname, './dist'),
     filename: 'main.bundle.js'
   }
 }

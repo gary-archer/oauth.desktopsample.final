@@ -1,7 +1,7 @@
-const {merge} = require('webpack-merge');
-const baseConfig = require('./webpack.config.main.base.js');
+import {merge} from 'webpack-merge';
+import baseConfig from './webpack.config.main.base.mjs';
 
-module.exports = merge(baseConfig, {
+export default merge(baseConfig, {
 
   // Let webpack know this is a release build
   mode: 'production',

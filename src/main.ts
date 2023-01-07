@@ -1,5 +1,4 @@
 import {app, BrowserWindow, session} from 'electron';
-import log from 'electron-log';
 import path from 'path';
 import {Configuration} from './configuration/configuration';
 import {ConfigurationLoader} from './configuration/configurationLoader';
@@ -35,9 +34,6 @@ class Main {
             app.quit();
             return;
         }
-
-        // Show a startup message, which is reported to the console
-        log.info('STARTING ELECTRON MAIN PROCESS');
 
         // Attempting to start a second instance will fire the following event to the running instance
         app.on('second-instance', this._onSecondInstance);
