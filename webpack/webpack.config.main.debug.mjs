@@ -1,4 +1,3 @@
-
 import {merge} from 'webpack-merge';
 import baseConfig from './webpack.config.main.base.mjs';
 
