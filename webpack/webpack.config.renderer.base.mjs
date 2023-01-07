@@ -3,8 +3,7 @@ import path from 'path';
 const dirname = process.cwd();
 export default {
 
-  // Build for electron renderer output, using a web target to work around this issue
-  // https://github.com/webpack/webpack/issues/10035
+  // Build for electron renderer output
   target: ['web'],
 
   // Set the working folder

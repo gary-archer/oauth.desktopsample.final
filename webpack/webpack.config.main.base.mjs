@@ -4,7 +4,7 @@ const dirname = process.cwd();
 export default {
 
   // Indicate that we're building for the Electron Main process
-  target: 'electron-main',
+  target: ['electron-main'],
   
   node: {
     global: true

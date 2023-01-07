@@ -4,9 +4,9 @@
     "target": "ES2017",
     "lib": ["ES2022", "DOM"],
     "jsx": "react",
-    "module": "ES2022",
+    "module": "CommonJS",
     "moduleResolution": "Node",
-    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "outDir": "dist",
     "sourceMap": true
   },
