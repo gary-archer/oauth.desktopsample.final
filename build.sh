@@ -78,9 +78,9 @@ fi
 # Build the main side of the Electron app
 #
 if [ "$PLATFORM" == 'WINDOWS' ]; then
-  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.main.$CONFIGURATION.js"
+  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.main.$CONFIGURATION.mjs"
 else
-  ./node_modules/.bin/webpack --config "webpack/webpack.config.main.$CONFIGURATION.js"
+  ./node_modules/.bin/webpack --config "webpack/webpack.config.main.$CONFIGURATION.mjs"
 fi
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the main side of the desktop app'
@@ -91,9 +91,9 @@ fi
 # Build the renderer side of the Electron app
 #
 if [ "$PLATFORM" == 'WINDOWS' ]; then
-  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.renderer.$CONFIGURATION.js"
+  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.renderer.$CONFIGURATION.mjs"
 else
-  ./node_modules/.bin/webpack --config "webpack/webpack.config.renderer.$CONFIGURATION.js"
+  ./node_modules/.bin/webpack --config "webpack/webpack.config.renderer.$CONFIGURATION.mjs"
 fi
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the renderer side of the desktop app'
