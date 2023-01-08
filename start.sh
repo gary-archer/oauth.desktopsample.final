@@ -27,7 +27,7 @@ esac
 #
 # Build the application's Typescript code
 #
-./build.sh
+./build.sh 'debug'
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the desktop app'
   exit

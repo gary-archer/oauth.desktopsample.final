@@ -6,6 +6,9 @@ export default {
   // Build for electron renderer output
   target: ['web'],
 
+  // Always output source maps
+  devtool: 'source-map',
+
   // Set the working folder
   context: path.resolve(dirname, './src'),
 

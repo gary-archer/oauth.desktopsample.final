@@ -27,7 +27,7 @@ esac
 #
 # Build the application's Typescript code in release mode
 #
-./build.sh release
+./build.sh 'release'
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the desktop app code'
   exit
