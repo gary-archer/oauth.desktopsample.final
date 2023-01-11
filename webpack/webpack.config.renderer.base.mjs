@@ -6,7 +6,7 @@ export default {
   // Build for electron renderer output
   target: ['web'],
 
-  // Always output source maps
+  // Always output source maps since we are building bundles
   devtool: 'source-map',
 
   // Set the working folder

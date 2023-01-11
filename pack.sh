@@ -34,6 +34,12 @@ if [ $? -ne 0 ]; then
 fi
 
 #
+# Source map files could be used enable exception source line lookup
+# This code sample just deletes them, to prevent packaging them
+#
+rm dist/*.js.map
+
+#
 # Package the app
 #
 if [ -d 'package' ]; then

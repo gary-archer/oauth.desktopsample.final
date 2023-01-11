@@ -6,9 +6,8 @@ export default {
   // Indicate that we're building for the Electron Main process
   target: ['electron-main'],
   
-  node: {
-    global: true
-  },
+  // Always output source maps since we need to decompile bundles
+  devtool: 'source-map',
 
   // Set the working folder
   context: path.resolve(dirname, './src'),

@@ -1,5 +1,6 @@
 import webpack from 'webpack';
 import {merge} from 'webpack-merge';
+import {removeSourceMapReferences} from './rewriteSourceMaps.mjs'
 import baseConfig from './webpack.config.renderer.base.mjs';
 
 export default merge(baseConfig, {
@@ -12,8 +13,18 @@ export default merge(baseConfig, {
     hints: false
   },
 
-  // Pass a variable through to our Web UI to tell it to not display stack traces
   plugins:[
+    
+    {
+      // In release builds, remove source map references
+      apply: (compiler) => {
+        compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
+          removeSourceMapReferences(['app.bundle.js', 'vendor.bundle.js']);
+        });
+      }
+    },
+    
+    // Pass a variable through to the renderer to tell it to not display stack traces
     new webpack.DefinePlugin({
       SHOW_STACK_TRACE: 'false',
     })

@@ -5,7 +5,4 @@ export default merge(baseConfig, {
 
   // Let webpack know this is a debug build
   mode: 'development',
-
-  // Output source maps to enable debugging of browser code
-  devtool: 'source-map'
 });
