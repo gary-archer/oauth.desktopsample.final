@@ -25,6 +25,7 @@
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "bash ./build.sh",
     "start": "bash ./start.sh",
+    "watch": "webpack --config webpack/webpack.config.renderer.debug.mjs --watch",
     "pack": "bash ./pack.sh"
   },
   "dependencies": {
