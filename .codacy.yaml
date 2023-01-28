@@ -1,10 +1,9 @@
 ---
 exclude_paths: [
     '*',    
-    'css/**',
-    'dist/**',
-    'linux/**',
     'src/preload.js',
+    'doc/**',
+    'linux/**',
     'web/**',
     'webpack/**'
 ]
