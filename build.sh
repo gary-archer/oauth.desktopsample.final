@@ -75,12 +75,17 @@ if [ $? -ne 0 ]; then
 fi
 
 #
+# Make webpack use ts-node to load webpack files
+#
+NODE_OPTIONS='--loader ts-node'
+
+#
 # Build the main side of the Electron app
 #
 if [ "$PLATFORM" == 'WINDOWS' ]; then
-  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.main.$CONFIGURATION.mjs"
+  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.main.$CONFIGURATION.ts"
 else
-  ./node_modules/.bin/webpack --config "webpack/webpack.config.main.$CONFIGURATION.mjs"
+  ./node_modules/.bin/webpack --config "webpack/webpack.config.main.$CONFIGURATION.ts"
 fi
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the main side of the desktop app'
@@ -91,9 +96,9 @@ fi
 # Build the renderer side of the Electron app
 #
 if [ "$PLATFORM" == 'WINDOWS' ]; then
-  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.renderer.$CONFIGURATION.mjs"
+  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.renderer.$CONFIGURATION.ts"
 else
-  ./node_modules/.bin/webpack --config "webpack/webpack.config.renderer.$CONFIGURATION.mjs"
+  ./node_modules/.bin/webpack --config "webpack/webpack.config.renderer.$CONFIGURATION.ts"
 fi
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the renderer side of the desktop app'

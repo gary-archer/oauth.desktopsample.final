@@ -25,7 +25,7 @@
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "bash ./build.sh",
     "start": "bash ./start.sh",
-    "watch": "webpack --config webpack/webpack.config.renderer.debug.mjs --watch",
+    "watch": "webpack --config webpack/webpack.config.renderer.debug.ts --watch",
     "pack": "bash ./pack.sh"
   },
   "dependencies": {
@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
-    "@types/node": "^14.18.35",
+    "@types/node": "^18.11.18",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.9",
     "@types/react-modal": "^3.13.1",
@@ -61,6 +61,7 @@
     "node-loader": "^1.0.3",
     "rimraf": "^3.0.2",
     "ts-loader": "^9.4.2",
+    "ts-node": "^10.9.1",
     "typescript": "^4.9.4",
     "webpack": "^5.75.0",
     "webpack-cli": "^4.10.0",
