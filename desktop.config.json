@@ -1,6 +1,6 @@
 {
     "app": {
-        "apiBaseUrl": "https://api.authsamples.com/api",
+        "apiBaseUrl": "https://api.authsamples.com/investments",
         "trustedHosts": [
             "https://api.authsamples.com",
             "https://login.authsamples.com",
@@ -12,7 +12,7 @@
         "clientId":              "1h8pildfi6a4bmfv2alj3fs6va",
         "redirectUri":           "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
         "privateSchemeName":     "x-mycompany-desktopapp",
-        "scope":                 "openid profile email https://api.authsamples.com/api/transactions_read",
+        "scope":                 "openid profile email https://api.authsamples.com/investments",
         "customLogoutEndpoint":  "https://login.authsamples.com/logout",
         "postLogoutRedirectUri": "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
         "logoutCallbackPath":    "/logoutcallback"
