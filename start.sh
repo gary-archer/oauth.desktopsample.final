@@ -44,11 +44,7 @@ fi
 #
 # Run the Electron app
 #
-if [ "$PLATFORM" == 'WINDOWS' ]; then
-  bash ./node_modules/.bin/electron ./dist
-else
-  ./node_modules/.bin/electron ./dist
-fi
+./node_modules/.bin/electron ./dist
 if [ $? -ne 0 ]; then
   echo 'Problem encountered running the desktop app'
   exit
