@@ -131,12 +131,8 @@ export function App(props: AppProps): JSX.Element {
      */
     function onDeepLink(event: DeepLinkEvent): void {
 
-        console.log(`*** Received: ${event.path}`);
-
         const prefix = `${props.viewModel.configuration.oauth.privateSchemeName}:`;
         const reactLocation = event.path.replace(prefix, '');
-
-        console.log(`*** Navigating to: ${reactLocation}`);
         navigate(reactLocation);
     }
 
