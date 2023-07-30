@@ -59,7 +59,8 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
             setState((s) => {
                 return {
                     ...s,
-                    userInfo: null,
+                    oauthUserInfo: null,
+                    apiUserInfo: null,
                 };
             });
         }
@@ -112,7 +113,8 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
             setState((s) => {
                 return {
                     ...s,
-                    userInfo: null,
+                    oauthUserInfo: null,
+                    apiUserInfo: null,
                 };
             });
         };
@@ -139,11 +141,9 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
             <div className='text-end mx-auto'>
                 <ErrorSummaryView {...errorProps}/>
             </div>
-            {state.oauthUserInfo && state.apiUserInfo &&
-                <div className='text-end mx-auto'>
-                    <p className='fw-bold'>{`${getNameForDisplay()}`}</p>
-                </div>
-            }
+            <div className='text-end mx-auto'>
+                <p className='fw-bold'>{`${getNameForDisplay()}`}</p>
+            </div>
         </>
     );
 }
