@@ -134,7 +134,7 @@ export class ErrorFactory {
     /*
      * Return an object for Ajax errors
      */
-    public static fromHttpError(source: string, exception: any, url: string): UIError {
+    public static fromHttpError(exception: any, url: string, source: string): UIError {
 
         // Already handled errors
         if (exception instanceof UIError) {

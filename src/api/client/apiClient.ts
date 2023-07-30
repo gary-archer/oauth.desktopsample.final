@@ -119,7 +119,7 @@ export class ApiClient {
 
         } catch (e: any) {
 
-            throw ErrorFactory.fromHttpError('web API', e, url);
+            throw ErrorFactory.fromHttpError(e, url, 'web API');
         }
     }
 

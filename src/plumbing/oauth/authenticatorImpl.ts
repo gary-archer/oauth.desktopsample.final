@@ -366,7 +366,7 @@ export class AuthenticatorImpl implements Authenticator {
 
         } catch (e: any) {
 
-            throw ErrorFactory.fromHttpError('authorization server', e, this._metadata!.userInfoEndpoint!);
+            throw ErrorFactory.fromHttpError(e, this._metadata!.userInfoEndpoint!, 'authorization server');
         }
     }
 
