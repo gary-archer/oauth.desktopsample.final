@@ -36,7 +36,7 @@ export class CustomRequestor extends Requestor {
             }
 
             // Otherwise throw the technical error details
-            throw ErrorFactory.fromApiError(e, settings.url || '');
+            throw ErrorFactory.fromHttpError('authorization server', e, settings.url || '');
         }
     }
 }

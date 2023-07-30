@@ -297,7 +297,7 @@ try {
     const main = new Main();
     main.execute();
 
-} catch (e) {
+} catch (e: any) {
 
     // Handle startup errors
     const error = ErrorFactory.fromException(e);

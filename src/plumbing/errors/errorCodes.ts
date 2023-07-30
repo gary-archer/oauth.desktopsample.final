@@ -25,6 +25,9 @@ export class ErrorCodes {
     // An error starting a logout request, such as contacting the metadata endpoint
     public static readonly logoutRequestFailed = 'logout_request_failed';
 
+    // An error downloading user info from the authorization server
+    public static readonly userInfoError = 'userinfo_error';
+
     // A general exception in the UI
     public static readonly generalUIError = 'general_ui_error';
 

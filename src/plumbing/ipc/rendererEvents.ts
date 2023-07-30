@@ -158,7 +158,7 @@ export class RendererEvents {
 
         try {
             return urlparse(url, true);
-        } catch (e) {
+        } catch (e: any) {
             return null;
         }
     }

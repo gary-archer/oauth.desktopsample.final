@@ -55,7 +55,7 @@ export class LogoutManager {
                 // Ask the main side of the app to open the system browser
                 await this._events.openSystemBrowser(logoutUrl);
 
-            } catch (e) {
+            } catch (e: any) {
 
                 // Report errors correctly from the above async call
                 reject(e);

@@ -134,7 +134,7 @@ export class ErrorFactory {
     /*
      * Return an object for Ajax errors
      */
-    public static fromApiError(exception: any, url: string): UIError {
+    public static fromHttpError(source: string, exception: any, url: string): UIError {
 
         // Already handled errors
         if (exception instanceof UIError) {
@@ -154,7 +154,7 @@ export class ErrorFactory {
             error = new UIError(
                 'Network',
                 ErrorCodes.apiNetworkError,
-                'A network problem occurred when the UI called the Web API',
+                `A network problem occurred when the UI called the ${source}`,
                 exception.stack);
             error.details = this._getExceptionMessage(exception);
 
@@ -164,7 +164,7 @@ export class ErrorFactory {
             error = new UIError(
                 'Data',
                 ErrorCodes.apiDataError,
-                'A technical problem occurred parsing received data from the Web API',
+                `A technical problem occurred parsing received data from the ${source}`,
                 exception.stack);
             error.details = this._getExceptionMessage(exception);
 
@@ -174,13 +174,13 @@ export class ErrorFactory {
             error = new UIError(
                 'API',
                 ErrorCodes.apiResponseError,
-                'A technical problem occurred when the UI called the Web API',
+                `A technical problem occurred when the UI called the ${source}`,
                 exception.stack);
             error.details = this._getExceptionMessage(exception);
 
-            // Override the default with a server response when received and CORS allows us to read it
+            // Read response error payloads
             if (exception.response && exception.response.data && typeof exception.response.data === 'object') {
-                ErrorFactory._updateFromApiErrorResponse(error, exception.response.data);
+                ErrorFactory._updateFromErrorResponseBody(error, exception.response.data);
             }
         }
 
@@ -192,20 +192,27 @@ export class ErrorFactory {
     /*
      * Try to update the default API error with response details
      */
-    private static _updateFromApiErrorResponse(error: UIError, apiError: any): void {
+    private static _updateFromErrorResponseBody(error: UIError, payload: any): void {
 
         // Attempt to read the API error response
-        if (apiError) {
+        if (payload) {
 
-            // Set the code and message, returned for both 4xx and 5xx errors
-            if (apiError.code && apiError.message) {
-                error.errorCode = apiError.code;
-                error.details = apiError.message;
+            // Handle API errors, which include extra details for 5xx errors
+            if (payload.code && payload.message) {
+
+                error.errorCode = payload.code;
+                error.details = payload.message;
+
+                if (payload.area && payload.id && payload.utcTime) {
+                    error.setApiErrorDetails(payload.area, payload.id, payload.utcTime);
+                }
             }
 
-            // Set extra details returned for 5xx errors
-            if (apiError.area && apiError.id && apiError.utcTime) {
-                error.setApiErrorDetails(apiError.area, apiError.id, apiError.utcTime);
+            // Handle OAuth errors in HTTP reponses
+            if (payload.error && payload.error_description) {
+
+                error.errorCode = payload.error;
+                error.details = payload.error_description;
             }
         }
     }

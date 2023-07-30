@@ -77,7 +77,7 @@ export class LoginManager {
                     await this._handleLoginResponse(request, response, error);
                     resolve();
 
-                } catch (e) {
+                } catch (e: any) {
 
                     // Handle any errors in the async block
                     reject(e);
@@ -120,7 +120,7 @@ export class LoginManager {
             // Swap the authorization code for tokens
             await this._onCodeReceived(response!.code, codeVerifier);
 
-        } catch (e) {
+        } catch (e: any) {
 
             // Handle any error conditions
             throw ErrorFactory.fromTokenError(e, ErrorCodes.authorizationCodeGrantFailed);

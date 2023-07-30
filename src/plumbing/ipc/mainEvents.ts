@@ -87,7 +87,7 @@ export class MainEvents {
             Opener(args[1]);
             this._sendResponse(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, null, null);
 
-        } catch (e) {
+        } catch (e: any) {
 
             // Return an error on failure
             this._sendResponse(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, null, e);
@@ -103,7 +103,7 @@ export class MainEvents {
             const tokens = await TokenStorage.load();
             this._sendResponse(IpcEventNames.ON_LOAD_TOKENS, tokens, null);
 
-        } catch (e) {
+        } catch (e: any) {
 
             // Return an error on failure
             this._sendResponse(IpcEventNames.ON_LOAD_TOKENS, null, e);
@@ -120,7 +120,7 @@ export class MainEvents {
             await TokenStorage.save(data);
             this._sendResponse(IpcEventNames.ON_SAVE_TOKENS, null, null);
 
-        } catch (e) {
+        } catch (e: any) {
 
             // Return an error on failure
             this._sendResponse(IpcEventNames.ON_SAVE_TOKENS, null, e);
@@ -136,7 +136,7 @@ export class MainEvents {
             await TokenStorage.delete();
             this._sendResponse(IpcEventNames.ON_DELETE_TOKENS, null, null);
 
-        } catch (e) {
+        } catch (e: any) {
 
             // Return an error on failure
             this._sendResponse(IpcEventNames.ON_DELETE_TOKENS, null, e);

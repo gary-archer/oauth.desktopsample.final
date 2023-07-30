@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {UserInfo} from '../../api/entities/userInfo';
+import {ApiUserInfo} from '../../api/entities/apiUserInfo';
 import {UIError} from '../../plumbing/errors/uiError';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {ReloadUserInfoEvent} from '../../plumbing/events/reloadUserInfoEvent';
 import {SetErrorEvent} from '../../plumbing/events/setErrorEvent';
+import {OAuthUserInfo} from '../../plumbing/oauth/oauthUserInfo';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {UserInfoViewProps} from './userInfoViewProps';
 import {UserInfoViewState} from './userInfoViewState';
@@ -16,7 +17,8 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
 
     const model = props.viewModel;
     const [state, setState] = useState<UserInfoViewState>({
-        userInfo: null,
+        oauthUserInfo: null,
+        apiUserInfo: null,
     });
 
     useEffect(() => {
@@ -71,16 +73,35 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     }
 
     /*
+     * Get a name string using both OAuth user info API specific user info
+     */
+    function getNameForDisplay(): string {
+
+        if (state.oauthUserInfo && state.apiUserInfo) {
+
+            let name = `${state.oauthUserInfo.givenName} ${state.oauthUserInfo.familyName}`;
+            if (state.apiUserInfo.role === 'admin') {
+                name += ' (ADMIN)';
+            }
+
+            return name;
+        }
+
+        return '';
+    }
+
+    /*
      * Ask the model to load data, then update state
      */
     async function loadData(reload = false, causeError = false): Promise<void> {
 
-        const onSuccess = (userInfo: UserInfo) => {
+        const onSuccess = (oauthUserInfo: OAuthUserInfo, apiUserInfo: ApiUserInfo) => {
 
             setState((s) => {
                 return {
                     ...s,
-                    userInfo,
+                    oauthUserInfo,
+                    apiUserInfo,
                 };
             });
         };
@@ -118,9 +139,9 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
             <div className='text-end mx-auto'>
                 <ErrorSummaryView {...errorProps}/>
             </div>
-            {state.userInfo &&
+            {state.oauthUserInfo && state.apiUserInfo &&
                 <div className='text-end mx-auto'>
-                    <p className='fw-bold'>{`${state.userInfo.givenName} ${state.userInfo.familyName}`}</p>
+                    <p className='fw-bold'>{`${getNameForDisplay()}`}</p>
                 </div>
             }
         </>

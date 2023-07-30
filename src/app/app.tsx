@@ -66,7 +66,7 @@ export function App(props: AppProps): JSX.Element {
                 };
             });
 
-        } catch (e) {
+        } catch (e: any) {
             setError(e);
         }
     }
@@ -166,7 +166,7 @@ export function App(props: AppProps): JSX.Element {
                 };
             });
 
-        } catch (e) {
+        } catch (e: any) {
 
             // Report login errors
             setError(e);
@@ -183,7 +183,7 @@ export function App(props: AppProps): JSX.Element {
             setError(null);
             await model.authenticator.logout();
 
-        } catch (e) {
+        } catch (e: any) {
 
             // We only output logout errors to the console
             const error = ErrorFactory.fromException(e);
@@ -205,7 +205,7 @@ export function App(props: AppProps): JSX.Element {
             setError(null);
             await model.authenticator.expireAccessToken();
 
-        } catch (e) {
+        } catch (e: any) {
             setError(e);
         }
     }
@@ -219,7 +219,7 @@ export function App(props: AppProps): JSX.Element {
             setError(null);
             await model.authenticator.expireRefreshToken();
 
-        } catch (e) {
+        } catch (e: any) {
             setError(e);
         }
     }

@@ -1,3 +1,5 @@
+import {OAuthUserInfo} from './oauthUserInfo';
+
 /*
  * An interface to represent authentication related operations
  */
@@ -14,6 +16,9 @@ export interface Authenticator {
 
     // Try to refresh the access token
     refreshAccessToken(): Promise<string>;
+
+    // Get identity attributes to the UI
+    getUserInfo(): Promise<OAuthUserInfo>;
 
     // Do the login redirect and process the response
     login(): Promise<void>;

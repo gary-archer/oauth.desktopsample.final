@@ -3,9 +3,9 @@ import {Guid} from 'guid-typescript';
 import {ErrorFactory} from '../../plumbing/errors/errorFactory';
 import {Authenticator} from '../../plumbing/oauth/authenticator';
 import {AxiosUtils} from '../../plumbing/utilities/axiosUtils';
+import {ApiUserInfo} from '../entities/apiUserInfo';
 import {Company} from '../entities/company';
 import {CompanyTransactions} from '../entities/companyTransactions';
-import {UserInfo} from '../entities/userInfo';
 import {ApiRequestOptions} from './apiRequestOptions';
 
 /*
@@ -36,11 +36,11 @@ export class ApiClient {
     }
 
     /*
-     * We download user info from the API so that we can get any data we need
+     * Download custom claims from the API
      */
-    public async getUserInfo(options?: ApiRequestOptions): Promise<UserInfo> {
+    public async getUserInfo(options?: ApiRequestOptions): Promise<ApiUserInfo> {
 
-        return await this._callApi('userinfo', 'GET', null, options) as UserInfo;
+        return await this._callApi('userinfo', 'GET', null, options) as ApiUserInfo;
     }
 
     /*
@@ -79,26 +79,18 @@ export class ApiClient {
             // Call the API
             return await this._callApiWithToken(url, method, dataToSend, token, options);
 
-        } catch (error1) {
+        } catch (error1: any) {
 
             // Report Ajax errors if this is not a 401
-            if (!this._isApi401Error(error1)) {
-                throw ErrorFactory.fromApiError(error1, url);
+            if (error1.statusCode !== 401) {
+                throw error1;
             }
 
             // If we received a 401 then try to get a new token
             token = await this._authenticator.refreshAccessToken();
 
             // The general pattern for calling an OAuth secured API is to retry 401s once with a new token
-            try {
-                // Call the API again
-                return await this._callApiWithToken(url, method, dataToSend, token, options);
-
-            } catch (error2) {
-
-                // Report Ajax errors for the retry
-                throw ErrorFactory.fromApiError(error2, url);
-            }
+            return await this._callApiWithToken(url, method, dataToSend, token, options);
         }
     }
 
@@ -112,16 +104,23 @@ export class ApiClient {
         accessToken: string,
         options?: ApiRequestOptions): Promise<any> {
 
-        const axiosOptions: AxiosRequestConfig = {
-            url,
-            method,
-            data: dataToSend,
-            headers: this._getHeaders(accessToken, options),
-        };
+        try {
 
-        const response = await axios.request(axiosOptions);
-        AxiosUtils.checkJson(response.data);
-        return response.data;
+            const axiosOptions: AxiosRequestConfig = {
+                url,
+                method,
+                data: dataToSend,
+                headers: this._getHeaders(accessToken, options),
+            };
+
+            const response = await axios.request(axiosOptions);
+            AxiosUtils.checkJson(response.data);
+            return response.data;
+
+        } catch (e: any) {
+
+            throw ErrorFactory.fromHttpError('web API', e, url);
+        }
     }
 
     /*
@@ -146,12 +145,5 @@ export class ApiClient {
         }
 
         return headers;
-    }
-
-    /*
-     * API 401s are handled via a retry with a new token
-     */
-    private _isApi401Error(error: any) {
-        return error.response && error.response.status === 401;
     }
 }
