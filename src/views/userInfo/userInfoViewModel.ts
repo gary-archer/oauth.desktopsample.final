@@ -59,10 +59,10 @@ export class UserInfoViewModel {
             this._apiViewEvents.onViewLoading(ApiViewNames.UserInfo);
             const requestOptions = {causeError: options.causeError};
 
-            // The UI can get OAuth user info from both the authorization server
+            // The UI gets OAuth user info from the authorization server
             const oauthUserInfo = await this._authenticator.getUserInfo();
 
-            // The UI can also get domain specific user info from the API
+            // The UI gets domain specific user attributes from its API
             const apiUserInfo = await this._apiClient.getUserInfo(requestOptions);
 
             this._apiViewEvents.onViewLoaded(ApiViewNames.UserInfo);
