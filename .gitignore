@@ -1,0 +1,6 @@
+.gitignore
+node_modules
+dist
+package
+.DS_Store
+finaldesktopapp.desktop
