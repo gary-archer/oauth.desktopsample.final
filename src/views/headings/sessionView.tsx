@@ -39,16 +39,11 @@ export function SessionView(props: SessionViewProps): JSX.Element {
         });
     }
 
-    if (!state.isVisible) {
-        return (
-            <>
-            </>
-        );
-    }
-
     return  (
-        <div className='sessionid text-end mx-auto'>
-            <small>{state.text}</small>
-        </div>
+        <>
+            {state.isVisible && <div className='sessionid text-end mx-auto'>
+                <small>{state.text}</small>
+            </div>}
+        </>
     );
 }

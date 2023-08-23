@@ -1,12 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {ApiUserInfo} from '../../api/entities/apiUserInfo';
-import {UIError} from '../../plumbing/errors/uiError';
+import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {NavigateEvent} from '../../plumbing/events/navigateEvent';
-import {ReloadUserInfoEvent} from '../../plumbing/events/reloadUserInfoEvent';
-import {SetErrorEvent} from '../../plumbing/events/setErrorEvent';
-import {OAuthUserInfo} from '../../plumbing/oauth/oauthUserInfo';
+import {ReloadDataEvent} from '../../plumbing/events/reloadDataEvent';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
+import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
+import {ViewLoadOptions} from '../utilities/viewLoadOptions';
 import {UserInfoViewProps} from './userInfoViewProps';
 import {UserInfoViewState} from './userInfoViewState';
 
@@ -17,8 +16,9 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
 
     const model = props.viewModel;
     const [state, setState] = useState<UserInfoViewState>({
-        oauthUserInfo: null,
-        apiUserInfo: null,
+        oauthUserInfo: model.oauthUserInfo,
+        apiUserInfo: model.apiUserInfo,
+        error: null,
     });
 
     useEffect(() => {
@@ -27,11 +27,12 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     }, []);
 
     /*
-     * Subscribe to events and then do the initial load of data
+     * Subscribe for reload events and then do the initial load of data
      */
     async function startup(): Promise<void> {
         model.eventBus.on(EventNames.Navigate, onNavigate);
-        model.eventBus.on(EventNames.ReloadUserInfo, onReload);
+        model.eventBus.on(EventNames.ReloadData, onReload);
+        await loadData();
     }
 
     /*
@@ -39,7 +40,7 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
      */
     function cleanup(): void {
         model.eventBus.detach(EventNames.Navigate, onNavigate);
-        model.eventBus.detach(EventNames.ReloadUserInfo, onReload);
+        model.eventBus.detach(EventNames.ReloadData, onReload);
     }
 
     /*
@@ -56,21 +57,28 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
 
             // If in the login required view we clear user data
             model.unload();
-            setState((s) => {
-                return {
-                    ...s,
-                    oauthUserInfo: null,
-                    apiUserInfo: null,
-                };
-            });
         }
+
+        setState((s) => {
+            return {
+                ...s,
+                oauthUserInfo: model.oauthUserInfo,
+                apiUserInfo : model.apiUserInfo,
+                error: model.error,
+            };
+        });
     }
 
     /*
      * Process the reload event
      */
-    function onReload(event: ReloadUserInfoEvent): void {
-        loadData(true, event.causeError);
+    function onReload(event: ReloadDataEvent): void {
+
+        const options = {
+            forceReload: true,
+            causeError: event.causeError
+        };
+        loadData(options);
     }
 
     /*
@@ -94,56 +102,40 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     /*
      * Ask the model to load data, then update state
      */
-    async function loadData(reload = false, causeError = false): Promise<void> {
+    async function loadData(options?: ViewLoadOptions): Promise<void> {
 
-        const onSuccess = (oauthUserInfo: OAuthUserInfo, apiUserInfo: ApiUserInfo) => {
-
-            setState((s) => {
-                return {
-                    ...s,
-                    oauthUserInfo,
-                    apiUserInfo,
-                };
-            });
-        };
-
-        const onError = (error: UIError) => {
-
-            model.eventBus.emit(EventNames.SetError, null, new SetErrorEvent('userinfo', error));
-            setState((s) => {
-                return {
-                    ...s,
-                    oauthUserInfo: null,
-                    apiUserInfo: null,
-                };
-            });
-        };
-
-        const options = {
-            reload,
-            causeError,
-        };
-
-        model.eventBus.emit(EventNames.SetError, null, new SetErrorEvent('userinfo', null));
-        model.callApi(onSuccess, onError, options);
+        await model.callApi(options);
+        setState((s) => {
+            return {
+                ...s,
+                oauthUserInfo: model.oauthUserInfo,
+                apiUserInfo : model.apiUserInfo,
+                error: model.error,
+            };
+        });
     }
 
-    const errorProps = {
-        eventBus: model.eventBus,
-        containingViewName: 'userinfo',
-        hyperlinkMessage: 'Problem Encountered',
-        dialogTitle: 'User Info Error',
-        centred: false,
-    };
+    function getErrorProps(): ErrorSummaryViewProps {
+
+        return {
+            error: state.error!,
+            errorsToIgnore: [ErrorCodes.loginRequired],
+            containingViewName: 'userinfo',
+            hyperlinkMessage: 'Problem Encountered',
+            dialogTitle: 'User Info Error',
+            centred: false,
+        };
+    }
 
     return (
         <>
-            <div className='text-end mx-auto'>
-                <ErrorSummaryView {...errorProps}/>
-            </div>
+            {state.error && <div className='text-end mx-auto'>
+                <ErrorSummaryView {...getErrorProps()}/>
+            </div>}
+            {state.oauthUserInfo && state.apiUserInfo &&
             <div className='text-end mx-auto'>
                 <p className='fw-bold'>{`${getUserNameForDisplay()}`}</p>
-            </div>
+            </div>}
         </>
     );
 }

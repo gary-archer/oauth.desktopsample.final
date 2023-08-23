@@ -5,12 +5,10 @@ import {
     GRANT_TYPE_REFRESH_TOKEN,
     StringMap,
     TokenRequest} from '@openid/appauth';
-import axios, {AxiosRequestConfig} from 'axios';
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorFactory} from '../errors/errorFactory';
 import {RendererEvents} from '../ipc/rendererEvents';
-import {AxiosUtils} from '../utilities/axiosUtils';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {Authenticator} from './authenticator';
 import {CustomRequestor} from './customRequestor';
@@ -18,7 +16,6 @@ import {LoginManager} from './login/loginManager';
 import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
-import {OAuthUserInfo} from './oauthUserInfo';
 import {TokenData} from './tokenData';
 
 /*
@@ -67,6 +64,22 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
+     * Provide the user info endpoint to the fetch client
+     */
+    public async getUserInfoEndpoint(): Promise<string> {
+
+        try {
+
+            await this._loadMetadata();
+            return this._metadata!.userInfoEndpoint!;
+
+        } catch (e: any) {
+
+            throw ErrorFactory.fromHttpError(e, this._metadata!.userInfoEndpoint!, 'authorization server');
+        }
+    }
+
+    /*
      * Try to get an access token
      */
     public async getAccessToken(): Promise<string> {
@@ -82,13 +95,13 @@ export class AuthenticatorImpl implements Authenticator {
         }
 
         // Try to refresh if possible
-        return this.refreshAccessToken();
+        return this.synchronizedRefresh();
     }
 
     /*
      * Try to refresh an access token
      */
-    public async refreshAccessToken(): Promise<string> {
+    public async synchronizedRefresh(): Promise<string> {
 
         // Try to use the refresh token to get a new access token
         if (this._tokens && this._tokens.refreshToken) {
@@ -167,35 +180,6 @@ export class AuthenticatorImpl implements Authenticator {
 
             // Do error translation if required
             throw ErrorFactory.fromLogoutOperation(e, ErrorCodes.logoutRequestFailed);
-        }
-    }
-
-    /*
-     * Get user info from the authorization server and handle retries with a refreshed access token
-     */
-    public async getUserInfo(): Promise<OAuthUserInfo> {
-
-        // First check that we have an access token
-        let accessToken = await this.getAccessToken();
-
-        try {
-
-            // Download metadata from the Authorization server if required
-            await this._loadMetadata();
-
-            // Call the API
-            return await this._makeUserInfoRequest(accessToken);
-
-        } catch (e: any) {
-
-            // Report Ajax errors if this is not a 401
-            if (e.statusCode !== 401) {
-                throw e;
-            }
-
-            // If we received a 401 then try to get a new token
-            accessToken = await this.refreshAccessToken();
-            return await this._makeUserInfoRequest(accessToken);
         }
     }
 
@@ -337,36 +321,6 @@ export class AuthenticatorImpl implements Authenticator {
                 // Rethrow other errors
                 throw ErrorFactory.fromTokenError(e, ErrorCodes.tokenRenewalError);
             }
-        }
-    }
-
-    /*
-     * Download user attributes from the authorization server
-     */
-    public async _makeUserInfoRequest(accessToken: string): Promise<OAuthUserInfo> {
-
-        try {
-
-            const options = {
-                url: this._metadata!.userInfoEndpoint!,
-                method: 'GET',
-                headers: {
-                    'accept': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`,
-                },
-            };
-
-            const response = await axios.request(options as AxiosRequestConfig);
-            AxiosUtils.checkJson(response.data);
-
-            return {
-                givenName: response.data['given_name'] || '',
-                familyName: response.data['family_name'] || '',
-            };
-
-        } catch (e: any) {
-
-            throw ErrorFactory.fromHttpError(e, this._metadata!.userInfoEndpoint!, 'authorization server');
         }
     }
 

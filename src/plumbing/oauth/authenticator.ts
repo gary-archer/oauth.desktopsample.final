@@ -1,5 +1,3 @@
-import {OAuthUserInfo} from './oauthUserInfo';
-
 /*
  * An interface to represent authentication related operations
  */
@@ -11,11 +9,14 @@ export interface Authenticator {
     // Return whether we have a user object and tokens
     isLoggedIn(): Promise<boolean>;
 
+    // Provide the user info endpoint to the fetch client
+    getUserInfoEndpoint(): Promise<string>;
+
     // Try to get an access token
     getAccessToken(): Promise<string>;
 
     // Try to refresh the access token
-    refreshAccessToken(): Promise<string>;
+    synchronizedRefresh(): Promise<string>;
 
     // Do the login redirect and process the response
     login(): Promise<void>;
@@ -23,12 +24,9 @@ export interface Authenticator {
     // Do the logout redirect and process the response
     logout(): Promise<void>;
 
-    // Get identity attributes to the UI
-    getUserInfo(): Promise<OAuthUserInfo>;
-
-    // Update the access token to make it act like it is expired
+    // For testing, make the access token act expired
     expireAccessToken(): Promise<void>;
 
-    // Update the refresh token to make it act like it is expired
+    // For testing, make the refresh token act expired
     expireRefreshToken(): Promise<void>;
 }
