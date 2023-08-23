@@ -200,8 +200,14 @@ export class AppViewModel {
     public async login(): Promise<void> {
 
         try {
+
+            // Try the login
+            this._error = null;
             await this._authenticator?.login();
+
         } catch (e: any) {
+
+            // Handle errors
             this._error = ErrorFactory.fromException(e);
         }
     }
@@ -214,6 +220,7 @@ export class AppViewModel {
         try {
 
             // Try the logout
+            this._error = null;
             await this._authenticator?.logout();
 
         } catch (e: any) {
@@ -225,6 +232,42 @@ export class AppViewModel {
 
         // Reset state
         this.setLoggedOutState();
+    }
+
+    /*
+     * For reliability testing, ask the OAuth agent to make the access token act expired, and handle errors
+     */
+    public async expireAccessToken(): Promise<void> {
+
+        try {
+
+            // Try the operation
+            this._error = null;
+            await this._authenticator?.expireAccessToken();
+
+        } catch (e: any) {
+
+            // Update error state
+            this._error = ErrorFactory.fromException(e);
+        }
+    }
+
+    /*
+     * For reliability testing, ask the OAuth agent to make the refresh token act expired, and handle errors
+     */
+    public async expireRefreshToken(): Promise<void> {
+
+        try {
+
+            // Try the operation
+            this._error = null;
+            await this._authenticator?.expireRefreshToken();
+
+        } catch (e: any) {
+
+            // Update error state
+            this._error = ErrorFactory.fromException(e);
+        }
     }
 
     /*
@@ -254,30 +297,6 @@ export class AppViewModel {
         this._error = null;
         this._viewModelCoordinator.resetState();
         this._fetchCache.clearAll();
-    }
-
-    /*
-     * For reliability testing, ask the OAuth agent to make the access token act expired, and handle errors
-     */
-    public async expireAccessToken(): Promise<void> {
-
-        try {
-            await this._authenticator?.expireAccessToken();
-        } catch (e: any) {
-            this._error = ErrorFactory.fromException(e);
-        }
-    }
-
-    /*
-     * For reliability testing, ask the OAuth agent to make the refresh token act expired, and handle errors
-     */
-    public async expireRefreshToken(): Promise<void> {
-
-        try {
-            await this._authenticator?.expireRefreshToken();
-        } catch (e: any) {
-            this._error = ErrorFactory.fromException(e);
-        }
     }
 
     /*

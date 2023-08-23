@@ -107,20 +107,19 @@ export class FetchClient {
         // Ensure that the cache item exists, to avoid a redundant API request on every view recreation
         cacheItem = this._fetchCache.createItem(options.cacheKey);
 
-        // Avoid API requests and trigger a login redirect when we know it is needed
-        if (!this._authenticator.isLoggedIn()) {
+        // Get the access token and trigger a login redirect if not found
+        let accessToken = await this._authenticator.getAccessToken();
+        if (!accessToken) {
 
             const loginRequiredError = ErrorFactory.fromLoginRequired();
             cacheItem.error = loginRequiredError;
             throw loginRequiredError;
         }
 
-        // Get the access token
-        let accessToken = await this._authenticator.getAccessToken();
         try {
 
             // Call the API and return data on success
-            const data1 = await this._callApiWithToken(method, url, accessToken, options, dataToSend);
+            const data1 = await this._callApiWithAccessToken(method, url, accessToken, options, dataToSend);
             cacheItem.data = data1;
             return data1;
 
@@ -149,7 +148,7 @@ export class FetchClient {
             try {
 
                 // Call the API again with the rewritten access token
-                const data2 = await this._callApiWithToken(method, url, accessToken, options, dataToSend);
+                const data2 = await this._callApiWithAccessToken(method, url, accessToken, options, dataToSend);
                 cacheItem.data = data2;
                 return data2;
 
@@ -166,7 +165,7 @@ export class FetchClient {
     /*
      * Do the work of calling the API
      */
-    private async _callApiWithToken(
+    private async _callApiWithAccessToken(
         method: Method,
         url: string,
         accessToken: string,

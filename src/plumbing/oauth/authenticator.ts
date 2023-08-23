@@ -6,14 +6,11 @@ export interface Authenticator {
     // Setup that requires async calls
     initialise(): Promise<void>;
 
-    // Return whether we have a user object and tokens
-    isLoggedIn(): Promise<boolean>;
-
     // Provide the user info endpoint to the fetch client
     getUserInfoEndpoint(): Promise<string>;
 
     // Try to get an access token
-    getAccessToken(): Promise<string>;
+    getAccessToken(): Promise<string | null>;
 
     // Try to refresh the access token
     synchronizedRefresh(): Promise<string>;

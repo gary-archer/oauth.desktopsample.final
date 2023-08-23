@@ -55,15 +55,6 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Return whether we have a user object and tokens
-     */
-    public async isLoggedIn(): Promise<boolean> {
-
-        this._tokens = await this._events.loadTokens();
-        return !!this._tokens;
-    }
-
-    /*
      * Provide the user info endpoint to the fetch client
      */
     public async getUserInfoEndpoint(): Promise<string> {
@@ -82,7 +73,7 @@ export class AuthenticatorImpl implements Authenticator {
     /*
      * Try to get an access token
      */
-    public async getAccessToken(): Promise<string> {
+    public async getAccessToken(): Promise<string | null> {
 
         // Load tokens from secure storage if required
         if (!this._tokens) {
@@ -94,8 +85,8 @@ export class AuthenticatorImpl implements Authenticator {
             return this._tokens.accessToken;
         }
 
-        // Try to refresh if possible
-        return this.synchronizedRefresh();
+        // Indicate no access token
+        return null;
     }
 
     /*

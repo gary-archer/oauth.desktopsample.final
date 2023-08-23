@@ -96,18 +96,25 @@ export function App(props: AppProps): JSX.Element {
 
         // Handle retrying failed initialisation
         if (!model.isInitialised) {
+
             await model.initialise();
+            setState((s) => {
+                return {
+                    ...s,
+                    isInitialised: model.isInitialised,
+                    error: model.error,
+                };
+            });
         }
 
         if (model.isInitialised) {
 
             if (CurrentLocation.path === '/loggedout') {
 
+                console
+
                 // Trigger a login when the Home button is clicked in the Login Required view
-                const isLoggedIn = await model.authenticator.isLoggedIn();
-                if (!isLoggedIn) {
-                    await login();
-                }
+                await login();
 
             } else {
 
