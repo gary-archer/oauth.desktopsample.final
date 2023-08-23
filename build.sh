@@ -74,33 +74,44 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-#
-# Make webpack use ts-node to load webpack files
-#
-NODE_OPTIONS='--loader ts-node'
+if [ "$CONFIGURATION" == 'release' ]; then
 
-#
-# Build the main side of the Electron app
-#
-if [ "$PLATFORM" == 'WINDOWS' ]; then
-  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.main.$CONFIGURATION.ts"
-else
-  ./node_modules/.bin/webpack --config "webpack/webpack.config.main.$CONFIGURATION.ts"
-fi
-if [ $? -ne 0 ]; then
-  echo 'Problem encountered building the main side of the desktop app'
-  exit 1
-fi
+  #
+  # Build the main side of the Electron app
+  #
+  npm run webpackMainRelease
+  if [ $? -ne 0 ]; then
+    echo 'Problem encountered building the main side of the desktop app'
+    exit 1
+  fi
 
-#
-# Build the renderer side of the Electron app
-#
-if [ "$PLATFORM" == 'WINDOWS' ]; then
-  ./node_modules/.bin/webpack.cmd --config "webpack/webpack.config.renderer.$CONFIGURATION.ts"
+  #
+  # Build the renderer side of the Electron app
+  #
+  npm run webpackRendererRelease
+  if [ $? -ne 0 ]; then
+    echo 'Problem encountered building the renderer side of the desktop app'
+    exit 1
+  fi
+
 else
-  ./node_modules/.bin/webpack --config "webpack/webpack.config.renderer.$CONFIGURATION.ts"
-fi
-if [ $? -ne 0 ]; then
-  echo 'Problem encountered building the renderer side of the desktop app'
-  exit 1
+
+  #
+  # Build the main side of the Electron app
+  #
+  npm run webpackMainDebug
+  if [ $? -ne 0 ]; then
+    echo 'Problem encountered building the main side of the desktop app'
+    exit 1
+  fi
+
+  #
+  # Build the renderer side of the Electron app in watch mode
+  #
+  npm run webpackRendererDebug
+  if [ $? -ne 0 ]; then
+    echo 'Problem encountered building the renderer side of the desktop app'
+    exit 1
+  fi
+
 fi
