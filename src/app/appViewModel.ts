@@ -1,17 +1,19 @@
 import EventBus from 'js-event-bus';
-import {ApiClient} from '../api/client/apiClient';
+import {FetchCache} from '../api/client/fetchCache';
+import {FetchClient} from '../api/client/fetchClient';
 import {Configuration} from '../configuration/configuration';
+import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
+import {ErrorFactory} from '../plumbing/errors/errorFactory';
+import {UIError} from '../plumbing/errors/uiError';
 import {EventNames} from '../plumbing/events/eventNames';
-import {ReloadMainViewEvent} from '../plumbing/events/reloadMainViewEvent';
-import {ReloadUserInfoEvent} from '../plumbing/events/reloadUserInfoEvent';
+import {ReloadDataEvent} from '../plumbing/events/reloadDataEvent';
 import {RendererEvents} from '../plumbing/ipc/rendererEvents';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {CompaniesContainerViewModel} from '../views/companies/companiesContainerViewModel';
 import {TransactionsContainerViewModel} from '../views/transactions/transactionsContainerViewModel';
 import {UserInfoViewModel} from '../views/userInfo/userInfoViewModel';
-import {ApiViewEvents} from '../views/utilities/apiViewEvents';
-import {ApiViewNames} from '../views/utilities/apiViewNames';
+import {ViewModelCoordinator} from '../views/utilities/viewModelCoordinator';
 
 /*
  * Global objects as input to the application view
@@ -21,12 +23,13 @@ export class AppViewModel {
     // Global objects
     private _configuration: Configuration | null;
     private _authenticator: Authenticator | null;
-    private _apiClient: ApiClient | null;
+    private _apiClient: FetchClient | null;
 
-    // Event related objects
+    // Other infrastructure
     private _eventBus: EventBus;
-    private _apiViewEvents: ApiViewEvents;
     private _ipcEvents: RendererEvents;
+    private readonly _fetchCache: FetchCache;
+    private readonly _viewModelCoordinator: ViewModelCoordinator;
 
     // Child view models
     private _companiesViewModel: CompaniesContainerViewModel | null;
@@ -34,6 +37,8 @@ export class AppViewModel {
     private _userInfoViewModel: UserInfoViewModel | null;
 
     // State flags
+    private _error: UIError | null;
+    private _isInitialising: boolean;
     private _isInitialised: boolean;
 
     /*
@@ -46,53 +51,27 @@ export class AppViewModel {
         this._authenticator = null;
         this._apiClient = null;
 
-        // Create the event bus for messages between views
+        // Create objects used for coordination
         this._eventBus = new EventBus();
+        this._fetchCache = new FetchCache();
+        this._viewModelCoordinator = new ViewModelCoordinator(this._eventBus, this._fetchCache);
 
         // Register to receive Electron events from the main side of the app
         this._ipcEvents = new RendererEvents(this._eventBus);
         this._ipcEvents.register();
-
-        // Create a helper class to notify us about views that make API calls
-        // This will enable us to only trigger any login redirects once, after all views have tried to load
-        this._apiViewEvents = new ApiViewEvents(this._eventBus);
-        this._apiViewEvents.addView(ApiViewNames.Main);
-        this._apiViewEvents.addView(ApiViewNames.UserInfo);
 
         // Child view models
         this._companiesViewModel = null;
         this._transactionsViewModel = null;
         this._userInfoViewModel = null;
 
-        // Flags
+        // Top level error state
+        this._error = null;
+
+        // State flags
+        this._isInitialising = false;
         this._isInitialised = false;
         this._setupCallbacks();
-    }
-
-    /*
-     * Some global objects are created after downloading configuration, which is only done once
-     * The app view can be created many times and will get the same instance of the model
-     */
-    public async initialise(): Promise<void> {
-
-        if (!this._isInitialised) {
-
-            // Load configuration from the main side of the app
-            this._configuration = await this._ipcEvents.loadConfiguration();
-
-            // Initialize OpenID Connect handling
-            this._authenticator = new AuthenticatorImpl(this.configuration.oauth, this._ipcEvents);
-            await this._authenticator.initialise();
-
-            // Create a client to call the API and handle retries
-            this._apiClient = new ApiClient(this._configuration.app.apiBaseUrl, this._authenticator);
-
-            // If we were started via a deep link, navigate to that location
-            await this._ipcEvents.setDeepLinkStartupUrlIfRequired();
-
-            // Update state
-            this._isInitialised = true;
-        }
     }
 
     /*
@@ -100,6 +79,10 @@ export class AppViewModel {
      */
     public get isInitialised(): boolean {
         return this._isInitialised;
+    }
+
+    public get error(): UIError | null {
+        return this._error;
     }
 
     public get configuration(): Configuration {
@@ -110,7 +93,7 @@ export class AppViewModel {
         return this._authenticator!;
     }
 
-    public get apiClient(): ApiClient {
+    public get apiClient(): FetchClient {
         return this._apiClient!;
     }
 
@@ -118,8 +101,51 @@ export class AppViewModel {
         return this._eventBus;
     }
 
-    public get apiViewEvents(): ApiViewEvents {
-        return this._apiViewEvents;
+    /*
+     * Some global objects are created after downloading configuration, which is only done once
+     * The app view can be created many times and will get the same instance of the model
+     */
+    public async initialise(): Promise<void> {
+
+        if (this._isInitialised || this._isInitialising) {
+            return;
+        }
+
+        try {
+
+            // Prevent re-entrancy due to React strict mode
+            this._isInitialising = true;
+            this._error = null;
+
+            // Load configuration from the main side of the app
+            this._configuration = await this._ipcEvents.loadConfiguration();
+
+            // Initialize OpenID Connect handling
+            this._authenticator = new AuthenticatorImpl(this.configuration.oauth, this._ipcEvents);
+            await this._authenticator.initialise();
+
+            // Create a client for calling the API
+            this._apiClient = new FetchClient(
+                this.configuration,
+                this._fetchCache,
+                this._authenticator);
+
+            // Update state, to prevent model recreation if the view is recreated
+            this._isInitialised = true;
+
+            // If we were started via a deep link, navigate to that location
+            await this._ipcEvents.setDeepLinkStartupUrlIfRequired();
+
+        } catch (e: any) {
+
+            // Store startup errors
+            this._error = ErrorFactory.fromException(e);
+
+        } finally {
+
+            // Reset to allow retries
+            this._isInitialising = false;
+        }
     }
 
     /*
@@ -132,7 +158,7 @@ export class AppViewModel {
             this._companiesViewModel = new CompaniesContainerViewModel(
                 this._apiClient!,
                 this._eventBus,
-                this._apiViewEvents,
+                this._viewModelCoordinator,
             );
         }
 
@@ -147,7 +173,7 @@ export class AppViewModel {
             (
                 this._apiClient!,
                 this._eventBus,
-                this._apiViewEvents,
+                this._viewModelCoordinator,
             );
         }
 
@@ -159,10 +185,9 @@ export class AppViewModel {
         if (!this._userInfoViewModel) {
 
             this._userInfoViewModel = new UserInfoViewModel(
-                this._authenticator!,
                 this.apiClient!,
                 this._eventBus,
-                this._apiViewEvents,
+                this._viewModelCoordinator,
             );
         }
 
@@ -170,27 +195,89 @@ export class AppViewModel {
     }
 
     /*
+     * Try to login and report errors
+     */
+    public async login(): Promise<void> {
+
+        try {
+            await this._authenticator?.login();
+        } catch (e: any) {
+            this._error = ErrorFactory.fromException(e);
+        }
+    }
+
+    /*
+     * Try to logout and silently report errors
+     */
+    public async logout(): Promise<void> {
+
+        try {
+
+            // Try the logout
+            await this._authenticator?.logout();
+
+        } catch (e: any) {
+
+            // Only output logout errors to the console
+            const error = ErrorFactory.fromException(e);
+            ErrorConsoleReporter.output(error);
+        }
+
+        // Reset state
+        this.setLoggedOutState();
+    }
+
+    /*
      * Ask all views to get updated data from the API
      */
     public reloadData(causeError: boolean): void {
 
-        this._apiViewEvents.clearState();
-        this._eventBus.emit(EventNames.ReloadMainView, null, new ReloadMainViewEvent(causeError));
-        this._eventBus.emit(EventNames.ReloadUserInfo, null, new ReloadUserInfoEvent(causeError));
+        this._viewModelCoordinator!.resetState();
+        this._eventBus.emit(EventNames.ReloadData, null, new ReloadDataEvent(causeError));
     }
 
     /*
-     * Reload only the main view
+     * If there were load errors, try to reload data when Home is pressed
      */
-    public reloadMainView(): void {
-        this._eventBus.emit(EventNames.ReloadMainView, null, new ReloadMainViewEvent(false));
+    public reloadDataOnError(): void {
+
+        if (this._error || this._viewModelCoordinator!.hasErrors()) {
+            this.reloadData(false);
+        }
     }
 
     /*
-     * Reload only user info
+     * Before triggering a login, reset any state
      */
-    public reloadUserInfo(): void {
-        this._eventBus.emit(EventNames.ReloadUserInfo, null, new ReloadUserInfoEvent(false));
+    public setLoggedOutState(): void {
+
+        this._error = null;
+        this._viewModelCoordinator.resetState();
+        this._fetchCache.clearAll();
+    }
+
+    /*
+     * For reliability testing, ask the OAuth agent to make the access token act expired, and handle errors
+     */
+    public async expireAccessToken(): Promise<void> {
+
+        try {
+            await this._authenticator?.expireAccessToken();
+        } catch (e: any) {
+            this._error = ErrorFactory.fromException(e);
+        }
+    }
+
+    /*
+     * For reliability testing, ask the OAuth agent to make the refresh token act expired, and handle errors
+     */
+    public async expireRefreshToken(): Promise<void> {
+
+        try {
+            await this._authenticator?.expireRefreshToken();
+        } catch (e: any) {
+            this._error = ErrorFactory.fromException(e);
+        }
     }
 
     /*
@@ -198,6 +285,5 @@ export class AppViewModel {
      */
     private _setupCallbacks() {
         this.reloadData = this.reloadData.bind(this);
-        this.reloadMainView = this.reloadMainView.bind(this);
     }
 }

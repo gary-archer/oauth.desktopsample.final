@@ -8,7 +8,7 @@ import {FetchCacheItem} from './fetchCacheItem';
 export class FetchCache {
 
     // A map of URLs to the result
-    private readonly _requests: { [key: string]: FetchCacheItem } = {};
+    private _requests: { [key: string]: FetchCacheItem } = {};
 
     /*
      * Create an item when an API request is triggered
@@ -40,5 +40,12 @@ export class FetchCache {
         if (this._requests[key]) {
             delete this._requests[key];
         }
+    }
+
+    /*
+     * Clear the cache when logging out
+     */
+    public clearAll(): void {
+        this._requests = {};
     }
 }

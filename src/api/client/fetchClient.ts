@@ -24,13 +24,19 @@ export class FetchClient {
     public constructor(
         configuration: Configuration,
         fetchCache: FetchCache,
-        authenticator: Authenticator,
-        sessionId: string) {
+        authenticator: Authenticator) {
 
         this._configuration = configuration;
         this._fetchCache = fetchCache;
         this._authenticator = authenticator;
-        this._sessionId = sessionId;
+        this._sessionId = Guid.create().toString();
+    }
+
+    /*
+     * Return the session ID for display
+     */
+    public get sessionId(): string {
+        return this._sessionId;
     }
 
     /*
