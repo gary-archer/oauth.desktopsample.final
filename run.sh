@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##########################################################################
-# A script to build the desktop app and run it
+# A script to run the desktop app
 # On Windows, ensure that you have first set Git bash as the node.js shell
 # npm config set script-shell "C:\\Program Files\\git\\bin\\bash.exe"
 ##########################################################################
@@ -25,15 +25,6 @@ case "$(uname -s)" in
     PLATFORM="LINUX"
 	;;
 esac
-
-#
-# Build the application's Typescript code
-#
-./build.sh 'debug'
-if [ $? -ne 0 ]; then
-  echo 'Problem encountered building the desktop app'
-  exit
-fi
 
 #
 # Register the app to use the Electron command to run the built files in the dist folder

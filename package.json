@@ -25,7 +25,10 @@
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "./build.sh",
     "start": "./start.sh",
-    "watch": "webpack --config webpack/webpack.config.renderer.debug.ts --watch",
+    "webpackMainDebug": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' webpack --config webpack/webpack.config.main.dev.ts",
+    "webpackMainRelease": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' webpack --config webpack/webpack.config.main.prod.ts",
+    "webpackRendererDebug": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' webpack --config webpack/webpack.config.renderer.dev.ts --watch",
+    "webpackRendererRelease": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' webpack --config webpack/webpack.config.renderer.prod.ts",
     "pack": "./pack.sh"
   },
   "dependencies": {

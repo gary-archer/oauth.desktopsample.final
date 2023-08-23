@@ -18,10 +18,16 @@ The data is returned from an API that authorizes access to resources using domai
 
 ## Local Development Quick Start
 
-Build and run the app via this command, which will trigger the OpenID Connect desktop flow:
+Build the app via this command, which will build the renderer side of the app in watch mode:
 
 ```bash
-./start.sh
+./build.sh
+```
+
+Next run the app, to trigger the OpenID Connect desktop flow:
+
+```bash
+./run.sh
 ```
 
 A login is triggered in the system browser, so that the app cannot access the user's credentials.\
