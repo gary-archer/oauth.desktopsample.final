@@ -269,14 +269,17 @@ export function App(props: AppProps): JSX.Element {
             <TitleView {...getTitleProps()} />
             <HeaderButtonsView {...getHeaderButtonProps()} />
             {state.error && <ErrorSummaryView {...getErrorProps()} />}
-            <SessionView {...getSessionProps()} />
             {state.isInitialised &&
-            <Routes>
-                <Route path='/'              element={<CompaniesContainer {...getCompaniesProps()} />} />
-                <Route path='/companies/:id' element={<TransactionsContainer {...getTransactionsProps()} />} />
-                <Route path='/loggedout'     element={<LoginRequiredView {...getLoginRequiredProps()} />} />
-                <Route path='*'              element={<CompaniesContainer {...getCompaniesProps()} />} />
-            </Routes>}
+                <>
+                    <SessionView {...getSessionProps()} />
+                    <Routes>
+                        <Route path='/'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                        <Route path='/companies/:id' element={<TransactionsContainer {...getTransactionsProps()} />} />
+                        <Route path='/loggedout'     element={<LoginRequiredView {...getLoginRequiredProps()} />} />
+                        <Route path='*'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                    </Routes>
+                </>
+            }
         </>
     );
 }
