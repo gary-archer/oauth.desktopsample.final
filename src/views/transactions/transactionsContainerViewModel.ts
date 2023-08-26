@@ -47,7 +47,7 @@ export class TransactionsContainerViewModel {
     }
 
     /*
-     * Get data from the API and then notify the caller
+     * Get data from the API, and trigger a new login only once when the session expires
      */
     public async callApi(id: string, options?: ViewLoadOptions): Promise<void> {
 
