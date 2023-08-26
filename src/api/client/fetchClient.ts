@@ -63,6 +63,10 @@ export class FetchClient {
     public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo | null> {
 
         const url = await this._authenticator.getUserInfoEndpoint();
+        if (!url) {
+            return null;
+        }
+
         const data = await this._callApi('GET', url, options);
         if (!data) {
             return null;

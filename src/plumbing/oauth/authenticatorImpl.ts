@@ -30,6 +30,8 @@ export class AuthenticatorImpl implements Authenticator {
     private readonly _logoutState: LogoutState;
     private _metadata: AuthorizationServiceConfiguration | null;
     private _tokens: TokenData | null;
+    private _isLoading: boolean;
+    private _isLoaded: boolean;
 
     public constructor(configuration: OAuthConfiguration, events: RendererEvents) {
 
@@ -39,6 +41,8 @@ export class AuthenticatorImpl implements Authenticator {
         this._events = events;
         this._concurrencyHandler = new ConcurrentActionHandler();
         this._tokens = null;
+        this._isLoading = false;
+        this._isLoaded = false;
         this._setupCallbacks();
 
         // Initialise state, used to correlate responses from the system browser to the original request
@@ -48,26 +52,33 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Set the logged in state at startup or if the user refreshes the page
+     * Initialize the app upon startup, or retry if the initial load fails
+     * The loading flag prevents duplicate metadata requests due to React strict mode
      */
     public async initialise(): Promise<void> {
-        this._tokens = await this._events.loadTokens();
+
+        if (!this._isLoaded && !this._isLoading) {
+
+            this._isLoading = true;
+
+            try {
+
+                await this._loadMetadata();
+                this._tokens = await this._events.loadTokens();
+                this._isLoaded = true;
+
+            } finally {
+
+                this._isLoading = false;
+            }
+        }
     }
 
     /*
      * Provide the user info endpoint to the fetch client
      */
-    public async getUserInfoEndpoint(): Promise<string> {
-
-        try {
-
-            await this._loadMetadata();
-            return this._metadata!.userInfoEndpoint!;
-
-        } catch (e: any) {
-
-            throw ErrorFactory.fromHttpError(e, this._metadata!.userInfoEndpoint!, 'authorization server');
-        }
+    public async getUserInfoEndpoint(): Promise<string | null> {
+        return this._metadata?.userInfoEndpoint || null;
     }
 
     /*
@@ -117,8 +128,8 @@ export class AuthenticatorImpl implements Authenticator {
 
         try {
 
-            // Download metadata from the Authorization server if required
-            await this._loadMetadata();
+            // Initialise if required
+            await this.initialise();
 
             // Do the work of the login
             const loginManager = new LoginManager(
@@ -145,12 +156,8 @@ export class AuthenticatorImpl implements Authenticator {
 
             if (this._tokens && this._tokens.idToken) {
 
-                // Download metadata from the Authorization server if required
-                if (!this._metadata) {
-                    this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                        this._configuration.authority,
-                        new CustomRequestor());
-                }
+                // Initialise if required
+                await this.initialise();
 
                 // Reset state
                 const idToken = this._tokens.idToken;
@@ -160,7 +167,7 @@ export class AuthenticatorImpl implements Authenticator {
                 // Start the logout redirect to remove the authorization server's session cookie
                 const logout = new LogoutManager(
                     this._configuration,
-                    this._metadata,
+                    this._metadata!,
                     this._logoutState,
                     this._events,
                     idToken);
@@ -200,14 +207,23 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * A helper method to try to load metadata if required
+     * Load metadata if not already loaded
      */
     private async _loadMetadata() {
 
         if (!this._metadata) {
-            this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                this._configuration.authority,
-                new CustomRequestor());
+
+            try {
+
+                this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
+                    this._configuration.authority,
+                    new CustomRequestor());
+
+            } catch (e: any) {
+
+                // Do error translation if required
+                throw ErrorFactory.fromHttpError(e, this._configuration.authority, 'authorization server');
+            }
         }
     }
 
@@ -257,8 +273,8 @@ export class AuthenticatorImpl implements Authenticator {
 
         try {
 
-            // Download metadata from the Authorization server if required
-            await this._loadMetadata();
+            // Initialise if required
+            await this.initialise();
 
             // Supply the scope for access tokens
             const extras: StringMap = {

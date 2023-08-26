@@ -6,8 +6,8 @@ export interface Authenticator {
     // Setup that requires async calls
     initialise(): Promise<void>;
 
-    // Provide the user info endpoint to the fetch client
-    getUserInfoEndpoint(): Promise<string>;
+    // Provide the user info endpoint from metadata
+    getUserInfoEndpoint(): Promise<string | null>;
 
     // Try to get an access token
     getAccessToken(): Promise<string | null>;
