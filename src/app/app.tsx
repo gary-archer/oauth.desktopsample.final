@@ -1,19 +1,23 @@
 import React, {useEffect, useState} from 'react';
 import Modal from 'react-modal';
 import {Route, Routes, useNavigate} from 'react-router-dom';
-import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
-import {ErrorFactory} from '../plumbing/errors/errorFactory';
 import {DeepLinkEvent} from '../plumbing/events/deepLinkEvent';
 import {EventNames} from '../plumbing/events/eventNames';
 import {LoginStartedEvent} from '../plumbing/events/loginStartedEvent';
-import {SetErrorEvent} from '../plumbing/events/setErrorEvent';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
+import {CompaniesContainerProps} from '../views/companies/companiesContainerProps';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
+import {ErrorSummaryViewProps} from '../views/errors/errorSummaryViewProps';
 import {HeaderButtonsView} from '../views/headings/headerButtonsView';
+import {HeaderButtonsViewProps} from '../views/headings/headerButtonsViewProps';
+import {LoginRequiredViewProps} from '../views/loginRequired/loginRequiredViewProps';
 import {SessionView} from '../views/headings/sessionView';
+import {SessionViewProps} from '../views/headings/sessionViewProps';
 import {TitleView} from '../views/headings/titleView';
+import {TitleViewProps} from '../views/headings/titleViewProps';
 import {LoginRequiredView} from '../views/loginRequired/loginRequiredView';
 import {TransactionsContainer} from '../views/transactions/transactionsContainer';
+import {TransactionsContainerProps} from '../views/transactions/transactionsContainerProps';
 import {CurrentLocation} from '../views/utilities/currentLocation';
 import {LoginNavigator} from '../views/utilities/loginNavigator';
 import {AppProps} from './appProps';
@@ -28,6 +32,7 @@ export function App(props: AppProps): JSX.Element {
     const model = props.viewModel;
     const [state, setState] = useState<AppState>({
         isInitialised: model.isInitialised,
+        error: null,
     });
 
     // Startup runs only once
@@ -48,27 +53,30 @@ export function App(props: AppProps): JSX.Element {
         // Initialise the modal dialog system used for error popups
         Modal.setAppElement('#root');
 
-        try {
+        // Subscribe to application events
+        model.eventBus.on(EventNames.LoginRequired, onLoginRequired);
+        model.eventBus.on(EventNames.DeepLink, onDeepLink);
 
-            // Subscribe to application events
-            model.eventBus.on(EventNames.LoginRequired, onLoginRequired);
-            model.eventBus.on(EventNames.DeepLink, onDeepLink);
+        // Create global objects
+        await initialiseData();
+    }
 
-            // Initialise the view model if required
-            await model.initialise();
-            setError(null);
+    /*
+     * Initialise the model on startup
+     */
+    async function initialiseData(): Promise<void> {
 
-            // Update state
-            setState((s) => {
-                return {
-                    ...s,
-                    isInitialised: true,
-                };
-            });
+        // Initialise the view model if required
+        await model.initialise();
 
-        } catch (e: any) {
-            setError(e);
-        }
+        // Update state
+        setState((s) => {
+            return {
+                ...s,
+                isInitialised: model.isInitialised,
+                error: model.error,
+            };
+        });
     }
 
     /*
@@ -86,7 +94,6 @@ export function App(props: AppProps): JSX.Element {
      */
     function onLoginRequired(): void {
 
-        model.apiViewEvents.clearState();
         loginNavigator.navigateToLoginRequired();
     }
 
@@ -95,38 +102,23 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onHome(): Promise<void> {
 
-        // If there is a startup error then reinitialise the app
-        if (!state.isInitialised) {
-            cleanup();
-            await startup();
+        // Handle retrying failed initialisation
+        if (!model.isInitialised) {
+            await initialiseData();
         }
 
-        if (state.isInitialised) {
+        if (model.isInitialised) {
 
             if (CurrentLocation.path === '/loggedout') {
 
                 // Trigger a login when the Home button is clicked in the Login Required view
-                const isLoggedIn = await model.authenticator.isLoggedIn();
-                if (!isLoggedIn) {
-                    await login();
-                    return;
-                }
-            }
-
-            if (CurrentLocation.path === '/') {
-
-                // Force a reload of the main view if we are already in the home view
-                model.reloadMainView();
+                await login();
 
             } else {
 
-                // Otherwise navigate to the Home View
+                // Otherwise navigate to the home view, and trigger a reload if recovering from errors
                 navigate('/');
-            }
-
-            // Also reload user info if we are recovering from an error
-            if (model.apiViewEvents.hasLoadError()) {
-                model.reloadUserInfo();
+                model.reloadDataOnError();
             }
         }
     }
@@ -146,30 +138,21 @@ export function App(props: AppProps): JSX.Element {
      */
     async function login(): Promise<void> {
 
-        try {
+        // Update state to indicate a sign in is in progress
+        model.eventBus.emit(EventNames.LoginStarted, null, new LoginStartedEvent());
 
-            // Update state to indicate a sign in is in progress
-            setError(null);
-            model.eventBus.emit(EventNames.LoginStarted, null, new LoginStartedEvent());
+        // Do the work of the login
+        await model.login();
+        setState((s) => {
+            return {
+                ...s,
+                error: model.error,
+            };
+        });
 
-            // Do the work of the login
-            await model.authenticator.login();
-
-            // Move back to the location that took us to login required
+        // Move back to the location that took us to login required
+        if (!model.error) {
             loginNavigator.restorePreLoginLocation();
-
-            // Reset the re-render flag
-            setState((s) => {
-                return {
-                    ...s,
-                    rerender: false,
-                };
-            });
-
-        } catch (e: any) {
-
-            // Report login errors
-            setError(e);
         }
     }
 
@@ -178,22 +161,17 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onLogout(): Promise<void> {
 
-        try {
-            // Do the logout redirect
-            setError(null);
-            await model.authenticator.logout();
+        // Do the logout redirect
+        await model.logout();
+        setState((s) => {
+            return {
+                ...s,
+                error: model.error,
+            };
+        });
 
-        } catch (e: any) {
-
-            // We only output logout errors to the console
-            const error = ErrorFactory.fromException(e);
-            ErrorConsoleReporter.output(error);
-
-        } finally {
-
-            // Move to the logged out view upon completion
-            navigate('/loggedout');
-        }
+        // Move to the logged out view upon completion
+        navigate('/loggedout');
     }
 
     /*
@@ -201,13 +179,13 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onExpireAccessToken(): Promise<void> {
 
-        try {
-            setError(null);
-            await model.authenticator.expireAccessToken();
-
-        } catch (e: any) {
-            setError(e);
-        }
+        await model.expireAccessToken();
+        setState((s) => {
+            return {
+                ...s,
+                error: model.error,
+            };
+        });
     }
 
     /*
@@ -215,32 +193,35 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onExpireRefreshToken(): Promise<void> {
 
-        try {
-            setError(null);
-            await model.authenticator.expireRefreshToken();
+        await model.expireRefreshToken();
+        setState((s) => {
+            return {
+                ...s,
+                error: model.error,
+            };
+        });
+    }
 
-        } catch (e: any) {
-            setError(e);
+    function getTitleProps(): TitleViewProps {
+
+        if (state.isInitialised) {
+
+            return {
+                userInfo: {
+                    viewModel: model.getUserInfoViewModel(),
+                },
+            };
+        } else {
+
+            return {
+                userInfo: null,
+            };
         }
     }
 
-    /*
-     * A shared subroutine to set error state
-     */
-    function setError(e: any): void {
-        model.eventBus.emit(EventNames.SetError, null, new SetErrorEvent('main', e));
-    }
+    function getHeaderButtonProps(): HeaderButtonsViewProps {
 
-    /*
-     * Render basic details before the view model has initialised
-     */
-    function renderInitialScreen(): JSX.Element {
-
-        const titleProps = {
-            userInfo: null,
-        };
-
-        const headerButtonProps = {
+        return {
             eventBus: model.eventBus,
             handleHomeClick: onHome,
             handleExpireAccessTokenClick: onExpireAccessToken,
@@ -248,90 +229,66 @@ export function App(props: AppProps): JSX.Element {
             handleReloadDataClick: model.reloadData,
             handleLogoutClick: onLogout,
         };
-
-        const errorProps = {
-            eventBus: model.eventBus,
-            containingViewName: 'main',
-            hyperlinkMessage: 'Problem Encountered',
-            dialogTitle: 'Application Error',
-            centred: true,
-        };
-
-        return (
-            <>
-                <TitleView {...titleProps} />
-                <HeaderButtonsView {...headerButtonProps} />
-                <ErrorSummaryView {...errorProps} />
-            </>
-        );
     }
 
-    /*
-     * Attempt to render the entire layout, which will trigger calls to Web APIs
-     */
-    function renderMain(): JSX.Element {
+    function getErrorProps(): ErrorSummaryViewProps {
 
-        const titleProps = {
-            userInfo: {
-                viewModel: model.getUserInfoViewModel(),
-            },
-        };
-
-        const headerButtonProps = {
-            eventBus: model.eventBus,
-            handleHomeClick: onHome,
-            handleExpireAccessTokenClick: onExpireAccessToken,
-            handleExpireRefreshTokenClick: onExpireRefreshToken,
-            handleReloadDataClick: model.reloadData,
-            handleLogoutClick: onLogout,
-        };
-
-        const errorProps = {
-            eventBus: model.eventBus,
+        return {
+            error: state.error!,
+            errorsToIgnore: [],
             containingViewName: 'main',
             hyperlinkMessage: 'Problem Encountered',
             dialogTitle: 'Application Error',
             centred: true,
         };
+    }
 
-        const sessionProps = {
+    function getSessionProps(): SessionViewProps {
+
+        return {
             sessionId: model.apiClient.sessionId,
             eventBus: model.eventBus,
         };
+    }
 
-        const companiesViewProps = {
+    function getCompaniesProps(): CompaniesContainerProps {
+
+        return {
             viewModel: model.getCompaniesViewModel(),
         };
+    }
 
-        const transactionsViewProps = {
+    function getTransactionsProps(): TransactionsContainerProps {
+
+        return {
             viewModel: model.getTransactionsViewModel(),
             navigate,
         };
+    }
 
-        const loginRequiredProps = {
+    function getLoginRequiredProps(): LoginRequiredViewProps {
+
+        return {
             eventBus: model.eventBus,
         };
-
-        // Render the tree view
-        return (
-            <>
-                <TitleView {...titleProps} />
-                <HeaderButtonsView {...headerButtonProps} />
-                <ErrorSummaryView {...errorProps} />
-                <SessionView {...sessionProps} />
-                <Routes>
-                    <Route path='/'              element={<CompaniesContainer {...companiesViewProps} />} />
-                    <Route path='/companies/:id' element={<TransactionsContainer {...transactionsViewProps} />} />
-                    <Route path='/loggedout'     element={<LoginRequiredView {...loginRequiredProps} />} />
-                    <Route path='*'              element={<CompaniesContainer {...companiesViewProps} />} />
-                </Routes>
-            </>
-        );
     }
 
-    if (!state.isInitialised) {
-        return renderInitialScreen();
-    } else {
-        return renderMain();
-    }
+    return (
+        <>
+            <TitleView {...getTitleProps()} />
+            <HeaderButtonsView {...getHeaderButtonProps()} />
+            {state.error && <ErrorSummaryView {...getErrorProps()} />}
+            {state.isInitialised &&
+                <>
+                    <SessionView {...getSessionProps()} />
+                    <Routes>
+                        <Route path='/'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                        <Route path='/companies/:id' element={<TransactionsContainer {...getTransactionsProps()} />} />
+                        <Route path='/loggedout'     element={<LoginRequiredView {...getLoginRequiredProps()} />} />
+                        <Route path='*'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                    </Routes>
+                </>
+            }
+        </>
+    );
 }

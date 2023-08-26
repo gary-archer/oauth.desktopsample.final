@@ -1,87 +1,113 @@
 import EventBus from 'js-event-bus';
-import {ApiClient} from '../../api/client/apiClient';
-import {Authenticator} from '../../plumbing/oauth/authenticator';
-import {OAuthUserInfo} from '../../plumbing/oauth/oauthUserInfo';
+import {FetchCacheKeys} from '../../api/client/fetchCacheKeys';
+import {FetchClient} from '../../api/client/fetchClient';
+import {ApiUserInfo} from '../../api/entities/apiUserInfo';
+import {OAuthUserInfo} from '../../api/entities/oauthUserInfo';
 import {ErrorFactory} from '../../plumbing/errors/errorFactory';
 import {UIError} from '../../plumbing/errors/uiError';
-import {ApiViewEvents} from '../utilities/apiViewEvents';
-import {ApiViewNames} from '../utilities/apiViewNames';
-import {UserInfoLoadOptions}  from './userInfoLoadOptions';
-import {ApiUserInfo} from '../../api/entities/apiUserInfo';
+import {ViewLoadOptions} from '../utilities/viewLoadOptions';
+import {ViewModelCoordinator} from '../utilities/viewModelCoordinator';
 
 /*
  * The view model for the user info view
  */
 export class UserInfoViewModel {
 
-    private readonly _authenticator: Authenticator;
-    private readonly _apiClient: ApiClient;
+    private readonly _apiClient: FetchClient;
     private readonly _eventBus: EventBus;
-    private readonly _apiViewEvents: ApiViewEvents;
-    private _isLoaded: boolean;
+    private readonly _viewModelCoordinator: ViewModelCoordinator;
+    private _oauthUserInfo: OAuthUserInfo | null;
+    private _apiUserInfo: ApiUserInfo | null;
+    private _error: UIError | null;
 
     public constructor(
-        authenticator: Authenticator,
-        apiClient: ApiClient,
+        apiClient: FetchClient,
         eventBus: EventBus,
-        apiViewEvents: ApiViewEvents,
+        viewModelCoordinator: ViewModelCoordinator,
     ) {
-        this._authenticator = authenticator;
         this._apiClient = apiClient;
         this._eventBus = eventBus;
-        this._apiViewEvents = apiViewEvents;
-        this._isLoaded = false;
+        this._viewModelCoordinator = viewModelCoordinator;
+        this._oauthUserInfo = null;
+        this._apiUserInfo = null;
+        this._error = null;
     }
 
     /*
      * Property accessors
      */
+    public get oauthUserInfo(): OAuthUserInfo | null {
+        return this._oauthUserInfo;
+    }
+
+    public get apiUserInfo(): ApiUserInfo | null {
+        return this._apiUserInfo;
+    }
+
+    public get error(): UIError | null {
+        return this._error;
+    }
+
     public get eventBus(): EventBus {
         return this._eventBus;
     }
 
     /*
-     * Get userinfo and then notify the view
+     * Get data from the API and then notify the caller
      */
-    public async callApi(
-        onSuccess: (oauthUserInfo: OAuthUserInfo, apiUserInfo: ApiUserInfo) => void,
-        onError: (error: UIError) => void,
-        options: UserInfoLoadOptions): Promise<void> {
+    public async callApi(options?: ViewLoadOptions): Promise<void> {
 
-        // Return early if no load is needed
-        if (this._isLoaded && !options.reload) {
-            this._apiViewEvents.onViewLoaded(ApiViewNames.UserInfo);
-            return;
-        }
+        const oauthFetchOptions = {
+            cacheKey: FetchCacheKeys.OAuthUserInfo,
+            forceReload: options?.forceReload || false,
+            causeError: options?.causeError || false,
+        };
+
+        const apiFetchOptions = {
+            cacheKey: FetchCacheKeys.ApiUserInfo,
+            forceReload: options?.forceReload || false,
+            causeError: options?.causeError || false,
+        };
+
+        this._viewModelCoordinator.onUserInfoViewModelLoading();
 
         try {
 
-            this._apiViewEvents.onViewLoading(ApiViewNames.UserInfo);
-            const requestOptions = {causeError: options.causeError};
+            this._error = null;
+            this._oauthUserInfo = null;
+            this._apiUserInfo = null;
 
-            // The UI gets OAuth user info from the authorization server
-            const oauthUserInfoPromise = this._authenticator.getUserInfo();
-
-            // The UI gets domain specific user attributes from its API
-            const apiUserInfoPromise = this._apiClient.getUserInfo(requestOptions);
+            // Set up promises for the two sources of user info
+            const oauthUserInfoPromise = this._apiClient.getOAuthUserInfo(oauthFetchOptions);
+            const apiUserInfoPromise = this._apiClient.getApiUserInfo(apiFetchOptions);
 
             // Run the tasks in parallel
             const results = await Promise.all([oauthUserInfoPromise, apiUserInfoPromise]);
             const oauthUserInfo = results[0];
             const apiUserInfo = results[1];
 
-            // Update views
-            this._apiViewEvents.onViewLoaded(ApiViewNames.UserInfo);
-            this._isLoaded = true;
-            onSuccess(oauthUserInfo, apiUserInfo);
+            // Update data
+            if (oauthUserInfo) {
+                this._oauthUserInfo = oauthUserInfo;
+            }
+            if (apiUserInfo) {
+                this._apiUserInfo = apiUserInfo;
+            }
+
+            // Send a notification if any data loaded
+            if (oauthUserInfo || apiUserInfo) {
+                this._viewModelCoordinator.onUserInfoViewModelLoaded();
+            }
 
         } catch (e: any) {
 
             // Report errors
-            this._isLoaded = false;
-            const error = ErrorFactory.fromException(e);
-            this._apiViewEvents.onViewLoadFailed(ApiViewNames.UserInfo, error);
-            onError(error);
+            this._error = ErrorFactory.fromException(e);
+            this._oauthUserInfo = null;
+            this._apiUserInfo = null;
+
+            // Send a notification if there was an error
+            this._viewModelCoordinator.onUserInfoViewModelLoaded();
         }
     }
 
@@ -89,6 +115,8 @@ export class UserInfoViewModel {
      * Reset state when logging out
      */
     public unload(): void {
-        this._isLoaded = false;
+        this._oauthUserInfo = null;
+        this._apiUserInfo = null;
+        this._error = null;
     }
 }

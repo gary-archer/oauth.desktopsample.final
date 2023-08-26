@@ -1,7 +1,7 @@
 /*
- * An event object for reloading user info
+ * Represents a user requesting a data reload
  */
-export class ReloadUserInfoEvent {
+export class ReloadDataEvent {
 
     private readonly _causeError: boolean;
 

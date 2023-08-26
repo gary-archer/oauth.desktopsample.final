@@ -5,12 +5,10 @@ import {
     GRANT_TYPE_REFRESH_TOKEN,
     StringMap,
     TokenRequest} from '@openid/appauth';
-import axios, {AxiosRequestConfig} from 'axios';
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorFactory} from '../errors/errorFactory';
 import {RendererEvents} from '../ipc/rendererEvents';
-import {AxiosUtils} from '../utilities/axiosUtils';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {Authenticator} from './authenticator';
 import {CustomRequestor} from './customRequestor';
@@ -18,7 +16,6 @@ import {LoginManager} from './login/loginManager';
 import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
-import {OAuthUserInfo} from './oauthUserInfo';
 import {TokenData} from './tokenData';
 
 /*
@@ -33,6 +30,8 @@ export class AuthenticatorImpl implements Authenticator {
     private readonly _logoutState: LogoutState;
     private _metadata: AuthorizationServiceConfiguration | null;
     private _tokens: TokenData | null;
+    private _isLoading: boolean;
+    private _isLoaded: boolean;
 
     public constructor(configuration: OAuthConfiguration, events: RendererEvents) {
 
@@ -42,6 +41,8 @@ export class AuthenticatorImpl implements Authenticator {
         this._events = events;
         this._concurrencyHandler = new ConcurrentActionHandler();
         this._tokens = null;
+        this._isLoading = false;
+        this._isLoaded = false;
         this._setupCallbacks();
 
         // Initialise state, used to correlate responses from the system browser to the original request
@@ -51,25 +52,39 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Set the logged in state at startup or if the user refreshes the page
+     * Initialize the app upon startup, or retry if the initial load fails
+     * The loading flag prevents duplicate metadata requests due to React strict mode
      */
     public async initialise(): Promise<void> {
-        this._tokens = await this._events.loadTokens();
+
+        if (!this._isLoaded && !this._isLoading) {
+
+            this._isLoading = true;
+
+            try {
+
+                await this._loadMetadata();
+                this._tokens = await this._events.loadTokens();
+                this._isLoaded = true;
+
+            } finally {
+
+                this._isLoading = false;
+            }
+        }
     }
 
     /*
-     * Return whether we have a user object and tokens
+     * Provide the user info endpoint to the fetch client
      */
-    public async isLoggedIn(): Promise<boolean> {
-
-        this._tokens = await this._events.loadTokens();
-        return !!this._tokens;
+    public async getUserInfoEndpoint(): Promise<string | null> {
+        return this._metadata?.userInfoEndpoint || null;
     }
 
     /*
      * Try to get an access token
      */
-    public async getAccessToken(): Promise<string> {
+    public async getAccessToken(): Promise<string | null> {
 
         // Load tokens from secure storage if required
         if (!this._tokens) {
@@ -81,14 +96,14 @@ export class AuthenticatorImpl implements Authenticator {
             return this._tokens.accessToken;
         }
 
-        // Try to refresh if possible
-        return this.refreshAccessToken();
+        // Indicate no access token
+        return null;
     }
 
     /*
      * Try to refresh an access token
      */
-    public async refreshAccessToken(): Promise<string> {
+    public async synchronizedRefresh(): Promise<string> {
 
         // Try to use the refresh token to get a new access token
         if (this._tokens && this._tokens.refreshToken) {
@@ -113,8 +128,8 @@ export class AuthenticatorImpl implements Authenticator {
 
         try {
 
-            // Download metadata from the Authorization server if required
-            await this._loadMetadata();
+            // Initialise if required
+            await this.initialise();
 
             // Do the work of the login
             const loginManager = new LoginManager(
@@ -141,12 +156,8 @@ export class AuthenticatorImpl implements Authenticator {
 
             if (this._tokens && this._tokens.idToken) {
 
-                // Download metadata from the Authorization server if required
-                if (!this._metadata) {
-                    this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                        this._configuration.authority,
-                        new CustomRequestor());
-                }
+                // Initialise if required
+                await this.initialise();
 
                 // Reset state
                 const idToken = this._tokens.idToken;
@@ -156,7 +167,7 @@ export class AuthenticatorImpl implements Authenticator {
                 // Start the logout redirect to remove the authorization server's session cookie
                 const logout = new LogoutManager(
                     this._configuration,
-                    this._metadata,
+                    this._metadata!,
                     this._logoutState,
                     this._events,
                     idToken);
@@ -167,35 +178,6 @@ export class AuthenticatorImpl implements Authenticator {
 
             // Do error translation if required
             throw ErrorFactory.fromLogoutOperation(e, ErrorCodes.logoutRequestFailed);
-        }
-    }
-
-    /*
-     * Get user info from the authorization server and handle retries with a refreshed access token
-     */
-    public async getUserInfo(): Promise<OAuthUserInfo> {
-
-        // First check that we have an access token
-        let accessToken = await this.getAccessToken();
-
-        try {
-
-            // Download metadata from the Authorization server if required
-            await this._loadMetadata();
-
-            // Call the API
-            return await this._makeUserInfoRequest(accessToken);
-
-        } catch (e: any) {
-
-            // Report Ajax errors if this is not a 401
-            if (e.statusCode !== 401) {
-                throw e;
-            }
-
-            // If we received a 401 then try to get a new token
-            accessToken = await this.refreshAccessToken();
-            return await this._makeUserInfoRequest(accessToken);
         }
     }
 
@@ -218,21 +200,30 @@ export class AuthenticatorImpl implements Authenticator {
     public async expireRefreshToken(): Promise<void> {
 
         if (this._tokens && this._tokens.refreshToken) {
+            this._tokens.accessToken = `${this._tokens.accessToken}x`;
             this._tokens.refreshToken = `${this._tokens.refreshToken}x`;
-            this._tokens.accessToken = null;
             await this._events.saveTokens(this._tokens);
         }
     }
 
     /*
-     * A helper method to try to load metadata if required
+     * Load metadata if not already loaded
      */
     private async _loadMetadata() {
 
         if (!this._metadata) {
-            this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                this._configuration.authority,
-                new CustomRequestor());
+
+            try {
+
+                this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
+                    this._configuration.authority,
+                    new CustomRequestor());
+
+            } catch (e: any) {
+
+                // Do error translation if required
+                throw ErrorFactory.fromHttpError(e, this._configuration.authority, 'authorization server');
+            }
         }
     }
 
@@ -282,8 +273,8 @@ export class AuthenticatorImpl implements Authenticator {
 
         try {
 
-            // Download metadata from the Authorization server if required
-            await this._loadMetadata();
+            // Initialise if required
+            await this.initialise();
 
             // Supply the scope for access tokens
             const extras: StringMap = {
@@ -337,36 +328,6 @@ export class AuthenticatorImpl implements Authenticator {
                 // Rethrow other errors
                 throw ErrorFactory.fromTokenError(e, ErrorCodes.tokenRenewalError);
             }
-        }
-    }
-
-    /*
-     * Download user attributes from the authorization server
-     */
-    public async _makeUserInfoRequest(accessToken: string): Promise<OAuthUserInfo> {
-
-        try {
-
-            const options = {
-                url: this._metadata!.userInfoEndpoint!,
-                method: 'GET',
-                headers: {
-                    'accept': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`,
-                },
-            };
-
-            const response = await axios.request(options as AxiosRequestConfig);
-            AxiosUtils.checkJson(response.data);
-
-            return {
-                givenName: response.data['given_name'] || '',
-                familyName: response.data['family_name'] || '',
-            };
-
-        } catch (e: any) {
-
-            throw ErrorFactory.fromHttpError(e, this._metadata!.userInfoEndpoint!, 'authorization server');
         }
     }
 

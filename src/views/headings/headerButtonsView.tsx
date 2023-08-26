@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {DataStatusEvent} from '../../plumbing/events/dataStatusEvent';
 import {EventNames} from '../../plumbing/events/eventNames';
+import {ViewModelFetchEvent} from '../../plumbing/events/viewModelFetchEvent';
 import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {HeaderButtonsViewProps} from './headerButtonsViewProps';
 import {HeaderButtonsViewState} from './headerButtonsViewState';
@@ -21,12 +21,12 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
     }, []);
 
     function startup() {
-        props.eventBus.on(EventNames.DataStatus, onDataStatusUpdate);
+        props.eventBus.on(EventNames.ViewModelFetch, onViewModelFetch);
         props.eventBus.on(EventNames.Navigate, onNavigate);
     }
 
     function cleanup() {
-        props.eventBus.detach(EventNames.DataStatus, onDataStatusUpdate);
+        props.eventBus.detach(EventNames.ViewModelFetch, onViewModelFetch);
         props.eventBus.detach(EventNames.Navigate, onNavigate);
     }
 
@@ -37,8 +37,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
     /*
      * The session button state changes when data starts and ends loading
      */
-    function onDataStatusUpdate(event: DataStatusEvent) {
-
+    function onViewModelFetch(event: ViewModelFetchEvent) {
         setState((s) => {
             return {
                 ...s,
