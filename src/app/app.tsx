@@ -111,8 +111,6 @@ export function App(props: AppProps): JSX.Element {
 
             if (CurrentLocation.path === '/loggedout') {
 
-                console
-
                 // Trigger a login when the Home button is clicked in the Login Required view
                 await login();
 

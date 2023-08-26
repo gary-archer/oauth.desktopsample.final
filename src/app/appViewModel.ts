@@ -202,7 +202,7 @@ export class AppViewModel {
         try {
 
             // Try the login
-            this._error = null;
+            this.setLoggedOutState();
             await this._authenticator?.login();
 
         } catch (e: any) {
@@ -220,7 +220,7 @@ export class AppViewModel {
         try {
 
             // Try the logout
-            this._error = null;
+            this.setLoggedOutState();
             await this._authenticator?.logout();
 
         } catch (e: any) {

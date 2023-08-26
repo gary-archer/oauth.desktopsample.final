@@ -19,7 +19,7 @@ export class LoginNavigator {
      */
     public navigateToLoginRequired(): void {
 
-        if (CurrentLocation.path != 'LoginRequired') {
+        if (CurrentLocation.path != '/loggedout') {
             sessionStorage.setItem(this._key, CurrentLocation.path);
         }
 
