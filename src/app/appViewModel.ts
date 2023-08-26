@@ -202,7 +202,7 @@ export class AppViewModel {
         try {
 
             // Try the login
-            this.setLoggedOutState();
+            this._error = null;
             await this._authenticator?.login();
 
         } catch (e: any) {
@@ -210,6 +210,10 @@ export class AppViewModel {
             // Handle errors
             this._error = ErrorFactory.fromException(e);
         }
+
+        // Reset state
+        this._fetchCache.clearAll();
+        this._viewModelCoordinator.resetState();
     }
 
     /*
@@ -220,7 +224,7 @@ export class AppViewModel {
         try {
 
             // Try the logout
-            this.setLoggedOutState();
+            this._error = null;
             await this._authenticator?.logout();
 
         } catch (e: any) {
@@ -231,7 +235,8 @@ export class AppViewModel {
         }
 
         // Reset state
-        this.setLoggedOutState();
+        this._fetchCache.clearAll();
+        this._viewModelCoordinator.resetState();
     }
 
     /*
@@ -287,16 +292,6 @@ export class AppViewModel {
         if (this._error || this._viewModelCoordinator!.hasErrors()) {
             this.reloadData(false);
         }
-    }
-
-    /*
-     * Before triggering a login, reset any state
-     */
-    public setLoggedOutState(): void {
-
-        this._error = null;
-        this._viewModelCoordinator.resetState();
-        this._fetchCache.clearAll();
     }
 
     /*

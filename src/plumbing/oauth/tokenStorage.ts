@@ -11,7 +11,7 @@ export class TokenStorage {
     // The below link describes the Windows limitation that otherwise leads to a 'Stub received bad data' error
     // https://github.com/atom/node-keytar/issues/112
     static readonly ACCESS_TOKEN = 'DesktopSample.AccessToken';
-    static readonly REFRESH_TOKEN = 'DesktopSample.AccessToken';
+    static readonly REFRESH_TOKEN = 'DesktopSample.RefreshToken';
     static readonly ID_TOKEN = 'DesktopSample.IdToken';
 
     // The current username

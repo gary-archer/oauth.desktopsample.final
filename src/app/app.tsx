@@ -57,6 +57,15 @@ export function App(props: AppProps): JSX.Element {
         model.eventBus.on(EventNames.LoginRequired, onLoginRequired);
         model.eventBus.on(EventNames.DeepLink, onDeepLink);
 
+        // Create global objects
+        await initialiseData();
+    }
+
+    /*
+     * Initialise the model on startup
+     */
+    async function initialiseData(): Promise<void> {
+
         // Initialise the view model if required
         await model.initialise();
 
@@ -85,7 +94,6 @@ export function App(props: AppProps): JSX.Element {
      */
     function onLoginRequired(): void {
 
-        model.setLoggedOutState();
         loginNavigator.navigateToLoginRequired();
     }
 
@@ -96,15 +104,7 @@ export function App(props: AppProps): JSX.Element {
 
         // Handle retrying failed initialisation
         if (!model.isInitialised) {
-
-            await model.initialise();
-            setState((s) => {
-                return {
-                    ...s,
-                    isInitialised: model.isInitialised,
-                    error: model.error,
-                };
-            });
+            await initialiseData();
         }
 
         if (model.isInitialised) {
@@ -143,19 +143,17 @@ export function App(props: AppProps): JSX.Element {
 
         // Do the work of the login
         await model.login();
-
-        // Move back to the location that took us to login required
-        if (!model.error) {
-            loginNavigator.restorePreLoginLocation();
-        }
-
-        // Update state
         setState((s) => {
             return {
                 ...s,
                 error: model.error,
             };
         });
+
+        // Move back to the location that took us to login required
+        if (!model.error) {
+            loginNavigator.restorePreLoginLocation();
+        }
     }
 
     /*
@@ -165,6 +163,12 @@ export function App(props: AppProps): JSX.Element {
 
         // Do the logout redirect
         await model.logout();
+        setState((s) => {
+            return {
+                ...s,
+                error: model.error,
+            };
+        });
 
         // Move to the logged out view upon completion
         navigate('/loggedout');

@@ -12,7 +12,7 @@ import {FetchCache} from './fetchCache';
 import {FetchOptions} from './fetchOptions';
 
 /*
- * A high level class used by the rest of the app to fetch cacheable secured data
+ * A high level class used by the rest of the app to fetch secured data from APIs
  */
 export class FetchClient {
 
@@ -104,7 +104,7 @@ export class FetchClient {
             return cacheItem.data;
         }
 
-        // Ensure that the cache item exists, to avoid a redundant API request on every view recreation
+        // Ensure that the cache item exists, to avoid further redundant API requests
         cacheItem = this._fetchCache.createItem(options.cacheKey);
 
         // Get the access token and trigger a login redirect if not found
@@ -139,7 +139,7 @@ export class FetchClient {
 
             } catch (e2: any) {
 
-                // Save refresh errors
+                // Report refresh errors
                 const error2 = ErrorFactory.fromHttpError(e2, url, 'API');
                 cacheItem.error = error2;
                 throw error2;
@@ -154,7 +154,7 @@ export class FetchClient {
 
             }  catch (e3: any) {
 
-                // Save retry errors
+                // Report retry errors
                 const error3 = ErrorFactory.fromHttpError(e3, url, 'API');
                 cacheItem.error = error3;
                 throw error3;
@@ -172,23 +172,6 @@ export class FetchClient {
         fetchOptions: FetchOptions,
         dataToSend: any): Promise<any> {
 
-        const requestOptions = {
-            url,
-            method,
-            data: dataToSend,
-            headers: this._getHeaders(accessToken, fetchOptions),
-        } as AxiosRequestConfig;
-
-        const response = await axios.request(requestOptions);
-        AxiosUtils.checkJson(response.data);
-        return response.data;
-    }
-
-    /*
-     * Add headers for logging and advanced testing purposes
-     */
-    private _getHeaders(accessToken: string, options: FetchOptions): any {
-
         const headers: any = {
 
             // The required authorization header
@@ -201,10 +184,19 @@ export class FetchClient {
         };
 
         // A special header can be sent to ask the API to throw a simulated exception
-        if (options.causeError) {
+        if (fetchOptions.causeError) {
             headers['x-mycompany-test-exception'] = 'SampleApi';
         }
 
-        return headers;
+        const requestOptions = {
+            url,
+            method,
+            data: dataToSend,
+            headers,
+        } as AxiosRequestConfig;
+
+        const response = await axios.request(requestOptions);
+        AxiosUtils.checkJson(response.data);
+        return response.data;
     }
 }
