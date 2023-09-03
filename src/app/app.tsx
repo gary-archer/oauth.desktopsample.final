@@ -116,8 +116,10 @@ export function App(props: AppProps): JSX.Element {
 
             } else {
 
-                // Otherwise navigate to the home view, and trigger a reload if recovering from errors
+                // Otherwise navigate to the home view
                 navigate('/');
+
+                // Force a data reload if recovering from errors
                 model.reloadDataOnError();
             }
         }

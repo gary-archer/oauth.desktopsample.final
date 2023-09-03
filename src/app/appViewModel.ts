@@ -199,6 +199,10 @@ export class AppViewModel {
      */
     public async login(): Promise<void> {
 
+        // Reset cached state for API requests
+        this._fetchCache.clearAll();
+        this._viewModelCoordinator.resetState();
+
         try {
 
             // Try the login
@@ -210,16 +214,16 @@ export class AppViewModel {
             // Handle errors
             this._error = ErrorFactory.fromException(e);
         }
-
-        // Reset state
-        this._fetchCache.clearAll();
-        this._viewModelCoordinator.resetState();
     }
 
     /*
      * Try to logout and silently report errors
      */
     public async logout(): Promise<void> {
+
+        // Reset cached state for API requests
+        this._fetchCache.clearAll();
+        this._viewModelCoordinator.resetState();
 
         try {
 
@@ -233,10 +237,6 @@ export class AppViewModel {
             const error = ErrorFactory.fromException(e);
             ErrorConsoleReporter.output(error);
         }
-
-        // Reset state
-        this._fetchCache.clearAll();
-        this._viewModelCoordinator.resetState();
     }
 
     /*

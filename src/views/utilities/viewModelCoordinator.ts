@@ -64,14 +64,14 @@ export class ViewModelCoordinator {
     }
 
     /*
-     * I need to do something here, though loading fires for the real request and also strict mode
+     * Called when the user info view model begins loading
      */
     public onUserInfoViewModelLoading(): void {
         this._userInfoLoading = true;
     }
 
     /*
-     * This is called when fixed views finish sending API requests
+     * This is called when the user info view model receives an API response
      * If all views have loaded, see if we need to trigger a login redirect
      */
     public onUserInfoViewModelLoaded(): void {
