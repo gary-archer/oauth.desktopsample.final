@@ -104,7 +104,7 @@ export class FetchClient {
         // Return existing data from the memory cache when available
         // If a view is created whiles its API requests are in flight, this returns null to the view model
         let cacheItem = this._fetchCache.getItem(options.cacheKey);
-        if (cacheItem) {
+        if (cacheItem && !cacheItem.error) {
             return cacheItem.data;
         }
 
