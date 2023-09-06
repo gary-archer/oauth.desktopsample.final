@@ -87,7 +87,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
 
         await model.callApi(companyId, options);
 
-        if (model.error && model.isExpectedApiError()) {
+        if (model.error && model.isForbiddenError()) {
 
             // For 'expected' errors, return to the home view
             props.navigate('/');
