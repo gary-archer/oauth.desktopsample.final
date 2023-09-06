@@ -280,18 +280,16 @@ export class AppViewModel {
      */
     public reloadData(causeError: boolean): void {
 
+        this._error = null;
         this._viewModelCoordinator!.resetState();
         this._eventBus.emit(EventNames.ReloadData, null, new ReloadDataEvent(causeError));
     }
 
     /*
-     * If there were load errors, try to reload data when Home is pressed
+     * See if there are any errors
      */
-    public reloadDataOnError(): void {
-
-        if (this._error || this._viewModelCoordinator!.hasErrors()) {
-            this.reloadData(false);
-        }
+    public hasError(): boolean {
+        return !!this._error || this._viewModelCoordinator!.hasErrors();
     }
 
     /*

@@ -93,7 +93,6 @@ export function App(props: AppProps): JSX.Element {
      * Redirect to the login required view when we need to sign in
      */
     function onLoginRequired(): void {
-
         loginNavigator.navigateToLoginRequired();
     }
 
@@ -120,9 +119,32 @@ export function App(props: AppProps): JSX.Element {
                 navigate('/');
 
                 // Force a data reload if recovering from errors
-                model.reloadDataOnError();
+                if (model.hasError()) {
+
+                    await model.reloadData(false);
+                    setState((s) => {
+                        return {
+                            ...s,
+                            error: model.error,
+                        };
+                    });
+                }
             }
         }
+    }
+
+    /*
+     * Handle reloads and updating the error state
+     */
+    async function onReloadData(causeError: boolean): Promise<void> {
+
+        await model.reloadData(causeError);
+        setState((s) => {
+            return {
+                ...s,
+                error: model.error,
+            };
+        });
     }
 
     /*
@@ -213,6 +235,7 @@ export function App(props: AppProps): JSX.Element {
                     viewModel: model.getUserInfoViewModel(),
                 },
             };
+
         } else {
 
             return {
@@ -228,7 +251,7 @@ export function App(props: AppProps): JSX.Element {
             handleHomeClick: onHome,
             handleExpireAccessTokenClick: onExpireAccessToken,
             handleExpireRefreshTokenClick: onExpireRefreshToken,
-            handleReloadDataClick: model.reloadData,
+            handleReloadDataClick: onReloadData,
             handleLogoutClick: onLogout,
         };
     }
