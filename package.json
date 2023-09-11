@@ -1,0 +1,75 @@
+{
+  "name": "finaldesktopapp",
+  "version": "2.0.0",
+  "description": "The Final OpenID Connect secured Desktop App using the AppAuth-JS security",
+  "keywords": [],
+  "author": "Gary Archer",
+  "license": "MIT",
+  "main": "main.bundle.js",
+  "type": "commonjs",
+  "files": [
+    "dist/**"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "build": {
+    "protocols": {
+      "name": "finaldesktopapp",
+      "schemes": [
+        "x-mycompany-desktopapp"
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "npx eslint . --ext .ts,.tsx",
+    "build": "./build.sh",
+    "start": "./start.sh",
+    "webpackMainDebug": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' webpack --config webpack/webpack.config.main.dev.ts",
+    "webpackMainRelease": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' webpack --config webpack/webpack.config.main.prod.ts",
+    "webpackRendererDebug": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' webpack --config webpack/webpack.config.renderer.dev.ts --watch",
+    "webpackRendererRelease": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' webpack --config webpack/webpack.config.renderer.prod.ts",
+    "pack": "./pack.sh"
+  },
+  "dependencies": {
+    "@openid/appauth": "^1.3.1",
+    "axios": "^1.4.0",
+    "fs-extra": "^11.1.1",
+    "guid-typescript": "^1.0.9",
+    "js-event-bus": "^1.1.1",
+    "keytar": "^7.9.0",
+    "moment": "2.29.4",
+    "opener": "^1.5.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-modal": "^3.16.1",
+    "react-router-dom": "^6.9.0",
+    "url-parse": "1.5.10",
+    "username": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.1",
+    "@types/node": "^18.16.19",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.9",
+    "@types/react-modal": "^3.13.1",
+    "@types/url-parse": "^1.4.8",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "electron": "^25.2.0",
+    "electron-packager": "^17.1.1",
+    "electron-rebuild": "^3.2.9",
+    "eslint": "^8.44.0",
+    "eslint-plugin-react": "^7.32.2",
+    "node-loader": "^2.0.0",
+    "ts-loader": "^9.4.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.5",
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-merge": "^5.8.0"
+  },
+  "overrides": {
+    "semver": "7.5.2"
+  }
+}
