@@ -12,7 +12,7 @@
 ## Views
 
 The desktop app is a simple UI with some basic navigation between views, to render fictional resources.\
-The data is returned from an API that authorizes access to resources using domain specific claims.
+The data is returned from an API that authorizes access to resources using claims from multiple sources.
 
 ![Desktop App Views](./doc/views.png)
 
@@ -47,7 +47,7 @@ You can then test all lifecycle operations, including token refresh, expiry even
 ## Further Information
 
 * See the [API Journey - Client Side](https://authguidance.com/api-journey-client-side/) for further information on the app's behaviour
-* Further details about the desktop app are provided, starting in the [Final Desktop Sample Overview](https://authguidance.com/final-desktop-sample-overview/)
+* Further details specific to the desktop app are provided, starting in the [Final Desktop Sample Overview](https://authguidance.com/final-desktop-sample-overview/)
 
 ## Programming Languages
 
