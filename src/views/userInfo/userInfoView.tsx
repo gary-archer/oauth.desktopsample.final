@@ -45,29 +45,23 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     }
 
     /*
-     * Load data when in a main view
+     * If in the login required view we clear user data
      */
     async function onNavigate(event: NavigateEvent): Promise<void> {
 
-        if (event.isMainView) {
+        if (!event.isMainView) {
 
-            // Load user data the first time
-            await loadData();
-
-        } else {
-
-            // If in the login required view we clear user data
             model.unload();
-        }
 
-        setState((s) => {
-            return {
-                ...s,
-                oauthUserInfo: model.oauthUserInfo,
-                apiUserInfo : model.apiUserInfo,
-                error: model.error,
-            };
-        });
+            setState((s) => {
+                return {
+                    ...s,
+                    oauthUserInfo: model.oauthUserInfo,
+                    apiUserInfo : model.apiUserInfo,
+                    error: model.error,
+                };
+            });
+        }
     }
 
     /*
