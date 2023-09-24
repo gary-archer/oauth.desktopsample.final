@@ -1,5 +1,0 @@
-1. No navigated event when the app starts with tokens, so header buttons do not enable
-   cf mobile
-
-2. User info does not load after login
-   cf mobile

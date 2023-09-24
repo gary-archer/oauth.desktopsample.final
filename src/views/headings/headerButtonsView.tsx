@@ -1,7 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {ViewModelFetchEvent} from '../../plumbing/events/viewModelFetchEvent';
-import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {HeaderButtonsViewProps} from './headerButtonsViewProps';
 
 /*
@@ -9,8 +8,8 @@ import {HeaderButtonsViewProps} from './headerButtonsViewProps';
  */
 export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
 
-    const [hasData, setHasData] = useState(false);
-    const [isMainView, setIsMainView] = useState(false);
+    const model = props.model;
+    model.useState();
 
     useEffect(() => {
         startup();
@@ -19,12 +18,10 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
 
     function startup() {
         props.eventBus.on(EventNames.ViewModelFetch, onViewModelFetch);
-        props.eventBus.on(EventNames.Navigate, onNavigate);
     }
 
     function cleanup() {
         props.eventBus.detach(EventNames.ViewModelFetch, onViewModelFetch);
-        props.eventBus.detach(EventNames.Navigate, onNavigate);
     }
 
     // Settings related to button long clicks
@@ -35,16 +32,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      * The session button state changes when data starts and ends loading
      */
     function onViewModelFetch(event: ViewModelFetchEvent) {
-        setHasData(event.loaded);
-        console.log(`*** Received has data: ${event.loaded}`);
-    }
-
-    /*
-     * The session button state becomes disabled when the login required view is active
-     */
-    function onNavigate(event: NavigateEvent) {
-        setIsMainView(event.isMainView);
-        console.log(`*** Received isMainView: ${event.isMainView}`);
+        model.updateHasData(event.loaded);
     }
 
     /*
@@ -52,7 +40,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      */
     function handleReloadPress(): void {
 
-        if (!hasData || !isMainView) {
+        if (!model.hasData) {
             return;
         }
 
@@ -65,7 +53,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      */
     function handleReloadRelease(): void {
 
-        if (!hasData || !isMainView) {
+        if (!model.hasData) {
             return;
         }
 
@@ -97,9 +85,17 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
     }
 
     /*
+     * Clear the model's data state and then call the parent
+     */
+    function onLogoutPressed() {
+        model.updateHasData(false);
+        props.handleLogoutClick();
+    }
+
+    /*
      * Render buttons and callback the parent when clicked
      */
-    const disabled = hasData && isMainView ? false : true;
+    const disabled = model.hasData ? false : true;
     return  (
         <div className='row'>
             <div className='col col-one-fifth my-2 d-flex p-1'>
@@ -148,7 +144,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
             </div>
             <div className='col col-one-fifth my-2 d-flex p-1'>
                 <button
-                    onClick={props.handleLogoutClick}
+                    onClick={onLogoutPressed}
                     className='btn btn-primary w-100 p-1'
                     disabled={disabled}
                     type='button'
