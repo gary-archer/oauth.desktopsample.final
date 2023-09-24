@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import Modal from 'react-modal';
 import {Route, Routes, useNavigate} from 'react-router-dom';
 import {DeepLinkEvent} from '../plumbing/events/deepLinkEvent';
@@ -21,29 +21,22 @@ import {TransactionsContainerProps} from '../views/transactions/transactionsCont
 import {CurrentLocation} from '../views/utilities/currentLocation';
 import {LoginNavigator} from '../views/utilities/loginNavigator';
 import {AppProps} from './appProps';
-import {AppState} from './appState';
 
 /*
- * The application root component
+ * The application shell component
  */
 export function App(props: AppProps): JSX.Element {
 
-    // The view is re-rendered when any of these state properties change
     const model = props.viewModel;
-    const [state, setState] = useState<AppState>({
-        isInitialised: model.isInitialised,
-        error: null,
-    });
+    model.useState();
 
-    // Startup runs only once
+    const navigate = useNavigate();
+    const loginNavigator = new LoginNavigator(navigate);
+
     useEffect(() => {
         startup();
         return () => cleanup();
     }, []);
-
-    // Set up React Router navigation
-    const navigate = useNavigate();
-    const loginNavigator = new LoginNavigator(navigate);
 
     /*
      * Run the app's startup logic
@@ -65,18 +58,7 @@ export function App(props: AppProps): JSX.Element {
      * Initialise the model on startup
      */
     async function initialiseData(): Promise<void> {
-
-        // Initialise the view model if required
         await model.initialise();
-
-        // Update state
-        setState((s) => {
-            return {
-                ...s,
-                isInitialised: model.isInitialised,
-                error: model.error,
-            };
-        });
     }
 
     /*
@@ -101,12 +83,12 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onHome(): Promise<void> {
 
-        // Handle retrying failed initialisation
-        if (!model.isInitialised) {
+        // Handle retrying failed loads
+        if (!model.isLoaded) {
             await initialiseData();
         }
 
-        if (model.isInitialised) {
+        if (model.isLoaded) {
 
             if (CurrentLocation.path === '/loggedout') {
 
@@ -120,14 +102,7 @@ export function App(props: AppProps): JSX.Element {
 
                 // Force a data reload if recovering from errors
                 if (model.hasError()) {
-
                     await model.reloadData(false);
-                    setState((s) => {
-                        return {
-                            ...s,
-                            error: model.error,
-                        };
-                    });
                 }
             }
         }
@@ -137,14 +112,7 @@ export function App(props: AppProps): JSX.Element {
      * Handle reloads and updating the error state
      */
     async function onReloadData(causeError: boolean): Promise<void> {
-
         await model.reloadData(causeError);
-        setState((s) => {
-            return {
-                ...s,
-                error: model.error,
-            };
-        });
     }
 
     /*
@@ -167,12 +135,6 @@ export function App(props: AppProps): JSX.Element {
 
         // Do the work of the login
         await model.login();
-        setState((s) => {
-            return {
-                ...s,
-                error: model.error,
-            };
-        });
 
         // Move back to the location that took us to login required
         if (!model.error) {
@@ -187,12 +149,6 @@ export function App(props: AppProps): JSX.Element {
 
         // Do the logout redirect
         await model.logout();
-        setState((s) => {
-            return {
-                ...s,
-                error: model.error,
-            };
-        });
 
         // Move to the logged out view upon completion
         navigate('/loggedout');
@@ -202,33 +158,19 @@ export function App(props: AppProps): JSX.Element {
      * For test purposes this makes the access token act expired
      */
     async function onExpireAccessToken(): Promise<void> {
-
         await model.expireAccessToken();
-        setState((s) => {
-            return {
-                ...s,
-                error: model.error,
-            };
-        });
     }
 
     /*
      * For test purposes this makes the refresh token act expired
      */
     async function onExpireRefreshToken(): Promise<void> {
-
         await model.expireRefreshToken();
-        setState((s) => {
-            return {
-                ...s,
-                error: model.error,
-            };
-        });
     }
 
     function getTitleProps(): TitleViewProps {
 
-        if (state.isInitialised) {
+        if (model.isLoaded) {
 
             return {
                 userInfo: {
@@ -259,7 +201,7 @@ export function App(props: AppProps): JSX.Element {
     function getErrorProps(): ErrorSummaryViewProps {
 
         return {
-            error: state.error!,
+            error: model.error!,
             errorsToIgnore: [],
             containingViewName: 'main',
             hyperlinkMessage: 'Problem Encountered',
@@ -302,8 +244,8 @@ export function App(props: AppProps): JSX.Element {
         <>
             <TitleView {...getTitleProps()} />
             <HeaderButtonsView {...getHeaderButtonProps()} />
-            {state.error && <ErrorSummaryView {...getErrorProps()} />}
-            {state.isInitialised &&
+            {model.error && <ErrorSummaryView {...getErrorProps()} />}
+            {model.isLoaded &&
                 <>
                     <SessionView {...getSessionProps()} />
                     <Routes>

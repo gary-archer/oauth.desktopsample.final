@@ -2,17 +2,14 @@ import React, {useEffect, useState} from 'react';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {SessionViewProps} from './sessionViewProps';
-import {SessionViewState} from './sessionViewState';
 
 /*
  * Render the session id used by API logs once data is loaded
  */
 export function SessionView(props: SessionViewProps): JSX.Element {
 
-    const [state, setState] = useState<SessionViewState>({
-        text: `API Session Id: ${props.sessionId}`,
-        isVisible: false,
-    });
+    const text = `API Session Id: ${props.sessionId}`;
+    const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
         startup();
@@ -31,19 +28,16 @@ export function SessionView(props: SessionViewProps): JSX.Element {
      * The session button state becomes disabled when the login required view is active
      */
     function onNavigate(event: NavigateEvent) {
-        setState((s) => {
-            return {
-                ...s,
-                isVisible: event.isMainView,
-            };
-        });
+        setIsVisible(event.isMainView);
     }
 
     return  (
         <>
-            {state.isVisible && <div className='sessionid text-end mx-auto'>
-                <small>{state.text}</small>
-            </div>}
+            {isVisible &&
+                <div className='sessionid text-end mx-auto'>
+                    <small>{text}</small>
+                </div>
+            }
         </>
     );
 }

@@ -1,4 +1,5 @@
 import EventBus from 'js-event-bus';
+import {Dispatch, SetStateAction, useState} from 'react';
 import {FetchCache} from '../api/client/fetchCache';
 import {FetchClient} from '../api/client/fetchClient';
 import {Configuration} from '../configuration/configuration';
@@ -31,15 +32,19 @@ export class AppViewModel {
     private readonly _fetchCache: FetchCache;
     private readonly _viewModelCoordinator: ViewModelCoordinator;
 
+    // State
+    private _error: UIError | null;
+    private _isLoading: boolean;
+    private _isLoaded: boolean;
+
     // Child view models
     private _companiesViewModel: CompaniesContainerViewModel | null;
     private _transactionsViewModel: TransactionsContainerViewModel | null;
     private _userInfoViewModel: UserInfoViewModel | null;
 
-    // State flags
-    private _error: UIError | null;
-    private _isInitialising: boolean;
-    private _isInitialised: boolean;
+    // Callbacks to set model properties that affect view rendering
+    private _setIsLoaded: Dispatch<SetStateAction<boolean>> | null;
+    private _setError: Dispatch<SetStateAction<UIError | null>> | null;
 
     /*
      * Set the initial state when the app starts
@@ -60,25 +65,37 @@ export class AppViewModel {
         this._ipcEvents = new RendererEvents(this._eventBus);
         this._ipcEvents.register();
 
-        // Child view models
+        // Initialize state
+        this._error = null;
+        this._isLoading = false;
+        this._isLoaded = false;
+        this._setIsLoaded = null;
+        this._setError = null;
+
+        // Initialize child view models
         this._companiesViewModel = null;
         this._transactionsViewModel = null;
         this._userInfoViewModel = null;
-
-        // Top level error state
-        this._error = null;
-
-        // State flags
-        this._isInitialising = false;
-        this._isInitialised = false;
         this._setupCallbacks();
+    }
+
+    /*
+     * For the correct React behavior, the view initializes state every time it loads
+     */
+    public useState(): void {
+
+        const [, setIsLoaded] = useState(this._isLoaded);
+        this._setIsLoaded = setIsLoaded;
+
+        const [, setError] = useState(this._error);
+        this._setError = setError;
     }
 
     /*
      * Return details to the view
      */
-    public get isInitialised(): boolean {
-        return this._isInitialised;
+    public get isLoaded(): boolean {
+        return this._isLoaded;
     }
 
     public get error(): UIError | null {
@@ -107,15 +124,15 @@ export class AppViewModel {
      */
     public async initialise(): Promise<void> {
 
-        if (this._isInitialised || this._isInitialising) {
+        if (this._isLoaded || this._isLoading) {
             return;
         }
 
         try {
 
             // Prevent re-entrancy due to React strict mode
-            this._isInitialising = true;
-            this._error = null;
+            this._isLoading = true;
+            this._updateError(null);
 
             // Load configuration from the main side of the app
             this._configuration = await this._ipcEvents.loadConfiguration();
@@ -130,8 +147,8 @@ export class AppViewModel {
                 this._fetchCache,
                 this._authenticator);
 
-            // Update state, to prevent model recreation if the view is recreated
-            this._isInitialised = true;
+            // Inform the view that loading is complete
+            this._updateIsLoaded(true);
 
             // If we were started via a deep link, navigate to that location
             await this._ipcEvents.setDeepLinkStartupUrlIfRequired();
@@ -139,18 +156,51 @@ export class AppViewModel {
         } catch (e: any) {
 
             // Store startup errors
-            this._error = ErrorFactory.fromException(e);
+            this._updateError(ErrorFactory.fromException(e));
 
         } finally {
 
             // Reset to allow retries
-            this._isInitialising = false;
+            this._isLoading = false;
         }
     }
 
     /*
-     * Return child view models when requested
+     * Try to login and report errors
      */
+    public async login(): Promise<void> {
+
+        this._fetchCache.clearAll();
+        this._viewModelCoordinator.resetState();
+        this._updateError(null);
+
+        try {
+            await this._authenticator!.login();
+        } catch (e: any) {
+            this._updateError(ErrorFactory.fromException(e));
+        }
+    }
+
+    /*
+     * Try to logout and silently report errors
+     */
+    public async logout(): Promise<void> {
+
+        this._fetchCache.clearAll();
+        this._viewModelCoordinator.resetState();
+        this._updateError(null);
+
+        try {
+
+            await this._authenticator!.logout();
+
+        } catch (e: any) {
+
+            const error = ErrorFactory.fromException(e);
+            ErrorConsoleReporter.output(error);
+        }
+    }
+
     public getCompaniesViewModel(): CompaniesContainerViewModel {
 
         if (!this._companiesViewModel) {
@@ -195,65 +245,17 @@ export class AppViewModel {
     }
 
     /*
-     * Try to login and report errors
-     */
-    public async login(): Promise<void> {
-
-        // Reset cached state for API requests
-        this._fetchCache.clearAll();
-        this._viewModelCoordinator.resetState();
-
-        try {
-
-            // Try the login
-            this._error = null;
-            await this._authenticator?.login();
-
-        } catch (e: any) {
-
-            // Handle errors
-            this._error = ErrorFactory.fromException(e);
-        }
-    }
-
-    /*
-     * Try to logout and silently report errors
-     */
-    public async logout(): Promise<void> {
-
-        // Reset cached state for API requests
-        this._fetchCache.clearAll();
-        this._viewModelCoordinator.resetState();
-
-        try {
-
-            // Try the logout
-            this._error = null;
-            await this._authenticator?.logout();
-
-        } catch (e: any) {
-
-            // Only output logout errors to the console
-            const error = ErrorFactory.fromException(e);
-            ErrorConsoleReporter.output(error);
-        }
-    }
-
-    /*
      * For reliability testing, ask the OAuth agent to make the access token act expired, and handle errors
      */
     public async expireAccessToken(): Promise<void> {
 
         try {
 
-            // Try the operation
-            this._error = null;
+            this._updateError(null);
             await this._authenticator?.expireAccessToken();
 
         } catch (e: any) {
-
-            // Update error state
-            this._error = ErrorFactory.fromException(e);
+            this._updateError(ErrorFactory.fromException(e));
         }
     }
 
@@ -264,14 +266,11 @@ export class AppViewModel {
 
         try {
 
-            // Try the operation
-            this._error = null;
+            this._updateError(null);
             await this._authenticator?.expireRefreshToken();
 
         } catch (e: any) {
-
-            // Update error state
-            this._error = ErrorFactory.fromException(e);
+            this._updateError(ErrorFactory.fromException(e));
         }
     }
 
@@ -280,7 +279,7 @@ export class AppViewModel {
      */
     public reloadData(causeError: boolean): void {
 
-        this._error = null;
+        this._updateError(null);
         this._viewModelCoordinator!.resetState();
         this._eventBus.emit(EventNames.ReloadData, null, new ReloadDataEvent(causeError));
     }
@@ -290,6 +289,22 @@ export class AppViewModel {
      */
     public hasError(): boolean {
         return !!this._error || this._viewModelCoordinator!.hasErrors();
+    }
+
+    /*
+     * Update loaded state and the binding system
+     */
+    private _updateIsLoaded(isLoaded: boolean): void {
+        this._isLoaded = isLoaded;
+        this._setIsLoaded!(isLoaded);
+    }
+
+    /*
+     * Update error state and the binding system
+     */
+    private _updateError(error: UIError | null): void {
+        this._error = error;
+        this._setError!(error);
     }
 
     /*

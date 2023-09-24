@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {NavigateEvent} from '../../plumbing/events/navigateEvent';
@@ -7,7 +7,6 @@ import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
 import {ViewLoadOptions} from '../utilities/viewLoadOptions';
 import {UserInfoViewProps} from './userInfoViewProps';
-import {UserInfoViewState} from './userInfoViewState';
 
 /*
  * A simple component to render the logged in user
@@ -15,12 +14,7 @@ import {UserInfoViewState} from './userInfoViewState';
 export function UserInfoView(props: UserInfoViewProps): JSX.Element {
 
     const model = props.viewModel;
-    const [state, setState] = useState<UserInfoViewState>({
-        oauthUserInfo: model.oauthUserInfo,
-        apiUserInfo: model.apiUserInfo,
-        error: null,
-        showUserDescription: false,
-    });
+    model.useState();
 
     useEffect(() => {
         startup();
@@ -31,8 +25,8 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
      * Subscribe for reload events and then do the initial load of data
      */
     async function startup(): Promise<void> {
-        model.eventBus.on(EventNames.Navigate, onNavigate);
         model.eventBus.on(EventNames.ReloadData, onReload);
+        model.eventBus.on(EventNames.Navigate, onNavigate);
         await loadData();
     }
 
@@ -40,27 +34,19 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
      * Unsubscribe when we unload
      */
     function cleanup(): void {
-        model.eventBus.detach(EventNames.Navigate, onNavigate);
         model.eventBus.detach(EventNames.ReloadData, onReload);
+        model.eventBus.detach(EventNames.Navigate, onNavigate);
     }
 
     /*
-     * If in the login required view we clear user data
+     * Handle updates when the user navigates back from the login required view
      */
     async function onNavigate(event: NavigateEvent): Promise<void> {
 
         if (!event.isMainView) {
-
             model.unload();
-
-            setState((s) => {
-                return {
-                    ...s,
-                    oauthUserInfo: model.oauthUserInfo,
-                    apiUserInfo : model.apiUserInfo,
-                    error: model.error,
-                };
-            });
+        } else {
+            await model.reload();
         }
     }
 
@@ -77,12 +63,12 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     }
 
     /*
-     * Get a name string from both OAuth user info
+     * Get a name string using OAuth user info
      */
     function getUserNameForDisplay(): string {
 
-        if (state.oauthUserInfo) {
-            return `${state.oauthUserInfo.givenName} ${state.oauthUserInfo.familyName}`;
+        if (model.oauthUserInfo) {
+            return `${model.oauthUserInfo.givenName} ${model.oauthUserInfo.familyName}`;
         }
 
         return '';
@@ -112,22 +98,13 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
      * Ask the model to load data, then update state
      */
     async function loadData(options?: ViewLoadOptions): Promise<void> {
-
         await model.callApi(options);
-        setState((s) => {
-            return {
-                ...s,
-                oauthUserInfo: model.oauthUserInfo,
-                apiUserInfo : model.apiUserInfo,
-                error: model.error,
-            };
-        });
     }
 
     function getErrorProps(): ErrorSummaryViewProps {
 
         return {
-            error: state.error!,
+            error: model.error!,
             errorsToIgnore: [ErrorCodes.loginRequired],
             containingViewName: 'userinfo',
             hyperlinkMessage: 'Problem Encountered',
@@ -138,19 +115,22 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
 
     return (
         <>
-            {state.error && <div className='text-end mx-auto'>
-                <ErrorSummaryView {...getErrorProps()}/>
-            </div>}
-            {state.oauthUserInfo && state.apiUserInfo &&
-            <div className='text-end mx-auto'>
-                <div className='fw-bold basictooltip'>{getUserNameForDisplay()}
-                    <div className='basictooltiptext'>
-                        <small>{getUserTitle()}</small>
-                        <br />
-                        <small>{getUserRegions()}</small>
+            {model.error &&
+                <div className='text-end mx-auto'>
+                    <ErrorSummaryView {...getErrorProps()}/>
+                </div>
+            }
+            {model.oauthUserInfo && model.apiUserInfo &&
+                <div className='text-end mx-auto'>
+                    <div className='fw-bold basictooltip'>{getUserNameForDisplay()}
+                        <div className='basictooltiptext'>
+                            <small>{getUserTitle()}</small>
+                            <br />
+                            <small>{getUserRegions()}</small>
+                        </div>
                     </div>
                 </div>
-            </div>}
+            }
         </>
     );
 }

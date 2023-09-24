@@ -5,16 +5,13 @@ import {LoginStartedEvent} from '../../plumbing/events/loginStartedEvent';
 import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {CurrentLocation} from '../utilities/currentLocation';
 import {LoginRequiredViewProps} from './loginRequiredViewProps';
-import {LoginRequiredViewState} from './loginRequiredViewState';
 
 /*
  * Render the login required view
  */
 export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
 
-    const [state, setState] = useState<LoginRequiredViewState>({
-        isSigningIn: false,
-    });
+    const [isSigningIn, setIsSigningIn] = useState(false);
 
     useEffect(() => {
         startup();
@@ -38,16 +35,11 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     function onLoginStarted(_event: LoginStartedEvent) {
-        setState((s) => {
-            return {
-                ...s,
-                isSigningIn: true,
-            };
-        });
+        setIsSigningIn(true);
     }
 
     /*
-     * When sign in is clicked we show some green text while the user waits
+     * When a login starts we show some green text while the user waits
      */
     function renderSigningIn(): JSX.Element {
 
@@ -66,7 +58,7 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
                 <h6>
                     You are logged out - click HOME to sign in ...
                 </h6>
-                {state.isSigningIn && renderSigningIn()}
+                {isSigningIn && renderSigningIn()}
             </div>
         </div>
     );

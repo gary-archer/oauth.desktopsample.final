@@ -5,7 +5,7 @@ import EventBus from 'js-event-bus';
  */
 export interface HeaderButtonsViewProps {
 
-    // Enable the view to subscribe to events
+    // Enables the view to receive events
     eventBus: EventBus;
 
     // Callbacks when they are clicked
