@@ -17,11 +17,11 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
     }, []);
 
     function startup() {
-        props.eventBus.on(EventNames.ViewModelFetch, onViewModelFetch);
+        model.eventBus.on(EventNames.ViewModelFetch, onViewModelFetch);
     }
 
     function cleanup() {
-        props.eventBus.detach(EventNames.ViewModelFetch, onViewModelFetch);
+        model.eventBus.detach(EventNames.ViewModelFetch, onViewModelFetch);
     }
 
     // Settings related to button long clicks

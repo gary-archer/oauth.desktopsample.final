@@ -210,7 +210,7 @@ export class AppViewModel {
     public getHeaderButtonsViewModel(): HeaderButtonsViewModel {
 
         if (!this._headerButtonsViewModel) {
-            this._headerButtonsViewModel = new HeaderButtonsViewModel();
+            this._headerButtonsViewModel = new HeaderButtonsViewModel(this._eventBus);
         }
 
         return this._headerButtonsViewModel;

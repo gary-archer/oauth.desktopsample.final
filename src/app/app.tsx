@@ -190,7 +190,6 @@ export function App(props: AppProps): JSX.Element {
 
         return {
             model: model.getHeaderButtonsViewModel(),
-            eventBus: model.eventBus,
             handleHomeClick: onHome,
             handleExpireAccessTokenClick: onExpireAccessToken,
             handleExpireRefreshTokenClick: onExpireRefreshToken,

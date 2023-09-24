@@ -1,3 +1,4 @@
+import EventBus from 'js-event-bus';
 import {Dispatch, SetStateAction, useState} from 'react';
 
 /*
@@ -5,10 +6,12 @@ import {Dispatch, SetStateAction, useState} from 'react';
  */
 export class HeaderButtonsViewModel {
 
+    private _eventBus: EventBus;
     private _hasData: boolean;
     private _setHasData: Dispatch<SetStateAction<boolean>> | null;
 
-    public constructor() {
+    public constructor(eventBus: EventBus) {
+        this._eventBus = eventBus;
         this._hasData = false;
         this._setHasData = null;
     }
@@ -24,6 +27,10 @@ export class HeaderButtonsViewModel {
     /*
      * Property accessors
      */
+    public get eventBus(): EventBus {
+        return this._eventBus;
+    }
+
     public get hasData(): boolean {
         return this._hasData;
     }

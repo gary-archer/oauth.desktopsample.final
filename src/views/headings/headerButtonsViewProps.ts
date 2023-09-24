@@ -1,4 +1,3 @@
-import EventBus from 'js-event-bus';
 import {HeaderButtonsViewModel} from './headerButtonsViewModel';
 
 /*
@@ -8,9 +7,6 @@ export interface HeaderButtonsViewProps {
 
     // Permanent model data
     model: HeaderButtonsViewModel;
-
-    // Enable the view to subscribe to events
-    eventBus: EventBus;
 
     // Callbacks when they are clicked
     handleHomeClick: () => void;

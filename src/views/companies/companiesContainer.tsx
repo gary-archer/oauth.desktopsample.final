@@ -2,6 +2,7 @@ import React, {useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {EventNames} from '../../plumbing/events/eventNames';
+import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {ReloadDataEvent} from '../../plumbing/events/reloadDataEvent';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
@@ -30,7 +31,14 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
      * Subscribe for reload events and then do the initial load of data
      */
     async function startup(): Promise<void> {
+        
+        // Inform other parts of the app that the main view is active
+        model.eventBus.emit(EventNames.Navigate, null, new NavigateEvent(true));
+
+        // Subscribe for reload events
         model.eventBus.on(EventNames.ReloadData, onReload);
+
+        // Do the initial load of data
         await loadData();
     }
 
