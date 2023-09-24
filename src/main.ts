@@ -13,13 +13,13 @@ class Main {
     private _window: BrowserWindow | null;
     private _ipcEvents: MainEvents;
     private _configuration: Configuration | null;
-    private _allowDevTools: boolean;
+    private _useBasicContentSecurityPolicy: boolean;
 
     public constructor() {
         this._window = null;
         this._ipcEvents = new MainEvents();
         this._configuration = null;
-        this._allowDevTools = false;
+        this._useBasicContentSecurityPolicy = false;
         this._setupCallbacks();
     }
 
@@ -107,11 +107,6 @@ class Main {
 
         // Register for event based communication with the renderer process
         this._ipcEvents.register();
-
-        // Open the developer tools at startup if required
-        if (this._allowDevTools) {
-            this._window.webContents.openDevTools();
-        }
     }
 
     /*
@@ -156,9 +151,9 @@ class Main {
         session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 
             let policy = '';
-            if (this._allowDevTools) {
+            if (this._useBasicContentSecurityPolicy) {
 
-                // The insecure CSP is used when using Electron devtools
+                // In some development use cases, disable the secure CSP
                 policy += "script-src 'self' 'unsafe-eval'";
 
             } else {

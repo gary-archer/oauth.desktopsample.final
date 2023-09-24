@@ -147,11 +147,11 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onLogout(): Promise<void> {
 
-        // Do the logout redirect
-        await model.logout();
-
-        // Move to the logged out view upon completion
+        // Move the desktop app to the logged out view
         navigate('/loggedout');
+
+        // Do the logout redirect to remove the SSO cookie
+        await model.logout();
     }
 
     /*
