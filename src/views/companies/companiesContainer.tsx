@@ -31,7 +31,7 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
      * Subscribe for reload events and then do the initial load of data
      */
     async function startup(): Promise<void> {
-        
+
         // Inform other parts of the app that the main view is active
         model.eventBus.emit(EventNames.Navigate, null, new NavigateEvent(true));
 

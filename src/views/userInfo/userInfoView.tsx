@@ -39,12 +39,14 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     }
 
     /*
-     * If in the login required view we clear user data
+     * Handle updates when the user navigates back from the login required view
      */
     async function onNavigate(event: NavigateEvent): Promise<void> {
 
         if (!event.isMainView) {
             model.unload();
+        } else {
+            await model.reload();
         }
     }
 

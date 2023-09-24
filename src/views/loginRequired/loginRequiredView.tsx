@@ -39,7 +39,7 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
     }
 
     /*
-     * When sign in is clicked we show some green text while the user waits
+     * When a login starts we show some green text while the user waits
      */
     function renderSigningIn(): JSX.Element {
 

@@ -135,6 +135,13 @@ export class UserInfoViewModel {
     }
 
     /*
+     * Reload when the user navigates from login required
+     */
+    public async reload(): Promise<void> {
+        await this.callApi();
+    }
+
+    /*
      * Update state and the binding system
      */
     private _updateOAuthUserInfo(oauthUserInfo: OAuthUserInfo | null): void {

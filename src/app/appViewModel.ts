@@ -12,7 +12,6 @@ import {RendererEvents} from '../plumbing/ipc/rendererEvents';
 import {Authenticator} from '../plumbing/oauth/authenticator';
 import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
 import {CompaniesContainerViewModel} from '../views/companies/companiesContainerViewModel';
-import {HeaderButtonsViewModel} from '../views/headings/headerButtonsViewModel';
 import {TransactionsContainerViewModel} from '../views/transactions/transactionsContainerViewModel';
 import {UserInfoViewModel} from '../views/userInfo/userInfoViewModel';
 import {ViewModelCoordinator} from '../views/utilities/viewModelCoordinator';
@@ -39,7 +38,6 @@ export class AppViewModel {
     private _isLoaded: boolean;
 
     // Child view models
-    private _headerButtonsViewModel: HeaderButtonsViewModel | null;
     private _companiesViewModel: CompaniesContainerViewModel | null;
     private _transactionsViewModel: TransactionsContainerViewModel | null;
     private _userInfoViewModel: UserInfoViewModel | null;
@@ -75,7 +73,6 @@ export class AppViewModel {
         this._setError = null;
 
         // Initialize child view models
-        this._headerButtonsViewModel = null;
         this._companiesViewModel = null;
         this._transactionsViewModel = null;
         this._userInfoViewModel = null;
@@ -202,18 +199,6 @@ export class AppViewModel {
             const error = ErrorFactory.fromException(e);
             ErrorConsoleReporter.output(error);
         }
-    }
-
-    /*
-     * Return child view models when requested
-     */
-    public getHeaderButtonsViewModel(): HeaderButtonsViewModel {
-
-        if (!this._headerButtonsViewModel) {
-            this._headerButtonsViewModel = new HeaderButtonsViewModel(this._eventBus);
-        }
-
-        return this._headerButtonsViewModel;
     }
 
     public getCompaniesViewModel(): CompaniesContainerViewModel {
