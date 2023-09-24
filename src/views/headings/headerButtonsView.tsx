@@ -36,6 +36,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      */
     function onViewModelFetch(event: ViewModelFetchEvent) {
         setHasData(event.loaded);
+        console.log(`*** Received has data: ${event.loaded}`);
     }
 
     /*
@@ -43,6 +44,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      */
     function onNavigate(event: NavigateEvent) {
         setIsMainView(event.isMainView);
+        console.log(`*** Received isMainView: ${event.isMainView}`);
     }
 
     /*
