@@ -3,17 +3,14 @@ import {EventNames} from '../../plumbing/events/eventNames';
 import {ViewModelFetchEvent} from '../../plumbing/events/viewModelFetchEvent';
 import {NavigateEvent} from '../../plumbing/events/navigateEvent';
 import {HeaderButtonsViewProps} from './headerButtonsViewProps';
-import {HeaderButtonsViewState} from './headerButtonsViewState';
 
 /*
  * Render the header buttons
  */
 export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
 
-    const [state, setState] = useState<HeaderButtonsViewState>({
-        hasData: false,
-        isMainView: false,
-    });
+    const [hasData, setHasData] = useState(false);
+    const [isMainView, setIsMainView] = useState(false);
 
     useEffect(() => {
         startup();
@@ -38,24 +35,14 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      * The session button state changes when data starts and ends loading
      */
     function onViewModelFetch(event: ViewModelFetchEvent) {
-        setState((s) => {
-            return {
-                ...s,
-                hasData: event.loaded,
-            };
-        });
+        setHasData(event.loaded);
     }
 
     /*
      * The session button state becomes disabled when the login required view is active
      */
     function onNavigate(event: NavigateEvent) {
-        setState((s) => {
-            return {
-                ...s,
-                isMainView: event.isMainView,
-            };
-        });
+        setIsMainView(event.isMainView);
     }
 
     /*
@@ -63,7 +50,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      */
     function handleReloadPress(): void {
 
-        if (!state.hasData || !state.isMainView) {
+        if (!hasData || !isMainView) {
             return;
         }
 
@@ -76,7 +63,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      */
     function handleReloadRelease(): void {
 
-        if (!state.hasData || !state.isMainView) {
+        if (!hasData || !isMainView) {
             return;
         }
 
@@ -110,7 +97,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
     /*
      * Render buttons and callback the parent when clicked
      */
-    const disabled = state.hasData && state.isMainView ? false : true;
+    const disabled = hasData && isMainView ? false : true;
     return  (
         <div className='row'>
             <div className='col col-one-fifth my-2 d-flex p-1'>
