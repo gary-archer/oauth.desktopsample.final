@@ -12,7 +12,7 @@
 
                 if (window.location.search.indexOf('error=') !== -1) {
                     var result = document.getElementById('result');
-                    result.innerText = 'Problem encountered verifying your identity';
+                    result.innerText = 'Problem encountered during the login operation';
                     result.style.color = 'red';
                 }
 
@@ -51,8 +51,8 @@
     <body>
         <div id='container'>
             <h3 id='heading'>Login Complete</h3>
-            <h5 id='result'>You have securely verified your identity</h5>
-            <button id='continueButton'>Continue</button>
+            <h5 id='result'>Login completed successfully and you can close this window</h5>
+            <button id='continueButton'>Return to the App</button>
         </div>
     </body>
 </html>
