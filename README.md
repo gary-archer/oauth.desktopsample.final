@@ -1,6 +1,6 @@
 # Final OAuth Desktop App
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/c795f06c1c5b416f92d8ba8d4257ff3c)](https://www.codacy.com/gh/gary-archer/oauth.desktopsample.final/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gary-archer/oauth.desktopsample.final&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4c74baaeb2de4d4189800314630d7522)](https://app.codacy.com/gh/gary-archer/oauth.desktopsample.final?utm_source=github.com&utm_medium=referral&utm_content=gary-archer/oauth.desktopsample.final&utm_campaign=Badge_Grade)
 
 [![Known Vulnerabilities](https://snyk.io/test/github/gary-archer/oauth.desktopsample.final/badge.svg)](https://snyk.io/test/github/gary-archer/oauth.desktopsample.final)
 
