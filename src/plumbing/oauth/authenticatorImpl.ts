@@ -86,11 +86,6 @@ export class AuthenticatorImpl implements Authenticator {
      */
     public async getAccessToken(): Promise<string | null> {
 
-        // Load tokens from secure storage if required
-        if (!this._tokens) {
-            this._tokens = await this._events.loadTokens();
-        }
-
         // Return the existing token if present
         if (this._tokens && this._tokens.accessToken) {
             return this._tokens.accessToken;
