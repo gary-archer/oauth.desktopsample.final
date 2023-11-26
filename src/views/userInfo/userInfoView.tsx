@@ -22,12 +22,11 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     }, []);
 
     /*
-     * Subscribe for reload events and then do the initial load of data
+     * Subscribe for load related events
      */
     async function startup(): Promise<void> {
         model.eventBus.on(EventNames.ReloadData, onReload);
         model.eventBus.on(EventNames.Navigated, onNavigate);
-        await loadData();
     }
 
     /*
@@ -39,14 +38,14 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     }
 
     /*
-     * Handle updates when the user navigates back from the login required view
+     * Load or unload data based on navigation events
      */
     async function onNavigate(event: NavigatedEvent): Promise<void> {
 
         if (!event.isMainView) {
             model.unload();
         } else {
-            await model.reload();
+            await loadData();
         }
     }
 
