@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {EventNames} from '../../plumbing/events/eventNames';
-import {NavigateEvent} from '../../plumbing/events/navigateEvent';
+import {NavigatedEvent} from '../../plumbing/events/navigatedEvent';
 import {ReloadDataEvent} from '../../plumbing/events/reloadDataEvent';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
@@ -41,7 +41,7 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     /*
      * Handle updates when the user navigates back from the login required view
      */
-    async function onNavigate(event: NavigateEvent): Promise<void> {
+    async function onNavigate(event: NavigatedEvent): Promise<void> {
 
         if (!event.isMainView) {
             model.unload();

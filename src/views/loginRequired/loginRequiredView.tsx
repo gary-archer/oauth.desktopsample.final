@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {useLocation} from 'react-router-dom';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {LoginStartedEvent} from '../../plumbing/events/loginStartedEvent';
-import {NavigateEvent} from '../../plumbing/events/navigateEvent';
+import {NavigatedEvent} from '../../plumbing/events/navigatedEvent';
 import {CurrentLocation} from '../utilities/currentLocation';
 import {LoginRequiredViewProps} from './loginRequiredViewProps';
 
@@ -23,7 +23,7 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
     function startup() {
 
         // Inform other parts of the app that the main view is no longer active
-        props.eventBus.emit(EventNames.Navigate, null, new NavigateEvent(false));
+        props.eventBus.emit(EventNames.Navigate, null, new NavigatedEvent(false));
 
         // Subscribe to the login started event, triggered when a header button is clicked
         props.eventBus.on(EventNames.LoginStarted, onLoginStarted);

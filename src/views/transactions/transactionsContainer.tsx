@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {useLocation, useParams} from 'react-router-dom';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {EventNames} from '../../plumbing/events/eventNames';
-import {NavigateEvent} from '../../plumbing/events/navigateEvent';
+import {NavigatedEvent} from '../../plumbing/events/navigatedEvent';
 import {ReloadDataEvent} from '../../plumbing/events/reloadDataEvent';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
@@ -36,7 +36,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
     async function startup(): Promise<void> {
 
         // Inform other parts of the app that the main view is active
-        model.eventBus.emit(EventNames.Navigate, null, new NavigateEvent(true));
+        model.eventBus.emit(EventNames.Navigate, null, new NavigatedEvent(true));
 
         // Subscribe for reload events
         model.eventBus.on(EventNames.ReloadData, onReload);

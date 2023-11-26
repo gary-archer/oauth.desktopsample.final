@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {EventNames} from '../../plumbing/events/eventNames';
-import {NavigateEvent} from '../../plumbing/events/navigateEvent';
+import {NavigatedEvent} from '../../plumbing/events/navigatedEvent';
 import {SessionViewProps} from './sessionViewProps';
 
 /*
@@ -27,7 +27,7 @@ export function SessionView(props: SessionViewProps): JSX.Element {
     /*
      * The session button state becomes disabled when the login required view is active
      */
-    function onNavigate(event: NavigateEvent) {
+    function onNavigate(event: NavigatedEvent) {
         setIsVisible(event.isMainView);
     }
 

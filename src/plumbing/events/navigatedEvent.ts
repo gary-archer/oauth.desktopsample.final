@@ -1,7 +1,7 @@
 /*
  * An event to manage navigation
  */
-export class NavigateEvent {
+export class NavigatedEvent {
 
     private readonly _mainView: boolean;
 
