@@ -104,7 +104,7 @@ export class ViewModelCoordinator {
             const errors = this._getLoadErrors();
             const found = errors.find((e) => e.errorCode === ErrorCodes.loginRequired);
             if (found) {
-                this._eventBus.emit(EventNames.LoginRequired, new LoginRequiredEvent());
+                this._eventBus.emit(EventNames.LoginRequired, null, new LoginRequiredEvent());
             }
         }
     }
