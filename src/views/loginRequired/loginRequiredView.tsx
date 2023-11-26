@@ -23,7 +23,7 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
     function startup() {
 
         // Inform other parts of the app that the main view is no longer active
-        props.eventBus.emit(EventNames.Navigate, null, new NavigatedEvent(false));
+        props.eventBus.emit(EventNames.Navigated, null, new NavigatedEvent(false));
 
         // Subscribe to the login started event, triggered when a header button is clicked
         props.eventBus.on(EventNames.LoginStarted, onLoginStarted);

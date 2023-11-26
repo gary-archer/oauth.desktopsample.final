@@ -17,11 +17,11 @@ export function SessionView(props: SessionViewProps): JSX.Element {
     }, []);
 
     function startup() {
-        props.eventBus.on(EventNames.Navigate, onNavigate);
+        props.eventBus.on(EventNames.Navigated, onNavigate);
     }
 
     function cleanup() {
-        props.eventBus.detach(EventNames.Navigate, onNavigate);
+        props.eventBus.detach(EventNames.Navigated, onNavigate);
     }
 
     /*

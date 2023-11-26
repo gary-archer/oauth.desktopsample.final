@@ -33,7 +33,7 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
     async function startup(): Promise<void> {
 
         // Inform other parts of the app that the main view is active
-        model.eventBus.emit(EventNames.Navigate, null, new NavigatedEvent(true));
+        model.eventBus.emit(EventNames.Navigated, null, new NavigatedEvent(true));
 
         // Subscribe for reload events
         model.eventBus.on(EventNames.ReloadData, onReload);
