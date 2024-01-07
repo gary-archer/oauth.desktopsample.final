@@ -90,7 +90,7 @@ export class CompaniesContainerViewModel {
 
         } finally {
 
-            this._viewModelCoordinator.onMainViewModelLoaded(fetchOptions.cacheKey);
+            await this._viewModelCoordinator.onMainViewModelLoaded(fetchOptions.cacheKey);
         }
     }
 

@@ -121,7 +121,7 @@ export class UserInfoViewModel {
 
         } finally {
 
-            this._viewModelCoordinator.onUserInfoViewModelLoaded();
+            await this._viewModelCoordinator.onUserInfoViewModelLoaded();
         }
     }
 

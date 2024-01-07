@@ -156,8 +156,7 @@ export class AuthenticatorImpl implements Authenticator {
 
                 // Reset state
                 const idToken = this._tokens.idToken;
-                this._tokens = null;
-                await this._events.deleteTokens();
+                await this.clearLoginState();
 
                 // Start the logout redirect to remove the authorization server's session cookie
                 const logout = new LogoutManager(
@@ -174,6 +173,14 @@ export class AuthenticatorImpl implements Authenticator {
             // Do error translation if required
             throw ErrorFactory.fromLogoutOperation(e, ErrorCodes.logoutRequestFailed);
         }
+    }
+
+    /*
+     * Allow the login state to be cleared when required
+     */
+    public async clearLoginState(): Promise<void> {
+        this._tokens = null;
+        await this._events.deleteTokens();
     }
 
     /*
@@ -315,8 +322,7 @@ export class AuthenticatorImpl implements Authenticator {
             if (e.error === ErrorCodes.refreshTokenExpired) {
 
                 // For invalid_grant errors, clear token data and return success, to force a login redirect
-                this._tokens = null;
-                await this._events.deleteTokens();
+                await this.clearLoginState();
 
             } else {
 

@@ -25,6 +25,15 @@ export class ErrorCodes {
     // An error starting a logout request, such as contacting the metadata endpoint
     public static readonly logoutRequestFailed = 'logout_request_failed';
 
+    // Returned from APIs when an access token is rejected
+    public static readonly invalidToken = 'invalid_token';
+
+    // Returned from APIs when an access token does not have the required scope
+    public static readonly insufficientScope = 'insufficient_scope';
+
+    // Returned from APIs when it cannot find the claims it needs in access tokens
+    public static readonly claimsFailure = 'claims_failure';
+
     // An error downloading user info from the authorization server
     public static readonly userInfoError = 'userinfo_error';
 

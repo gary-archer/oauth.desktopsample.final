@@ -21,6 +21,9 @@ export interface Authenticator {
     // Do the logout redirect and process the response
     logout(): Promise<void>;
 
+    // Allow the app to clear its login state after certain errors
+    clearLoginState(): Promise<void>;
+
     // For testing, make the access token act expired
     expireAccessToken(): Promise<void>;
 

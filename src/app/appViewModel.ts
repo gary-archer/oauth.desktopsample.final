@@ -25,12 +25,12 @@ export class AppViewModel {
     private _configuration: Configuration | null;
     private _authenticator: Authenticator | null;
     private _fetchClient: FetchClient | null;
+    private _viewModelCoordinator: ViewModelCoordinator | null;
 
     // Other infrastructure
     private _eventBus: EventBus;
     private _ipcEvents: RendererEvents;
     private readonly _fetchCache: FetchCache;
-    private readonly _viewModelCoordinator: ViewModelCoordinator;
 
     // State
     private _error: UIError | null;
@@ -55,11 +55,11 @@ export class AppViewModel {
         this._configuration = null;
         this._authenticator = null;
         this._fetchClient = null;
+        this._viewModelCoordinator = null;
 
         // Create objects used for coordination
         this._eventBus = new EventBus();
         this._fetchCache = new FetchCache();
-        this._viewModelCoordinator = new ViewModelCoordinator(this._eventBus, this._fetchCache);
 
         // Register to receive Electron events from the main side of the app
         this._ipcEvents = new RendererEvents(this._eventBus);
@@ -147,6 +147,11 @@ export class AppViewModel {
                 this._fetchCache,
                 this._authenticator);
 
+            this._viewModelCoordinator = new ViewModelCoordinator(
+                this._eventBus,
+                this._fetchCache,
+                this._authenticator);
+
             // Inform the view that loading is complete
             this._updateIsLoaded(true);
 
@@ -171,7 +176,7 @@ export class AppViewModel {
     public async login(): Promise<void> {
 
         this._fetchCache.clearAll();
-        this._viewModelCoordinator.resetState();
+        this._viewModelCoordinator!.resetState();
         this._updateError(null);
 
         try {
@@ -187,7 +192,7 @@ export class AppViewModel {
     public async logout(): Promise<void> {
 
         this._fetchCache.clearAll();
-        this._viewModelCoordinator.resetState();
+        this._viewModelCoordinator!.resetState();
         this._updateError(null);
 
         try {
@@ -208,7 +213,7 @@ export class AppViewModel {
             this._companiesViewModel = new CompaniesContainerViewModel(
                 this._fetchClient!,
                 this._eventBus,
-                this._viewModelCoordinator,
+                this._viewModelCoordinator!,
             );
         }
 
@@ -223,7 +228,7 @@ export class AppViewModel {
             (
                 this._fetchClient!,
                 this._eventBus,
-                this._viewModelCoordinator,
+                this._viewModelCoordinator!,
             );
         }
 
@@ -237,7 +242,7 @@ export class AppViewModel {
             this._userInfoViewModel = new UserInfoViewModel(
                 this.fetchClient!,
                 this._eventBus,
-                this._viewModelCoordinator,
+                this._viewModelCoordinator!,
             );
         }
 
