@@ -8,8 +8,8 @@
         ]
     },
     "oauth": {
-        "authority":             "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_qqJgVeuTn",
-        "clientId":              "1h8pildfi6a4bmfv2alj3fs6va",
+        "authority":             "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_CuhLeqiE9",
+        "clientId":              "5r463je7qeddssfqttaa8cpv91",
         "redirectUri":           "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
         "privateSchemeName":     "x-mycompany-desktopapp",
         "scope":                 "openid profile https://api.authsamples.com/investments",
