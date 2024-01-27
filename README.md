@@ -55,7 +55,7 @@ You can then test all lifecycle operations, including token refresh, expiry even
 
 ## Infrastructure
 
-* The [AppAuth-JS Library](https://github.com/openid/AppAuth-JS/blob/master/README.md) is used to implement the Authorization Code Flow (PKCE)
+* The [AppAuth-JS](https://github.com/openid/AppAuth-JS/blob/master/README.md) library is used to implement the Authorization Code Flow (PKCE)
 * The [keytar](https://github.com/atom/node-keytar) library is used by the Desktop App for secure storage of OAuth tokens
 * AWS API Gateway is used to host the Desktop App's OAuth Secured API
 * AWS Cognito is used as the default Authorization Server for the UI and API
