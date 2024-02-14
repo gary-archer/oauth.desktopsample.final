@@ -10,12 +10,11 @@ import {TokenData} from './tokenData';
  * - Linux:   ~/.config/finaldesktopapp/tokens.json
  * - macOS:   ~/Library/Application Support/finaldesktopapp/tokens.json
  * - Windows: ~/AppData/Roaming/finaldesktopapp/tokens.json
- * 
+ *
  * An encryption key is created at:
  * - Linux:   One of the gnome_libsecret entries in 'Passwords and Keys' / Login / Chromium Safe Storage
  * - macOS:   Keychain / Login / 'finaldesktopapp safeStorage'
- * - Windows: Somewhere in DPAPI
- *            https://github.com/carlospolop/hacktricks/blob/master/windows-hardening/windows-local-privilege-escalation/dpapi-extracting-passwords.md
+ * - Windows: Stored in DPAPI
  */
 export class TokenStorage {
 

@@ -1,4 +1,4 @@
-import {app, BrowserWindow, safeStorage, session} from 'electron';
+import {app, BrowserWindow, session} from 'electron';
 import path from 'path';
 import {Configuration} from './configuration/configuration';
 import {ConfigurationLoader} from './configuration/configurationLoader';
