@@ -18,7 +18,8 @@ The data is returned from an API that authorizes access to resources using claim
 
 ## Local Development Quick Start
 
-Build the app via this command, which will build the renderer side of the app in watch mode:
+First ensure that Node.js 20+ is installed.\
+Then build the app via this command, which will build the renderer side of the app in watch mode:
 
 ```bash
 ./build.sh

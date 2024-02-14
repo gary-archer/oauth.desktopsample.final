@@ -7,7 +7,9 @@ import {TokenData} from './tokenData';
  * https://freek.dev/2103-replacing-keytar-with-electrons-safestorage-in-ray
  *
  * Data is saved at app.getPath('userData'):
- * - Linux: ~/.config/finaldesktopapp/tokens.json
+ * - Linux:   ~/.config/finaldesktopapp/tokens.json
+ * - macOS:   ~/Library/Application Support/finaldesktopapp
+ * - Windows: ~/?
  */
 export class TokenStorage {
 
@@ -23,6 +25,7 @@ export class TokenStorage {
 
         console.log('*** ENCRYPTION ***');
         console.log(safeStorage.isEncryptionAvailable());
+        console.log(safeStorage.getSelectedStorageBackend());
 
         const encryptedBytesBase64 = this._store.get(TokenStorage._key);
         if (!encryptedBytesBase64) {
