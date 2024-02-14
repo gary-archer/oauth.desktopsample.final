@@ -3,8 +3,7 @@ import Store from 'electron-store';
 import {TokenData} from './tokenData';
 
 /*
- * A class to store our token data in secure storage
- * https://freek.dev/2103-replacing-keytar-with-electrons-safestorage-in-ray
+ * A class to store OAuth tokens for the desktop app using operating system encryption
  *
  * Tokens are saved at app.getPath('userData'):
  * - Linux:   ~/.config/finaldesktopapp/tokens.json
@@ -12,9 +11,9 @@ import {TokenData} from './tokenData';
  * - Windows: ~/AppData/Roaming/finaldesktopapp/tokens.json
  *
  * An encryption key is created at:
- * - Linux:   One of the gnome_libsecret entries in 'Passwords and Keys' / Login / Chromium Safe Storage
+ * - Linux:   Passwords and Keys / Login / Chromium Safe Storage
  * - macOS:   Keychain / Login / 'finaldesktopapp safeStorage'
- * - Windows: Stored in DPAPI
+ * - Windows: DPAPI
  */
 export class TokenStorage {
 
