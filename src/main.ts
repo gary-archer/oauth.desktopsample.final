@@ -1,4 +1,4 @@
-import {app, BrowserWindow, session} from 'electron';
+import {app, BrowserWindow, safeStorage, session} from 'electron';
 import path from 'path';
 import {Configuration} from './configuration/configuration';
 import {ConfigurationLoader} from './configuration/configurationLoader';
@@ -34,6 +34,13 @@ class Main {
         // Prevent private URI scheme notifications on Windows + Linux from creating a new instance of the application
         const primaryInstance = app.requestSingleInstanceLock();
         if (!primaryInstance) {
+            app.quit();
+            return;
+        }
+
+        // Make sure we can encrypt tokens using an encryption key managed by the desktop operating system
+        if (!safeStorage.isEncryptionAvailable()) {
+            console.log('The environment does not support safe storage');
             app.quit();
             return;
         }

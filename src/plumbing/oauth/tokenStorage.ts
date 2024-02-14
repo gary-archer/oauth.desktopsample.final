@@ -10,6 +10,13 @@ import {TokenData} from './tokenData';
  * - Linux:   ~/.config/finaldesktopapp/tokens.json
  * - macOS:   ~/Library/Application Support/finaldesktopapp
  * - Windows: ~/?
+ * 
+ * An encryption key is created at:
+ * - Linux:   gnome_libsecret
+ *            sudo apt install libsecret-tools
+ *            secret-tool search --all xdg:schema org.gnome.keyring.Note
+ * - macOS:   Keychain / Login / 'finaldesktopapp safeStorage'
+ * - Windows: 
  */
 export class TokenStorage {
 
@@ -25,7 +32,6 @@ export class TokenStorage {
 
         console.log('*** ENCRYPTION ***');
         console.log(safeStorage.isEncryptionAvailable());
-        console.log(safeStorage.getSelectedStorageBackend());
 
         const encryptedBytesBase64 = this._store.get(TokenStorage._key);
         if (!encryptedBytesBase64) {
@@ -40,10 +46,6 @@ export class TokenStorage {
      * Save token data after login
      */
     public static save(data: TokenData): void {
-
-        if (!safeStorage.isEncryptionAvailable()) {
-            throw new Error('Cannot store tokens since encryption is unavailable');
-        }
 
         const json = JSON.stringify(data);
         const buffer = safeStorage.encryptString(json);
