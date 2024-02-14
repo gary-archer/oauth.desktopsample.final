@@ -28,19 +28,9 @@ class Main {
      */
     public execute(): void {
 
-        console.log('*** DATA LOCATION ***');
-        console.log(app.getPath('userData'));
-
         // Prevent private URI scheme notifications on Windows + Linux from creating a new instance of the application
         const primaryInstance = app.requestSingleInstanceLock();
         if (!primaryInstance) {
-            app.quit();
-            return;
-        }
-
-        // Make sure we can encrypt tokens using an encryption key managed by the desktop operating system
-        if (!safeStorage.isEncryptionAvailable()) {
-            console.log('The environment does not support safe storage');
             app.quit();
             return;
         }
