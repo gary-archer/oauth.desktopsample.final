@@ -33,8 +33,18 @@ export class TokenStorage {
             return null;
         }
 
-        const json = safeStorage.decryptString(Buffer.from(encryptedBytesBase64, 'base64'));
-        return JSON.parse(json);
+        try {
+
+            // Try the decryption using the operating system encryption key
+            const json = safeStorage.decryptString(Buffer.from(encryptedBytesBase64, 'base64'));
+            return JSON.parse(json);
+
+        } catch (e: any) {
+
+            // Fail gracefully if the encryption key has been deleted
+            console.log(`Decrpyion failure in TokenStorage.load: ${e}`);
+            return null;
+        }
     }
 
     /*
