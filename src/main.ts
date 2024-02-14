@@ -28,6 +28,9 @@ class Main {
      */
     public execute(): void {
 
+        console.log('*** DATA LOCATION ***');
+        console.log(app.getPath('userData'));
+
         // Prevent private URI scheme notifications on Windows + Linux from creating a new instance of the application
         const primaryInstance = app.requestSingleInstanceLock();
         if (!primaryInstance) {
