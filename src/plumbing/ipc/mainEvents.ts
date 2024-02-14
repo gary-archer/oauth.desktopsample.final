@@ -97,10 +97,10 @@ export class MainEvents {
     /*
      * Load tokens from secure storage
      */
-    private async _loadTokens(): Promise<void> {
+    private _loadTokens(): void {
 
         try {
-            const tokens = await TokenStorage.load();
+            const tokens = TokenStorage.load();
             this._sendResponse(IpcEventNames.ON_LOAD_TOKENS, tokens, null);
 
         } catch (e: any) {
@@ -113,11 +113,11 @@ export class MainEvents {
     /*
      * Save tokens to secure storage
      */
-    private async _saveTokens(...args: any[]): Promise<void> {
+    private _saveTokens(...args: any[]): void {
 
         try {
             const data = args[1] as TokenData;
-            await TokenStorage.save(data);
+            TokenStorage.save(data);
             this._sendResponse(IpcEventNames.ON_SAVE_TOKENS, null, null);
 
         } catch (e: any) {
@@ -130,10 +130,10 @@ export class MainEvents {
     /*
      * Remove tokens from secure storage
      */
-    private async _deleteTokens(): Promise<void> {
+    private _deleteTokens(): void {
 
         try {
-            await TokenStorage.delete();
+            TokenStorage.delete();
             this._sendResponse(IpcEventNames.ON_DELETE_TOKENS, null, null);
 
         } catch (e: any) {
