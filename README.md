@@ -18,7 +18,8 @@ The data is returned from an API that authorizes access to resources using claim
 
 ## Local Development Quick Start
 
-Build the app via this command, which will build the renderer side of the app in watch mode:
+First ensure that Node.js 20+ is installed.\
+Then build the app via this command, which will build the renderer side of the app in watch mode:
 
 ```bash
 ./build.sh
@@ -56,6 +57,5 @@ You can then test all lifecycle operations, including token refresh, expiry even
 ## Infrastructure
 
 * The [AppAuth-JS](https://github.com/openid/AppAuth-JS/blob/master/README.md) library is used to implement the Authorization Code Flow (PKCE)
-* The [keytar](https://github.com/atom/node-keytar) library is used by the Desktop App for secure storage of OAuth tokens
 * [AWS Serverless](https://github.com/gary-archer/oauth.apisample.serverless) or Kubernetes is used to host remote API endpoints used by the app
 * AWS Cognito is used as the default Authorization Server for the UI and API

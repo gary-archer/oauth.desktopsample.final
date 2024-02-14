@@ -1,65 +1,72 @@
-import KeyTar from 'keytar';
-import OperatingSystemUserName from 'username';
+import {safeStorage} from 'electron';
+import Store from 'electron-store';
 import {TokenData} from './tokenData';
 
 /*
  * A class to store our token data in secure storage
+ * https://freek.dev/2103-replacing-keytar-with-electrons-safestorage-in-ray
+ *
+ * Tokens are saved at app.getPath('userData'):
+ * - Linux:   ~/.config/finaldesktopapp/tokens.json
+ * - macOS:   ~/Library/Application Support/finaldesktopapp/tokens.json
+ * - Windows: ~/AppData/Roaming/finaldesktopapp/tokens.json
+ *
+ * An encryption key is created at:
+ * - Linux:   One of the gnome_libsecret entries in 'Passwords and Keys' / Login / Chromium Safe Storage
+ * - macOS:   Keychain / Login / 'finaldesktopapp safeStorage'
+ * - Windows: Stored in DPAPI
  */
 export class TokenStorage {
 
-    // Token storage keys, and we use separate entries due to long Cognito tokens and Windows size limitations
-    // The below link describes the Windows limitation that otherwise leads to a 'Stub received bad data' error
-    // https://github.com/atom/node-keytar/issues/112
-    static readonly ACCESS_TOKEN = 'DesktopSample.AccessToken';
-    static readonly REFRESH_TOKEN = 'DesktopSample.RefreshToken';
-    static readonly ID_TOKEN = 'DesktopSample.IdToken';
-
-    // The current username
-    private static _userName: string;
+    private static _key = 'EncryptedData';
+    private static _store = new Store<Record<string, string>>({
+        name: 'tokens'
+    });
 
     /*
      * Load token data or return null
      */
-    public static async load(): Promise<TokenData | null> {
+    public static load(): TokenData | null {
 
-        // Get the operating system user name on the first call
-        if (!TokenStorage._userName) {
-            TokenStorage._userName = await OperatingSystemUserName();
-        }
-
-        // Look up tokens from secure storage
-        const accessToken = await KeyTar.getPassword(this.ACCESS_TOKEN, this._userName);
-        const refreshToken = await KeyTar.getPassword(this.REFRESH_TOKEN, this._userName);
-        const idToken = await KeyTar.getPassword(this.ID_TOKEN, this._userName);
-        if (!accessToken || !refreshToken || !idToken) {
+        const encryptedBytesBase64 = this._store.get(TokenStorage._key);
+        if (!encryptedBytesBase64) {
             return null;
         }
 
-        // Convert to our token data object
-        return {
-            accessToken,
-            refreshToken,
-            idToken,
-        };
+        try {
+
+            // Try the decryption using the operating system encryption key
+            const json = safeStorage.decryptString(Buffer.from(encryptedBytesBase64, 'base64'));
+            return JSON.parse(json);
+
+        } catch (e: any) {
+
+            // Fail gracefully if the encryption key has been deleted
+            console.log(`Decrpyion failure in TokenStorage.load: ${e}`);
+            return null;
+        }
     }
 
     /*
      * Save token data after login
      */
-    public static async save(data: TokenData): Promise<void> {
+    public static save(data: TokenData): void {
 
-        await KeyTar.setPassword(this.ACCESS_TOKEN, this._userName, data.accessToken!);
-        await KeyTar.setPassword(this.REFRESH_TOKEN, this._userName, data.refreshToken!);
-        await KeyTar.setPassword(this.ID_TOKEN, this._userName, data.idToken!);
+        // Safe storage uses an operating system service but make sure we are not saving tokens insecurely
+        if (!safeStorage.isEncryptionAvailable()) {
+            throw new Error('The environment does not support safe storage');
+        }
+
+        const json = JSON.stringify(data);
+        const buffer = safeStorage.encryptString(json);
+        const encryptedBytesBase64 = buffer.toString('base64');
+        this._store.set(TokenStorage._key, encryptedBytesBase64);
     }
 
     /*
      * Delete token data after logout
      */
-    public static async delete(): Promise<void> {
-
-        await KeyTar.deletePassword(this.ACCESS_TOKEN, this._userName);
-        await KeyTar.deletePassword(this.REFRESH_TOKEN, this._userName);
-        await KeyTar.deletePassword(this.ID_TOKEN, this._userName);
+    public static delete(): void {
+        this._store.delete(TokenStorage._key);
     }
 }

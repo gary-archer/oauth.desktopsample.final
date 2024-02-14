@@ -24,12 +24,6 @@ const config: webpack.Configuration = {
                 test: /\.ts$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
-            },
-            {
-                // Load the result of the keytar native build into the Electron app
-                // https://github.com/atom/node-keytar/issues/59
-                test: /\.node$/,
-                loader: 'node-loader'
             }
         ]
     },

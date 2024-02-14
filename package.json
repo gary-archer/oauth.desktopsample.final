@@ -11,7 +11,7 @@
     "dist/**"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "build": {
     "protocols": {
@@ -34,18 +34,17 @@
   "dependencies": {
     "@openid/appauth": "^1.3.1",
     "axios": "^1.6.0",
+    "electron-store": "^8.1.0",
     "fs-extra": "^11.1.1",
     "guid-typescript": "^1.0.9",
     "js-event-bus": "^1.1.1",
-    "keytar": "^7.9.0",
     "moment": "2.29.4",
     "opener": "^1.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
     "react-router-dom": "^6.9.0",
-    "url-parse": "1.5.10",
-    "username": "^5.1.0"
+    "url-parse": "1.5.10"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.1",
@@ -61,7 +60,6 @@
     "electron-rebuild": "^3.2.9",
     "eslint": "^8.52.0",
     "eslint-plugin-react": "^7.33.2",
-    "node-loader": "^2.0.0",
     "ts-loader": "^9.5.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
