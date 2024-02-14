@@ -12,11 +12,9 @@ import {TokenData} from './tokenData';
  * - Windows: ~/?
  * 
  * An encryption key is created at:
- * - Linux:   gnome_libsecret
- *            sudo apt install libsecret-tools
- *            secret-tool search --all xdg:schema org.gnome.keyring.Note
+ * - Linux:   One of the entries in 'Passwords and Keys' / Login / Chromium Safe Storage
  * - macOS:   Keychain / Login / 'finaldesktopapp safeStorage'
- * - Windows: 
+ * - Windows: ?
  */
 export class TokenStorage {
 
