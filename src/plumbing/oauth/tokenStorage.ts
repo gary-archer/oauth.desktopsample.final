@@ -17,12 +17,13 @@ export class TokenStorage {
      */
     public static load(): TokenData | null {
 
-        const encryptedBytesBase64 = this._store.get(TokenStorage._key);
-        if (!encryptedBytesBase64) {
-            return null;
-        }
-
         try {
+
+            // Try to read the file
+            const encryptedBytesBase64 = this._store.get(TokenStorage._key);
+            if (!encryptedBytesBase64) {
+                return null;
+            }
 
             // Try the decryption using the operating system encryption key
             const json = safeStorage.decryptString(Buffer.from(encryptedBytesBase64, 'base64'));
