@@ -41,7 +41,7 @@ export class LogoutManager {
 
             // Create a callback to wait for completion
             /* eslint-disable @typescript-eslint/no-unused-vars */
-            const callback = (queryParams: any) => {
+            const callback = (args: URLSearchParams) => {
                 resolve();
             };
 

@@ -22,13 +22,13 @@ export class LoginState {
     /*
      * Receive authorization response data and resume the login flow
      */
-    public handleLoginResponse(queryParams: any): void {
+    public handleLoginResponse(args: URLSearchParams): void {
 
-        const state = queryParams.state;
+        const state = args.get('state');
         if (state) {
-            const callback = this._getCallbackForState(queryParams.state);
+            const callback = this._getCallbackForState(state);
             if (callback) {
-                callback(queryParams);
+                callback(args);
                 this._clearState(state);
             }
         }

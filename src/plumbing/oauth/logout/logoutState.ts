@@ -22,10 +22,10 @@ export class LogoutState {
     /*
      * Receive logout response data and resume the logout flow
      */
-    public handleLogoutResponse(queryParams: any): void {
+    public handleLogoutResponse(args: URLSearchParams): void {
 
         if (this._logoutCallback) {
-            this._logoutCallback(queryParams);
+            this._logoutCallback(args);
             this._logoutCallback = null;
         }
     }

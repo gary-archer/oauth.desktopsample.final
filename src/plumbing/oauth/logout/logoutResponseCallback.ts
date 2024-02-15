@@ -1,2 +1,2 @@
 // A custom type for readability
-export type LogoutResponseCallback = (queryParams: any) => void;
+export type LogoutResponseCallback = (args: URLSearchParams) => void;

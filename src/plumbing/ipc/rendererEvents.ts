@@ -1,5 +1,4 @@
 import EventBus from 'js-event-bus';
-import urlparse from 'url-parse';
 import {Configuration} from '../../configuration/configuration';
 import {DeepLinkEvent} from '../../plumbing/events/deepLinkEvent';
 import {EventNames} from '../../plumbing/events/eventNames';
@@ -61,14 +60,15 @@ export class RendererEvents {
     public async setDeepLinkStartupUrlIfRequired(): Promise<void> {
 
         // See if the app was started by a deep link
-        const url = await this._sendIpcMessage(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
+        const urlString = await this._sendIpcMessage(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
 
         // If there was a startup URL set the hash location of the React app accordingly
         // This ensures that we move straight to the linked page rather than rendering the default page first
-        if (url) {
-            const parsedUrl = this._tryParseUrl(url);
-            if (parsedUrl) {
-                this._handleDeepLinkingNotification(parsedUrl.pathname);
+        if (urlString) {
+
+            const url = this._tryParseUrl(urlString);
+            if (url && url.pathname) {
+                this._handleDeepLinkingNotification(url.pathname);
             }
         }
     }
@@ -123,23 +123,25 @@ export class RendererEvents {
      */
     private _handlePrivateUriSchemeNotification(data: any): void {
 
-        const parsedUrl = this._tryParseUrl(data as string);
-        if (parsedUrl) {
+        const url = this._tryParseUrl(data as string);
+        if (url) {
 
-            if (parsedUrl.pathname === this._logoutCallbackPath) {
+            const args = new URLSearchParams(url.search);
+            const state = args.get('state');
+            if (url.pathname === this._logoutCallbackPath) {
 
                 // Handle logout responses
-                this._logoutState!.handleLogoutResponse(parsedUrl.query);
+                this._logoutState!.handleLogoutResponse(args);
 
-            } else if (parsedUrl.query.state) {
+            } else if (state) {
 
                 // Otherwise, if there is a state parameter we will classify this as a login response
-                this._loginState!.handleLoginResponse(parsedUrl.query);
+                this._loginState!.handleLoginResponse(args);
 
-            } else {
+            } else if (url.pathname) {
 
                 // Otherwise we will treat it a deep linking request and update the hash location
-                this._handleDeepLinkingNotification(parsedUrl.pathname);
+                this._handleDeepLinkingNotification(url.pathname);
             }
         }
     }
@@ -154,10 +156,10 @@ export class RendererEvents {
     /*
      * Private URI scheme notifications could provide malformed input, so parse them safely
      */
-    private _tryParseUrl(url: string): any {
+    private _tryParseUrl(url: string): URL | null {
 
         try {
-            return urlparse(url, true);
+            return new URL(url);
         } catch (e: any) {
             return null;
         }

@@ -1,11 +1,9 @@
 import {
     AuthorizationError,
-    AuthorizationErrorJson,
     AuthorizationRequest,
     AuthorizationRequestHandler,
     AuthorizationRequestResponse,
     AuthorizationResponse,
-    AuthorizationResponseJson,
     AuthorizationServiceConfiguration,
     BasicQueryStringUtils,
     DefaultCrypto} from '@openid/appauth';
@@ -40,10 +38,10 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         this._authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve) => {
 
             // Create a callback to wait for completion
-            const callback = (queryParams: any) => {
+            const callback = (args: URLSearchParams) => {
 
                 // Package up data into an object and then resolve our promise
-                const response = this._handleBrowserLoginResponse(queryParams, request);
+                const response = this._handleBrowserLoginResponse(args, request);
                 resolve(response);
 
                 // Ask the base class to call our completeAuthorizationRequest
@@ -73,30 +71,26 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
      * Collect response data using AppAuth objects
      */
     private _handleBrowserLoginResponse(
-        queryParams: any,
+        args: URLSearchParams,
         request: AuthorizationRequest): AuthorizationRequestResponse {
 
         // Get strongly typed fields
-        const authFields = queryParams as (AuthorizationResponseJson & AuthorizationErrorJson);
+        const state = args.get('state') || '';
+        const code = args.get('code') || '';
+        const error = args.get('error') || '';
 
         // Initialize the result
         let authorizationResponse: AuthorizationResponse | null = null;
         let authorizationError: AuthorizationError | null = null;
 
-        // Process the login response message
-        const state = authFields.state;
-        const code = authFields.code;
-        const error = authFields.error;
-
         if (error) {
 
             // Handle error responses if required
-            const errorDescription = authFields.error_description?.replace(/\+/g, ' ');
+            const errorDescription = args.get('error_description');
+            //.replace(/\+/g, ' ');
             const errorJson = {
                 error,
-                error_description: errorDescription,
-                error_uri: authFields.error_uri,
-                state,
+                error_description: errorDescription || '',
             };
             authorizationError = new AuthorizationError(errorJson);
 
