@@ -3,17 +3,7 @@ import Store from 'electron-store';
 import {TokenData} from './tokenData';
 
 /*
- * A class to store OAuth tokens for the desktop app using operating system encryption
- *
- * Tokens are saved at app.getPath('userData'):
- * - Linux:   ~/.config/finaldesktopapp/tokens.json
- * - macOS:   ~/Library/Application Support/finaldesktopapp/tokens.json
- * - Windows: ~/AppData/Roaming/finaldesktopapp/tokens.json
- *
- * An encryption key is created at:
- * - Linux:   Passwords and Keys / Login / Chromium Safe Storage
- * - macOS:   Keychain / Login / 'finaldesktopapp safeStorage'
- * - Windows: DPAPI
+ * A class to store OAuth tokens under the current user profile using operating system encryption
  */
 export class TokenStorage {
 
@@ -47,7 +37,7 @@ export class TokenStorage {
     }
 
     /*
-     * Save token data after login
+     * This saves token data to base64 encrypted bytes in a text file under the user profile
      */
     public static save(data: TokenData): void {
 
