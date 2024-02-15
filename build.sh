@@ -44,19 +44,6 @@ if [ ! -d 'node_modules' ]; then
 fi
 
 #
-# Build native code used by keytar to store tokens on the device
-#
-if [ "$PLATFORM" == 'WINDOWS' ]; then
-  ./node_modules/.bin/electron-rebuild.cmd
-else
-  ./node_modules/.bin/electron-rebuild
-fi
-if [ $? -ne 0 ]; then
-  echo 'Problem encountered building native code'
-  exit 1
-fi
-
-#
 # Copy deployable assets that are not Javascript bundles
 #
 if [ -d 'dist' ]; then
