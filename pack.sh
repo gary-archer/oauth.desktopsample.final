@@ -45,11 +45,7 @@ rm dist/*.js.map
 if [ -d 'package' ]; then
   rm -rf package
 fi
-if [ "$PLATFORM" == 'WINDOWS' ]; then
-  ./node_modules/.bin/electron-packager.cmd ./dist --out=package
-else
-  ./node_modules/.bin/electron-packager ./dist --out=package
-fi
+npx electron-packager ./dist --out=package
 if [ $? -ne 0 ]; then
   echo 'Problem encountered packaging the desktop app'
   exit
