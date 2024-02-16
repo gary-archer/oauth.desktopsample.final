@@ -30,14 +30,14 @@ esac
 # Register the app to use the Electron command to run the built files in the dist folder
 #
 if [ "$PLATFORM" == 'LINUX' ]; then
-  export APP_COMMAND="$(pwd)/node_modules/.bin/electron $(pwd)/dist"
+  export APP_COMMAND="npx electron $(pwd)/dist"
   ./linux/register.sh
 fi
 
 #
 # Run the Electron app
 #
-./node_modules/.bin/electron ./dist
+npx electron ./dist
 if [ $? -ne 0 ]; then
   echo 'Problem encountered running the desktop app'
   exit
