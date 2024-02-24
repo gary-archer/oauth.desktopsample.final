@@ -12,7 +12,8 @@ import {RendererEvents} from '../ipc/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {Authenticator} from './authenticator';
 import {CustomRequestor} from './customRequestor';
-import {LoginManager} from './login/loginManager';
+import {LoginAsyncAdapter} from './login/loginAsyncAdapter';
+import {LoginRedirectResult} from './login/loginRedirectResult';
 import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
@@ -117,29 +118,16 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Do the authorization redirect when the user clicks the Sign In button
+     * Do the login work
      */
     public async login(): Promise<void> {
 
-        try {
-
-            // Initialise if required
-            await this.initialise();
-
-            // Do the work of the login
-            const loginManager = new LoginManager(
-                this._configuration,
-                this._metadata!,
-                this._loginState,
-                this._events,
-                this._swapAuthorizationCodeForTokens);
-            await loginManager.login();
-
-        } catch (e: any) {
-
-            // Do error translation if required
-            throw ErrorFactory.fromLoginOperation(e, ErrorCodes.loginRequestFailed);
+        const result = await this._startLogin();
+        if (result.error) {
+            throw ErrorFactory.fromLoginOperation(result.error, ErrorCodes.loginResponseFailed);
         }
+
+        await this._endLogin(result);
     }
 
     /*
@@ -230,9 +218,37 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
+     * Do the work of starting a login redirect
+     */
+    private async _startLogin(): Promise<LoginRedirectResult> {
+
+        try {
+
+            // Initialise if required
+            await this.initialise();
+
+            // Run a login on the system browser and get the result
+            const loginManager = new LoginAsyncAdapter(
+                this._configuration,
+                this._metadata!,
+                this._loginState,
+                this._events);
+            return await loginManager.login();
+
+        } catch (e: any) {
+
+            // Do error translation if required
+            throw ErrorFactory.fromLoginOperation(e, ErrorCodes.loginRequestFailed);
+        }
+    }
+
+    /*
      * Swap the authorizasion code for a refresh token and access token
      */
-    private async _swapAuthorizationCodeForTokens(authorizationCode: string, codeVerifier: string): Promise<void> {
+    private async _endLogin(result: LoginRedirectResult): Promise<void> {
+
+        // Get the PKCE verifier
+        const codeVerifier = result.request.internal!['code_verifier'];
 
         // Supply PKCE parameters for the code exchange
         const extras: StringMap = {
@@ -242,7 +258,7 @@ export class AuthenticatorImpl implements Authenticator {
         // Create the token request
         const requestJson = {
             grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
-            code: authorizationCode,
+            code: result.response!.code,
             redirect_uri: this._configuration.redirectUri,
             client_id: this._configuration.clientId,
             extras,
@@ -336,7 +352,7 @@ export class AuthenticatorImpl implements Authenticator {
      * Ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks() {
-        this._swapAuthorizationCodeForTokens = this._swapAuthorizationCodeForTokens.bind(this);
+        this._endLogin = this._endLogin.bind(this);
         this._performTokenRefresh = this._performTokenRefresh.bind(this);
     }
 }
