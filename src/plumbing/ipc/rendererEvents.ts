@@ -6,6 +6,7 @@ import {LoginState} from '../oauth/login/loginState';
 import {LogoutState} from '../oauth/logout/logoutState';
 import {IpcEventNames} from './ipcEventNames';
 import {TokenData} from '../oauth/tokenData';
+import { UIError } from '../errors/uiError';
 
 /*
  * A class to encapsulate IPC messages sent and received by the renderer side of our app
@@ -119,7 +120,7 @@ export class RendererEvents {
 
         const result = await this._api.sendIpcMessage(eventName, requestData);
         if (result.error) {
-            throw result.error;
+            throw UIError.fromJson(result.error);
         }
 
         return result.data;

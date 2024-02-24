@@ -98,13 +98,10 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
 
         try {
 
-            console.log('*** CLIENT LOGIN START');
             await this._events.login();
-            console.log('*** CLIENT LOGIN END');
 
         } catch (e: any) {
 
-            console.log('*** CLIENT LOGIN ERROR');
             throw ErrorFactory.fromException(e);
         }
     }

@@ -46,6 +46,7 @@ export class ErrorFactory {
 
         // Already handled errors
         if (exception instanceof UIError) {
+            console.log('UIERror iniit');
             return exception;
         }
 

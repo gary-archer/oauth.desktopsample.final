@@ -102,9 +102,9 @@ export class UIError extends Error {
     }
 
     /*
-     * Output a JSON representation of the error
+     * Serialize the error to JSON
      */
-    public toLogFormat(): string {
+    public toJson(): string {
 
         const error: any = {
             area: this._area,
@@ -139,5 +139,19 @@ export class UIError extends Error {
         }
 
         return JSON.stringify(error, null, 2);
+    }
+
+    /*
+     * Deserialize the error from JSON
+     */
+    public static fromJson(json: string): UIError {
+
+        console.log('*** RECEIVING');
+        console.log(json);
+        return new UIError(
+            'Login',
+            'from_json',
+            'Error JSON'
+        );
     }
 }

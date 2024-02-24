@@ -5,6 +5,7 @@ import {AuthenticatorService} from '../oauth/authenticatorService';
 import {AuthenticatorServiceImpl} from '../oauth/authenticatorServiceImpl';
 import {TokenData} from '../oauth/tokenData';
 import {IpcEventNames} from './ipcEventNames';
+import { ErrorFactory } from '../errors/errorFactory';
 
 /*
  * A class to encapsulate IPC messages sent and received by the main side of our app
@@ -55,9 +56,18 @@ export class MainEvents {
      * Run a login redirect on the system browser
      */
     private async _onLogin(): Promise<void> {
-        console.log('*** RECEIVED login EVENT ON MAIN SIDE');
-        await this._authenticatorService.login();
-        this._sendResponse(IpcEventNames.ON_LOGIN, {message: 'LOGIN RESPONSE FROM MAIN2'}, null);
+
+        try {
+            await this._authenticatorService.login();
+            this._sendResponse(IpcEventNames.ON_LOGIN, null, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            console.log('*** SENDING');
+            console.log(errorJson);
+            this._sendResponse(IpcEventNames.ON_LOGIN, null, errorJson);
+        }
     }
 
     /*

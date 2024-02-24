@@ -120,14 +120,11 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public async login(): Promise<void> {
 
-        console.log('*** SERVER LOGIN START');
         const result = await this._startLogin();
         if (result.error) {
-            console.log('*** SERVER LOGIN ERROR');
             throw ErrorFactory.fromLoginOperation(result.error, ErrorCodes.loginResponseFailed);
         }
 
-        console.log('*** SERVER LOGIN SUCCESS');
         await this._endLogin(result);
     }
 
@@ -223,6 +220,10 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     private async _startLogin(): Promise<LoginRedirectResult> {
 
         try {
+
+            if (new Date().getTime() > 1) {
+                throw new Error('bang from server');
+            }
 
             // Initialise if required
             await this.initialise();

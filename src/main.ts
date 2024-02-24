@@ -293,6 +293,6 @@ try {
 
     // Handle startup errors
     const error = ErrorFactory.fromException(e);
-    console.log(error.toLogFormat());
+    console.log(error.toJson());
     app.exit();
 }
