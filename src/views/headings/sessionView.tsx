@@ -8,7 +8,7 @@ import {SessionViewProps} from './sessionViewProps';
  */
 export function SessionView(props: SessionViewProps): JSX.Element {
 
-    const text = `API Session Id: ${props.sessionId}`;
+    const text = `API Session ID: ${props.sessionId}`;
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {

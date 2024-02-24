@@ -18,11 +18,11 @@ export interface AuthenticatorService {
     // Run the login on the system browser
     login(): Promise<void>;
 
-    // Process any private URI scheme notifications that are OAuth responses
-    handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean;
-
     // Do the logout redirect and process the response
     logout(): Promise<void>;
+
+    // Process any private URI scheme notifications that are OAuth responses
+    handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean;
 
     // Allow the app to clear its login state after certain errors
     clearLoginState(): Promise<void>;

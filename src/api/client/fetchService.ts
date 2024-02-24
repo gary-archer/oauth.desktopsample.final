@@ -6,29 +6,29 @@ import {CompanyTransactions} from '../entities/companyTransactions';
 import {OAuthUserInfo} from '../entities/oauthUserInfo';
 import {Configuration} from '../../configuration/configuration';
 import {ErrorFactory} from '../../plumbing/errors/errorFactory';
-import {AuthenticatorClient} from '../../plumbing/oauth/authenticatorClient';
+import {AuthenticatorService} from '../../plumbing/oauth/authenticatorService';
 import {AxiosUtils} from '../../plumbing/utilities/axiosUtils';
 import {FetchCache} from './fetchCache';
 import {FetchOptions} from './fetchOptions';
 
 /*
- * API operations from the renderer side of the app
+ * API operations from the main side of the app
  */
-export class FetchClient {
+export class FetchService {
 
     private readonly _configuration: Configuration;
     private readonly _fetchCache: FetchCache;
-    private readonly _authenticatorClient: AuthenticatorClient;
+    private readonly _authenticatorService: AuthenticatorService;
     private readonly _sessionId: string;
 
     public constructor(
         configuration: Configuration,
         fetchCache: FetchCache,
-        authenticatorClient: AuthenticatorClient) {
+        authenticatorService: AuthenticatorService) {
 
         this._configuration = configuration;
         this._fetchCache = fetchCache;
-        this._authenticatorClient = authenticatorClient;
+        this._authenticatorService = authenticatorService;
         this._sessionId = Guid.create().toString();
     }
 
@@ -62,7 +62,7 @@ export class FetchClient {
      */
     public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo | null> {
 
-        const url = await this._authenticatorClient.getUserInfoEndpoint();
+        const url = await this._authenticatorService.getUserInfoEndpoint();
         if (!url) {
             return null;
         }
@@ -112,7 +112,7 @@ export class FetchClient {
         cacheItem = this._fetchCache.createItem(options.cacheKey);
 
         // Get the access token and trigger a login redirect if not found
-        let accessToken = await this._authenticatorClient.getAccessToken();
+        let accessToken = await this._authenticatorService.getAccessToken();
         if (!accessToken) {
 
             const loginRequiredError = ErrorFactory.fromLoginRequired();
@@ -139,7 +139,7 @@ export class FetchClient {
 
             try {
                 // Try to refresh the access token
-                accessToken = await this._authenticatorClient.synchronizedRefresh();
+                accessToken = await this._authenticatorService.synchronizedRefresh();
 
             } catch (e2: any) {
 

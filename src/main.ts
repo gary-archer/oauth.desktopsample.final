@@ -181,14 +181,14 @@ class Main {
     /*
      * On MacOS this is where we receive login responses or other deep links
      */
-    private async _onOpenUrl(event: any, schemeData: string): Promise<void> {
+    private _onOpenUrl(event: any, schemeData: string): void {
 
         event.preventDefault();
 
         if (this._window) {
 
             // If we have a running window we can just forward the notification to it
-            await this._receiveNotificationInRunningInstance(schemeData);
+            this._receiveNotificationInRunningInstance(schemeData);
 
         } else {
 
