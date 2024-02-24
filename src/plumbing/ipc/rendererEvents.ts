@@ -128,7 +128,7 @@ export class RendererEvents {
 
             const args = new URLSearchParams(url.search);
             const state = args.get('state');
-            if (url.pathname === this._logoutCallbackPath) {
+            if (url.pathname.toLowerCase() === this._logoutCallbackPath?.toLowerCase()) {
 
                 // Handle logout responses
                 this._logoutState!.handleLogoutResponse(args);

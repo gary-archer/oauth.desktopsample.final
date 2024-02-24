@@ -86,8 +86,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         if (error) {
 
             // Handle error responses if required
-            const errorDescription = args.get('error_description');
-            //.replace(/\+/g, ' ');
+            const errorDescription = args.get('error_description') || '';
             const errorJson = {
                 error,
                 error_description: errorDescription || '',
