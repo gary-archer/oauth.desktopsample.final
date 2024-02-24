@@ -77,7 +77,6 @@ export class RendererEvents {
      * Run a login on the main side of the app
      */
     public async login(): Promise<void> {
-
         await this._sendIpcMessage(IpcEventNames.ON_LOGIN, {});
     }
 

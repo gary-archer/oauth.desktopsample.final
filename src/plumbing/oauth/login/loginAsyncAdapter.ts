@@ -7,7 +7,6 @@ import {
     DefaultCrypto,
     StringMap} from '@openid/appauth';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
-import {RendererEvents} from '../../ipc/rendererEvents';
 import {BrowserLoginRequestHandler} from './browserLoginRequestHandler';
 import {LoginRedirectResult} from './loginRedirectResult';
 import {LoginState} from './loginState';
@@ -21,18 +20,15 @@ export class LoginAsyncAdapter {
     private readonly _configuration: OAuthConfiguration;
     private readonly _metadata: AuthorizationServiceConfiguration;
     private readonly _state: LoginState;
-    private readonly _events: RendererEvents;
 
     public constructor(
         configuration: OAuthConfiguration,
         metadata: AuthorizationServiceConfiguration,
-        state: LoginState,
-        events: RendererEvents) {
+        state: LoginState) {
 
         this._configuration = configuration;
         this._metadata = metadata;
         this._state = state;
-        this._events = events;
     }
 
     /*
@@ -80,7 +76,7 @@ export class LoginAsyncAdapter {
             try {
 
                 // Create a custom browser handler and try to start a login
-                const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state, this._events);
+                const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
                 browserLoginRequestHandler.setAuthorizationNotifier(notifier);
                 await browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
 

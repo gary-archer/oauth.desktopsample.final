@@ -137,9 +137,8 @@ export class AppViewModel {
             // Load configuration from the main side of the app
             this._configuration = await this._ipcEvents.loadConfiguration();
 
-            // Initialize OpenID Connect handling
+            // Create an object to initiate OAuth requests
             this._authenticatorClient = new AuthenticatorClientImpl(this.configuration.oauth, this._ipcEvents);
-            await this._authenticatorClient.initialise();
 
             // Create a client for calling the API
             this._fetchClient = new FetchClient(

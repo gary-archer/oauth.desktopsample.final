@@ -1,7 +1,6 @@
 import {
     AuthorizationServiceConfiguration,
     BaseTokenRequestHandler,
-    GRANT_TYPE_AUTHORIZATION_CODE,
     GRANT_TYPE_REFRESH_TOKEN,
     StringMap,
     TokenRequest} from '@openid/appauth';
@@ -12,8 +11,6 @@ import {RendererEvents} from '../ipc/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {AuthenticatorClient} from './authenticatorClient';
 import {CustomRequestor} from './customRequestor';
-import {LoginAsyncAdapter} from './login/loginAsyncAdapter';
-import {LoginRedirectResult} from './login/loginRedirectResult';
 import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
@@ -50,29 +47,6 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
         this._loginState = new LoginState();
         this._logoutState = new LogoutState();
         this._events.setOAuthDetails(this._loginState, this._logoutState, this._configuration.logoutCallbackPath);
-    }
-
-    /*
-     * Initialize the app upon startup, or retry if the initial load fails
-     * The loading flag prevents duplicate metadata requests due to React strict mode
-     */
-    public async initialise(): Promise<void> {
-
-        if (!this._isLoaded && !this._isLoading) {
-
-            this._isLoading = true;
-
-            try {
-
-                await this._loadMetadata();
-                this._tokens = await this._events.loadTokens();
-                this._isLoaded = true;
-
-            } finally {
-
-                this._isLoading = false;
-            }
-        }
     }
 
     /*
@@ -118,11 +92,21 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     }
 
     /*
-     * Do the login work
+     * Call the main side of the app to perform the login work
      */
     public async login(): Promise<void> {
 
-        console.log('*** AUTHENTICATOR CLIENT ***');
+        try {
+
+            console.log('*** CLIENT LOGIN START');
+            await this._events.login();
+            console.log('*** CLIENT LOGIN END');
+
+        } catch (e: any) {
+
+            console.log('*** CLIENT LOGIN ERROR');
+            throw ErrorFactory.fromException(e);
+        }
     }
 
     /*
@@ -135,7 +119,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
             if (this._tokens && this._tokens.idToken) {
 
                 // Initialise if required
-                await this.initialise();
+                await this._initialise();
 
                 // Reset state
                 const idToken = this._tokens.idToken;
@@ -146,7 +130,6 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
                     this._configuration,
                     this._metadata!,
                     this._logoutState,
-                    this._events,
                     idToken);
                 await logout.start();
             }
@@ -192,6 +175,29 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     }
 
     /*
+     * Initialize the app upon startup, or retry if the initial load fails
+     * The loading flag prevents duplicate metadata requests due to React strict mode
+     */
+    private async _initialise(): Promise<void> {
+
+        if (!this._isLoaded && !this._isLoading) {
+
+            this._isLoading = true;
+
+            try {
+
+                await this._loadMetadata();
+                this._tokens = await this._events.loadTokens();
+                this._isLoaded = true;
+
+            } finally {
+
+                this._isLoading = false;
+            }
+        }
+    }
+
+    /*
      * Load metadata if not already loaded
      */
     private async _loadMetadata() {
@@ -213,73 +219,6 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     }
 
     /*
-     * Do the work of starting a login redirect
-     */
-    private async _startLogin(): Promise<LoginRedirectResult> {
-
-        try {
-
-            // Initialise if required
-            await this.initialise();
-
-            // Run a login on the system browser and get the result
-            const loginManager = new LoginAsyncAdapter(
-                this._configuration,
-                this._metadata!,
-                this._loginState,
-                this._events);
-            return await loginManager.login();
-
-        } catch (e: any) {
-
-            // Do error translation if required
-            throw ErrorFactory.fromLoginOperation(e, ErrorCodes.loginRequestFailed);
-        }
-    }
-
-    /*
-     * Swap the authorizasion code for a refresh token and access token
-     */
-    private async _endLogin(result: LoginRedirectResult): Promise<void> {
-
-        // Get the PKCE verifier
-        const codeVerifier = result.request.internal!['code_verifier'];
-
-        // Supply PKCE parameters for the code exchange
-        const extras: StringMap = {
-            code_verifier: codeVerifier,
-        };
-
-        // Create the token request
-        const requestJson = {
-            grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
-            code: result.response!.code,
-            redirect_uri: this._configuration.redirectUri,
-            client_id: this._configuration.clientId,
-            extras,
-        };
-        const tokenRequest = new TokenRequest(requestJson);
-
-        // Execute the request to swap the code for tokens
-        const requestor = new CustomRequestor();
-        const tokenHandler = new BaseTokenRequestHandler(requestor);
-
-        // Perform the authorization code grant exchange
-        const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
-
-        // Set values from the response
-        const newTokenData = {
-            accessToken: tokenResponse.accessToken,
-            refreshToken: tokenResponse.refreshToken ? tokenResponse.refreshToken : null,
-            idToken: tokenResponse.idToken ? tokenResponse.idToken : null,
-        };
-
-        // Update tokens in memory and secure storage
-        this._tokens = newTokenData;
-        await this._events.saveTokens(this._tokens);
-    }
-
-    /*
      * Try to use the refresh token to get a new access token
      */
     private async _performTokenRefresh(): Promise<void> {
@@ -287,7 +226,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
         try {
 
             // Initialise if required
-            await this.initialise();
+            await this._initialise();
 
             // Supply the scope for access tokens
             const extras: StringMap = {
@@ -347,7 +286,6 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * Ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks() {
-        this._endLogin = this._endLogin.bind(this);
         this._performTokenRefresh = this._performTokenRefresh.bind(this);
     }
 }

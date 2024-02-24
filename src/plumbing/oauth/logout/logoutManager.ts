@@ -1,6 +1,5 @@
 import {AuthorizationServiceConfiguration} from '@openid/appauth';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
-import {RendererEvents} from '../../ipc/rendererEvents';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {LogoutState} from './logoutState';
 import {LogoutUrlBuilder} from './logoutUrlBuilder';
@@ -14,20 +13,17 @@ export class LogoutManager {
     private readonly _configuration: OAuthConfiguration;
     private readonly _metadata: AuthorizationServiceConfiguration;
     private readonly _state: LogoutState;
-    private readonly _events: RendererEvents;
     private readonly _idToken: string;
 
     public constructor(
         configuration: OAuthConfiguration,
         metadata: AuthorizationServiceConfiguration,
         state: LogoutState,
-        events: RendererEvents,
         idToken: string) {
 
         this._configuration = configuration;
         this._metadata = metadata;
         this._state = state;
-        this._events = events;
         this._idToken = idToken;
     }
 
@@ -53,7 +49,8 @@ export class LogoutManager {
                 this._state.storeLogoutCallback(callback);
 
                 // Ask the main side of the app to open the system browser
-                await this._events.openSystemBrowser(logoutUrl);
+                console.log('*** OPEN SYSTEM BROWSER FOR LOGOUT: ' + logoutUrl);
+                // await this._events.openSystemBrowser(logoutUrl);
 
             } catch (e: any) {
 

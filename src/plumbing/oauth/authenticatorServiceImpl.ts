@@ -8,7 +8,6 @@ import {
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorFactory} from '../errors/errorFactory';
-import {RendererEvents} from '../ipc/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {AuthenticatorService} from './authenticatorService';
 import {CustomRequestor} from './customRequestor';
@@ -18,6 +17,7 @@ import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
 import {TokenData} from './tokenData';
+import {TokenStorage} from './tokenStorage';
 
 /*
  * The entry point class for OAuth related requests in the main process
@@ -25,7 +25,7 @@ import {TokenData} from './tokenData';
 export class AuthenticatorServiceImpl implements AuthenticatorService {
 
     private readonly _configuration: OAuthConfiguration;
-    private readonly _events: RendererEvents;
+    private readonly _tokenStorage: TokenStorage;
     private readonly _concurrencyHandler: ConcurrentActionHandler;
     private readonly _loginState: LoginState;
     private readonly _logoutState: LogoutState;
@@ -34,22 +34,20 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     private _isLoading: boolean;
     private _isLoaded: boolean;
 
-    public constructor(configuration: OAuthConfiguration, events: RendererEvents) {
+    public constructor(configuration: OAuthConfiguration) {
 
-        // Initialise properties
         this._configuration = configuration;
+        this._tokenStorage = new TokenStorage();
         this._metadata = null;
-        this._events = events;
         this._concurrencyHandler = new ConcurrentActionHandler();
         this._tokens = null;
         this._isLoading = false;
         this._isLoaded = false;
         this._setupCallbacks();
 
-        // Initialise state, used to correlate responses from the system browser to the original request
+        // Initialise state to correlate responses from the system browser to original requests
         this._loginState = new LoginState();
         this._logoutState = new LogoutState();
-        this._events.setOAuthDetails(this._loginState, this._logoutState, this._configuration.logoutCallbackPath);
     }
 
     /*
@@ -65,7 +63,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             try {
 
                 await this._loadMetadata();
-                this._tokens = await this._events.loadTokens();
+                this._tokens = await this._tokenStorage.load();
                 this._isLoaded = true;
 
             } finally {
@@ -122,11 +120,14 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public async login(): Promise<void> {
 
+        console.log('*** SERVER LOGIN START');
         const result = await this._startLogin();
         if (result.error) {
+            console.log('*** SERVER LOGIN ERROR');
             throw ErrorFactory.fromLoginOperation(result.error, ErrorCodes.loginResponseFailed);
         }
 
+        console.log('*** SERVER LOGIN SUCCESS');
         await this._endLogin(result);
     }
 
@@ -151,7 +152,6 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
                     this._configuration,
                     this._metadata!,
                     this._logoutState,
-                    this._events,
                     idToken);
                 await logout.start();
             }
@@ -168,7 +168,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public async clearLoginState(): Promise<void> {
         this._tokens = null;
-        await this._events.deleteTokens();
+        await this._tokenStorage.delete();
     }
 
     /*
@@ -179,7 +179,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
         if (this._tokens && this._tokens.accessToken) {
             this._tokens.accessToken = `${this._tokens.accessToken}x`;
-            await this._events.saveTokens(this._tokens);
+            await this._tokenStorage.save(this._tokens);
         }
     }
 
@@ -192,7 +192,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         if (this._tokens && this._tokens.refreshToken) {
             this._tokens.accessToken = `${this._tokens.accessToken}x`;
             this._tokens.refreshToken = `${this._tokens.refreshToken}x`;
-            await this._events.saveTokens(this._tokens);
+            await this._tokenStorage.save(this._tokens);
         }
     }
 
@@ -231,8 +231,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const loginManager = new LoginAsyncAdapter(
                 this._configuration,
                 this._metadata!,
-                this._loginState,
-                this._events);
+                this._loginState);
             return await loginManager.login();
 
         } catch (e: any) {
@@ -281,7 +280,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
         // Update tokens in memory and secure storage
         this._tokens = newTokenData;
-        await this._events.saveTokens(this._tokens);
+        await this._tokenStorage.save(this._tokens);
     }
 
     /*
@@ -331,7 +330,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
             // Update tokens in memory and secure storage
             this._tokens = newTokenData;
-            await this._events.saveTokens(this._tokens);
+            await this._tokenStorage.save(this._tokens);
 
         } catch (e: any) {
 

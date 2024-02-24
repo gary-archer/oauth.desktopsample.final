@@ -3,9 +3,6 @@
  */
 export interface AuthenticatorClient {
 
-    // Setup that requires async calls
-    initialise(): Promise<void>;
-
     // Provide the user info endpoint from metadata
     getUserInfoEndpoint(): Promise<string | null>;
 

@@ -7,23 +7,22 @@ import {
     AuthorizationServiceConfiguration,
     BasicQueryStringUtils,
     DefaultCrypto} from '@openid/appauth';
-import {RendererEvents} from '../../ipc/rendererEvents';
+import Opener from 'opener';
 import {LoginState} from './loginState';
 
 /*
- * An override of the default authorization handler
+ * The AppAuth-JS class uses some old Node.js style callbacks
+ * This class adapts them to a modern async await syntax
  */
 export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
 
     private readonly _state: LoginState;
-    private readonly _events: RendererEvents;
     private _authorizationPromise: Promise<AuthorizationRequestResponse> | null;
 
-    public constructor(state: LoginState, events: RendererEvents) {
+    public constructor(state: LoginState) {
 
         super(new BasicQueryStringUtils(), new DefaultCrypto());
         this._state = state;
-        this._events = events;
         this._authorizationPromise = null;
     }
 
@@ -56,7 +55,8 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         const loginUrl = this.buildRequestUrl(metadata, request);
 
         // Ask the main side of the app to open the system browser
-        await this._events.openSystemBrowser(loginUrl);
+        console.log('*** OPEN SYSTEM BROWSER FOR LOGIN: ' + loginUrl);
+        Opener(loginUrl);
     }
 
     /*

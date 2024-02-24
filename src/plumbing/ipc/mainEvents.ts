@@ -1,8 +1,9 @@
 import {BrowserWindow, ipcMain} from 'electron';
 import Opener from 'opener';
 import {Configuration} from '../../configuration/configuration';
+import {AuthenticatorService} from '../oauth/authenticatorService';
+import {AuthenticatorServiceImpl} from '../oauth/authenticatorServiceImpl';
 import {TokenData} from '../oauth/tokenData';
-import {TokenStorage} from '../oauth/tokenStorage';
 import {IpcEventNames} from './ipcEventNames';
 
 /*
@@ -10,29 +11,17 @@ import {IpcEventNames} from './ipcEventNames';
  */
 export class MainEvents {
 
-    private _configuration: Configuration | null;
-    private _window: BrowserWindow | null;
+    private readonly _configuration: Configuration;
+    private readonly _window: BrowserWindow;
+    private readonly _authenticatorService: AuthenticatorService;
     private _deepLinkStartupUrl: string | null;
 
-    public constructor() {
-        this._configuration = null;
-        this._window = null;
+    public constructor(configuration: Configuration, window: BrowserWindow) {
+        this._configuration = configuration;
+        this._window = window;
+        this._authenticatorService = new AuthenticatorServiceImpl(this._configuration.oauth);
         this._deepLinkStartupUrl = null;
         this._setupCallbacks();
-    }
-
-    /*
-     * Set the configuration once available
-     */
-    public set configuration(configuration: Configuration) {
-        this._configuration = configuration;
-    }
-
-    /*
-     * Set the window once available
-     */
-    public set window(window: BrowserWindow) {
-        this._window = window;
     }
 
     /*
@@ -55,16 +44,20 @@ export class MainEvents {
         ipcMain.on(IpcEventNames.ON_DELETE_TOKENS, this._deleteTokens);
     }
 
-    private _onLogin() {
-        console.log('*** RECEIVED login EVENT ON MAIN SIDE');
-        this._sendResponse(IpcEventNames.ON_LOGIN, {message: 'LOGIN RESPONSE FROM MAIN'}, null);
-    }
-
     /*
      * When a login response or deep link is received, forward it to the renderer process
      */
     public sendPrivateSchemeNotificationUrl(url: string): void {
         this._window!.webContents.send(IpcEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, url);
+    }
+
+    /*
+     * Run a login redirect on the system browser
+     */
+    private async _onLogin(): Promise<void> {
+        console.log('*** RECEIVED login EVENT ON MAIN SIDE');
+        await this._authenticatorService.login();
+        this._sendResponse(IpcEventNames.ON_LOGIN, {message: 'LOGIN RESPONSE FROM MAIN2'}, null);
     }
 
     /*
@@ -106,7 +99,8 @@ export class MainEvents {
     private _loadTokens(): void {
 
         try {
-            const tokens = TokenStorage.load();
+            // const tokens = TokenStorage.load();
+            const tokens: TokenData | null = null;
             this._sendResponse(IpcEventNames.ON_LOAD_TOKENS, tokens, null);
 
         } catch (e: any) {
@@ -123,7 +117,9 @@ export class MainEvents {
 
         try {
             const data = args[1] as TokenData;
-            TokenStorage.save(data);
+            console.log('*** TODELETE ***');
+            console.log(data);
+            // TokenStorage.save(data);
             this._sendResponse(IpcEventNames.ON_SAVE_TOKENS, null, null);
 
         } catch (e: any) {
@@ -139,7 +135,7 @@ export class MainEvents {
     private _deleteTokens(): void {
 
         try {
-            TokenStorage.delete();
+            // TokenStorage.delete();
             this._sendResponse(IpcEventNames.ON_DELETE_TOKENS, null, null);
 
         } catch (e: any) {
@@ -160,6 +156,7 @@ export class MainEvents {
      * Ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks() {
+        this._onLogin = this._onLogin.bind(this);
         this._getConfiguration = this._getConfiguration.bind(this);
         this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
         this._openSystemBrowser = this._openSystemBrowser.bind(this);
