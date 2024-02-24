@@ -1,0 +1,5 @@
+1. Send session ID from client to API
+   Also transaction ID
+   So some kind of ApiInput data structure
+   And maybe some kind of ApiOutput data structure
+   
