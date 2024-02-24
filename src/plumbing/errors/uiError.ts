@@ -102,7 +102,7 @@ export class UIError extends Error {
     }
 
     /*
-     * Serialize the error to JSON
+     * Serialize the error to JSON when the main side of the app returns an error to the renderer
      */
     public toJson(): string {
 
@@ -142,16 +142,23 @@ export class UIError extends Error {
     }
 
     /*
-     * Deserialize the error from JSON
+     * Deserialize the error from JSON, when the renderer receives an error from the main side of the app
      */
     public static fromJson(json: string): UIError {
 
-        console.log('*** RECEIVING');
-        console.log(json);
-        return new UIError(
-            'Login',
-            'from_json',
-            'Error JSON'
-        );
+        const data = JSON.parse(json);
+        const error = new UIError(
+            data.area || '',
+            data.code || '',
+            data.message || '',
+            data.userAction || '');
+
+        error._utcTime = data.utcTime || '';
+        error._statusCode = data.statusCode || 0;
+        error._instanceId = data.instanceId || 0;
+        error._details = data.details || '';
+        error._url = data.url || '';
+        error.stack = (data.stack || []).join('\n');
+        return error;
     }
 }

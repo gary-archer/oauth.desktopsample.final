@@ -74,7 +74,6 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         request: AuthorizationRequest): AuthorizationRequestResponse {
 
         // Get strongly typed fields
-        console.log('*** BROWSER REQUEST HANDLER');
         const state = args.get('state') || '';
         const code = args.get('code') || '';
         const error = args.get('error') || '';
@@ -86,7 +85,6 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         if (error) {
 
             // Handle error responses if required
-            console.log('*** ERROR RESPONSE: ' + error);
             const errorDescription = args.get('error_description') || '';
             const errorJson = {
                 error,
@@ -97,7 +95,6 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         } else {
 
             // Create a success response containing the code, which we will next swap for tokens
-            console.log('*** SUCCESS RESPONSE');
             const responseJson = {
                 code,
                 state,

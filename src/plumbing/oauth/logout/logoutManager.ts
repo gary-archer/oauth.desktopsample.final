@@ -49,7 +49,6 @@ export class LogoutManager {
                 this._state.storeLogoutCallback(callback);
 
                 // Ask the main side of the app to open the system browser
-                console.log('*** OPEN SYSTEM BROWSER FOR LOGOUT: ' + logoutUrl);
                 // Opener(logoutUrl);
 
             } catch (e: any) {

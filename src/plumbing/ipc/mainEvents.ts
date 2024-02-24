@@ -64,8 +64,6 @@ export class MainEvents {
         } catch (e: any) {
 
             const errorJson = ErrorFactory.fromException(e).toJson();
-            console.log('*** SENDING');
-            console.log(errorJson);
             this._sendResponse(IpcEventNames.ON_LOGIN, null, errorJson);
         }
     }
@@ -146,7 +144,6 @@ export class MainEvents {
 
         try {
             const data = args[1] as TokenData;
-            console.log('*** TODELETE ***');
             console.log(data);
             // TokenStorage.save(data);
             this._sendResponse(IpcEventNames.ON_SAVE_TOKENS, null, null);

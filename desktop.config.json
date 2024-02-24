@@ -12,7 +12,7 @@
         "clientId":              "5r463je7qeddssfqttaa8cpv91",
         "redirectUri":           "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
         "privateSchemeName":     "x-mycompany-desktopapp",
-        "scope":                 "openid profile xxx https://api.authsamples.com/investments",
+        "scope":                 "openid profile https://api.authsamples.com/investments",
         "customLogoutEndpoint":  "https://login.authsamples.com/logout",
         "postLogoutRedirectUri": "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
         "logoutCallbackPath":    "/logoutcallback"
