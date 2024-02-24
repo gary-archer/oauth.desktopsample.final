@@ -8,7 +8,7 @@ import {IpcEventNames} from './ipcEventNames';
 import {TokenData} from '../oauth/tokenData';
 
 /*
- * A class to encapsulate IPC calls on the renderer side of our app
+ * A class to encapsulate IPC messages sent and received by the renderer side of our app
  */
 export class RendererEvents {
 
