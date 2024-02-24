@@ -66,6 +66,14 @@ export class RendererEvents {
     }
 
     /*
+     * Run a logout on the main side of the app
+     */
+    public async logout(): Promise<void> {
+
+        await this._sendIpcMessage(IpcEventNames.ON_LOGOUT, {});
+    }
+
+    /*
      * Call the main side of the application to load tokens
      */
     public async loadTokens(): Promise<TokenData | null> {

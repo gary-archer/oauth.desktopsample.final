@@ -11,7 +11,6 @@ import {RendererEvents} from '../ipc/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {AuthenticatorClient} from './authenticatorClient';
 import {CustomRequestor} from './customRequestor';
-import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
 import {TokenData} from './tokenData';
 
@@ -95,35 +94,10 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     }
 
     /*
-     * Implement full logout by clearing tokens and also redirecting to remove the Authorization Server session cookie
+     * Forward to the main side of the app to perform the logout work
      */
     public async logout(): Promise<void> {
-
-        try {
-
-            if (this._tokens && this._tokens.idToken) {
-
-                // Initialise if required
-                await this._initialise();
-
-                // Reset state
-                const idToken = this._tokens.idToken;
-                await this.clearLoginState();
-
-                // Start the logout redirect to remove the authorization server's session cookie
-                const logout = new LogoutManager(
-                    this._configuration,
-                    this._metadata!,
-                    this._logoutState,
-                    idToken);
-                await logout.start();
-            }
-
-        } catch (e: any) {
-
-            // Do error translation if required
-            throw ErrorFactory.fromLogoutOperation(e, ErrorCodes.logoutRequestFailed);
-        }
+        await this._events.logout();
     }
 
     /*

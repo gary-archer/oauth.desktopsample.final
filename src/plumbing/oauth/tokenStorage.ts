@@ -32,7 +32,7 @@ export class TokenStorage {
         } catch (e: any) {
 
             // Fail gracefully if the encryption key has been deleted
-            console.log(`Decrpyion failure in TokenStorage.load: ${e}`);
+            console.log(`Load failure in TokenStorage: ${e}`);
             return null;
         }
     }

@@ -37,6 +37,7 @@ export class MainEvents {
      */
     public register(): void {
         ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
+        ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
         ipcMain.on(IpcEventNames.ON_GET_CONFIGURATION, this._getConfiguration);
         ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
         ipcMain.on(IpcEventNames.ON_LOAD_TOKENS, this._loadTokens);
@@ -64,6 +65,22 @@ export class MainEvents {
 
             const errorJson = ErrorFactory.fromException(e).toJson();
             this._sendResponse(IpcEventNames.ON_LOGIN, null, errorJson);
+        }
+    }
+
+    /*
+     * Run a logout redirect on the system browser
+     */
+    private async _onLogout(): Promise<void> {
+
+        try {
+            await this._authenticatorService.logout();
+            this._sendResponse(IpcEventNames.ON_LOGOUT, null, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_LOGOUT, null, errorJson);
         }
     }
 
@@ -164,6 +181,7 @@ export class MainEvents {
      */
     private _setupCallbacks() {
         this._onLogin = this._onLogin.bind(this);
+        this._onLogout = this._onLogout.bind(this);
         this._getConfiguration = this._getConfiguration.bind(this);
         this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
         this._loadTokens = this._loadTokens.bind(this);

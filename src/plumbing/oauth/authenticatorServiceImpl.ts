@@ -130,34 +130,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
-     * Process OAuth private URI scheme responses
-     */
-    public handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean {
-
-        const url = UrlParser.tryParse(privateSchemeUrl);
-        if (url) {
-
-            const args = new URLSearchParams(url.search);
-            const state = args.get('state');
-            if (url.pathname.toLowerCase() === this._configuration.logoutCallbackPath?.toLowerCase()) {
-
-                // Handle logout responses
-                this._logoutState!.handleLogoutResponse(args);
-                return true;
-
-            } else if (state) {
-
-                // Otherwise, if there is a state parameter we will classify this as a login response
-                this._loginState!.handleLoginResponse(args);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /*
-     * Implement full logout by clearing tokens and also redirecting to remove the Authorization Server session cookie
+     * Implement full logout by clearing tokens and also redirecting to remove the authorization server session cookie
      */
     public async logout(): Promise<void> {
 
@@ -186,6 +159,33 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             // Do error translation if required
             throw ErrorFactory.fromLogoutOperation(e, ErrorCodes.logoutRequestFailed);
         }
+    }
+
+    /*
+     * Process OAuth login and logout responses
+     */
+    public handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean {
+
+        const url = UrlParser.tryParse(privateSchemeUrl);
+        if (url) {
+
+            const args = new URLSearchParams(url.search);
+            const state = args.get('state');
+            if (url.pathname.toLowerCase() === this._configuration.logoutCallbackPath?.toLowerCase()) {
+
+                // Handle logout responses
+                this._logoutState!.handleLogoutResponse(args);
+                return true;
+
+            } else if (state) {
+
+                // Otherwise, if there is a state parameter we will classify this as a login response
+                this._loginState!.handleLoginResponse(args);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*

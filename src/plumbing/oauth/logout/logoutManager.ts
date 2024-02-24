@@ -1,4 +1,5 @@
 import {AuthorizationServiceConfiguration} from '@openid/appauth';
+import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {LogoutState} from './logoutState';
@@ -49,7 +50,7 @@ export class LogoutManager {
                 this._state.storeLogoutCallback(callback);
 
                 // Ask the main side of the app to open the system browser
-                // Opener(logoutUrl);
+                Opener(logoutUrl);
 
             } catch (e: any) {
 
