@@ -8,3 +8,7 @@
    Metadata lookup happens on a new login, a token refresh, or a logout request.
    Drive this from my client side concurrency logic.
    Server side initialize method needed due to client side strict mode???
+
+4. Deep links to focus on
+
+5. Blog updates
