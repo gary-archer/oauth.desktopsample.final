@@ -10,12 +10,6 @@
         <script>
             window.addEventListener('DOMContentLoaded', function() {
 
-                if (window.location.search.indexOf('error=') !== -1) {
-                    var result = document.getElementById('result');
-                    result.innerText = 'Problem encountered during the login operation';
-                    result.style.color = 'red';
-                }
-
                 var redirectUri = 'x-mycompany-desktopapp:/callback';
                 if (window.location.search) {
                     redirectUri += window.location.search;
