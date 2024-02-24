@@ -3,7 +3,6 @@ import {Company} from '../entities/company';
 import {ApiUserInfo} from '../entities/apiUserInfo';
 import {CompanyTransactions} from '../entities/companyTransactions';
 import {OAuthUserInfo} from '../entities/oauthUserInfo';
-import {Configuration} from '../../configuration/configuration';
 import {ErrorFactory} from '../../plumbing/errors/errorFactory';
 import {FetchCache} from './fetchCache';
 import {FetchOptions} from './fetchOptions';
@@ -13,13 +12,11 @@ import {FetchOptions} from './fetchOptions';
  */
 export class FetchClient {
 
-    private readonly _configuration: Configuration;
     private readonly _fetchCache: FetchCache;
     private readonly _sessionId: string;
 
-    public constructor(configuration: Configuration, fetchCache: FetchCache) {
+    public constructor(fetchCache: FetchCache) {
 
-        this._configuration = configuration;
         this._fetchCache = fetchCache;
         this._sessionId = Guid.create().toString();
     }
@@ -101,5 +98,62 @@ export class FetchClient {
         const loginRequiredError = ErrorFactory.fromLoginRequired();
         cacheItem.error = loginRequiredError;
         throw loginRequiredError;
+
+        /* TODO: The real thing needs retry logic
+
+        // Get the access token and trigger a login redirect if not found
+        let accessToken = await this._authenticatorService.getAccessToken();
+        if (!accessToken) {
+
+            const loginRequiredError = ErrorFactory.fromLoginRequired();
+            cacheItem.error = loginRequiredError;
+            throw loginRequiredError;
+        }
+
+        try {
+
+            // Call the API and return data on success
+            const data1 = await this._callApiWithAccessToken(method, url, accessToken, options, dataToSend);
+            cacheItem.data = data1;
+            return data1;
+
+        } catch (e1: any) {
+
+            const error1 = ErrorFactory.fromHttpError(e1, url, 'API');
+            if (error1.statusCode !== 401) {
+
+                // Report errors if this is not a 401
+                cacheItem.error = error1;
+                throw error1;
+            }
+
+            try {
+                // Try to refresh the access token
+                accessToken = await this._authenticatorService.synchronizedRefresh();
+
+            } catch (e2: any) {
+
+                // Report refresh errors
+                const error2 = ErrorFactory.fromHttpError(e2, url, 'API');
+                cacheItem.error = error2;
+                throw error2;
+            }
+
+            try {
+
+                // Call the API again with the rewritten access token
+                const data2 = await this._callApiWithAccessToken(method, url, accessToken, options, dataToSend);
+                cacheItem.data = data2;
+                return data2;
+
+            }  catch (e3: any) {
+
+                // Report retry errors
+                const error3 = ErrorFactory.fromHttpError(e3, url, 'API');
+                cacheItem.error = error3;
+                throw error3;
+            }
+        }
+        */
     }
 }

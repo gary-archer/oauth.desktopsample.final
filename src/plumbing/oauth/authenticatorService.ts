@@ -3,22 +3,16 @@
  */
 export interface AuthenticatorService {
 
-    // Setup that requires async calls
-    initialise(): Promise<void>;
-
     // Provide the user info endpoint from metadata
     getUserInfoEndpoint(): Promise<string | null>;
 
     // Try to get an access token
     getAccessToken(): Promise<string | null>;
 
-    // Try to refresh the access token
-    synchronizedRefresh(): Promise<string>;
-
     // Run the login on the system browser
     login(): Promise<void>;
 
-    // Do the logout redirect and process the response
+    // Run the logout on the system browser
     logout(): Promise<void>;
 
     // Process any private URI scheme notifications that are OAuth responses

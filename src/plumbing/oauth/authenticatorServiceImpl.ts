@@ -52,29 +52,6 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
-     * Initialize the app upon startup, or retry if the initial load fails
-     * The loading flag prevents duplicate metadata requests due to React strict mode
-     */
-    public async initialise(): Promise<void> {
-
-        if (!this._isLoaded && !this._isLoading) {
-
-            this._isLoading = true;
-
-            try {
-
-                await this._loadMetadata();
-                this._tokens = await this._tokenStorage.load();
-                this._isLoaded = true;
-
-            } finally {
-
-                this._isLoading = false;
-            }
-        }
-    }
-
-    /*
      * Provide the user info endpoint to the fetch client
      */
     public async getUserInfoEndpoint(): Promise<string | null> {
@@ -139,7 +116,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             if (this._tokens && this._tokens.idToken) {
 
                 // Initialise if required
-                await this.initialise();
+                await this._initialise();
 
                 // Reset state
                 const idToken = this._tokens.idToken;
@@ -222,6 +199,29 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
+     * Initialize the app upon startup, or retry if the initial load fails
+     * The loading flag prevents duplicate metadata requests due to React strict mode
+     */
+    private async _initialise(): Promise<void> {
+
+        if (!this._isLoaded && !this._isLoading) {
+
+            this._isLoading = true;
+
+            try {
+
+                await this._loadMetadata();
+                this._tokens = await this._tokenStorage.load();
+                this._isLoaded = true;
+
+            } finally {
+
+                this._isLoading = false;
+            }
+        }
+    }
+
+    /*
      * Load metadata if not already loaded
      */
     private async _loadMetadata() {
@@ -250,7 +250,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         try {
 
             // Initialise if required
-            await this.initialise();
+            await this._initialise();
 
             // Run a login on the system browser and get the result
             const adapter = new LoginAsyncAdapter(
@@ -325,7 +325,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         try {
 
             // Initialise if required
-            await this.initialise();
+            await this._initialise();
 
             // Supply the scope for access tokens
             const extras: StringMap = {

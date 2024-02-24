@@ -5,10 +5,8 @@ import {ApiUserInfo} from '../entities/apiUserInfo';
 import {CompanyTransactions} from '../entities/companyTransactions';
 import {OAuthUserInfo} from '../entities/oauthUserInfo';
 import {Configuration} from '../../configuration/configuration';
-import {ErrorFactory} from '../../plumbing/errors/errorFactory';
 import {AuthenticatorService} from '../../plumbing/oauth/authenticatorService';
 import {AxiosUtils} from '../../plumbing/utilities/axiosUtils';
-import {FetchCache} from './fetchCache';
 import {FetchOptions} from './fetchOptions';
 
 /*
@@ -17,17 +15,12 @@ import {FetchOptions} from './fetchOptions';
 export class FetchService {
 
     private readonly _configuration: Configuration;
-    private readonly _fetchCache: FetchCache;
     private readonly _authenticatorService: AuthenticatorService;
     private readonly _sessionId: string;
 
-    public constructor(
-        configuration: Configuration,
-        fetchCache: FetchCache,
-        authenticatorService: AuthenticatorService) {
+    public constructor(configuration: Configuration, authenticatorService: AuthenticatorService) {
 
         this._configuration = configuration;
-        this._fetchCache = fetchCache;
         this._authenticatorService = authenticatorService;
         this._sessionId = Guid.create().toString();
     }
@@ -96,86 +89,7 @@ export class FetchService {
         options: FetchOptions,
         dataToSend: any = null): Promise<any> {
 
-        // Remove the item from the cache when a reload is requested
-        if (options.forceReload) {
-            this._fetchCache.removeItem(options.cacheKey);
-        }
-
-        // Return existing data from the memory cache when available
-        // If a view is created whiles its API requests are in flight, this returns null to the view model
-        let cacheItem = this._fetchCache.getItem(options.cacheKey);
-        if (cacheItem && !cacheItem.error) {
-            return cacheItem.data;
-        }
-
-        // Ensure that the cache item exists, to avoid further redundant API requests
-        cacheItem = this._fetchCache.createItem(options.cacheKey);
-
-        // Get the access token and trigger a login redirect if not found
-        let accessToken = await this._authenticatorService.getAccessToken();
-        if (!accessToken) {
-
-            const loginRequiredError = ErrorFactory.fromLoginRequired();
-            cacheItem.error = loginRequiredError;
-            throw loginRequiredError;
-        }
-
-        try {
-
-            // Call the API and return data on success
-            const data1 = await this._callApiWithAccessToken(method, url, accessToken, options, dataToSend);
-            cacheItem.data = data1;
-            return data1;
-
-        } catch (e1: any) {
-
-            const error1 = ErrorFactory.fromHttpError(e1, url, 'API');
-            if (error1.statusCode !== 401) {
-
-                // Report errors if this is not a 401
-                cacheItem.error = error1;
-                throw error1;
-            }
-
-            try {
-                // Try to refresh the access token
-                accessToken = await this._authenticatorService.synchronizedRefresh();
-
-            } catch (e2: any) {
-
-                // Report refresh errors
-                const error2 = ErrorFactory.fromHttpError(e2, url, 'API');
-                cacheItem.error = error2;
-                throw error2;
-            }
-
-            try {
-
-                // Call the API again with the rewritten access token
-                const data2 = await this._callApiWithAccessToken(method, url, accessToken, options, dataToSend);
-                cacheItem.data = data2;
-                return data2;
-
-            }  catch (e3: any) {
-
-                // Report retry errors
-                const error3 = ErrorFactory.fromHttpError(e3, url, 'API');
-                cacheItem.error = error3;
-                throw error3;
-            }
-        }
-    }
-
-    /*
-     * Do the work of calling the API
-     */
-    private async _callApiWithAccessToken(
-        method: Method,
-        url: string,
-        accessToken: string,
-        fetchOptions: FetchOptions,
-        dataToSend: any): Promise<any> {
-
+        const accessToken = '';
         const headers: any = {
 
             // The required authorization header
@@ -188,7 +102,7 @@ export class FetchService {
         };
 
         // A special header can be sent to ask the API to throw a simulated exception
-        if (fetchOptions.causeError) {
+        if (options.causeError) {
             headers['x-mycompany-test-exception'] = 'SampleApi';
         }
 

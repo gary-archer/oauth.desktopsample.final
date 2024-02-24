@@ -1,5 +1,10 @@
-1. Send session ID from client to API
-   Also transaction ID
-   So some kind of ApiInput data structure
-   And maybe some kind of ApiOutput data structure
+1. Add FetchClient and FetchService implementations and interfaces
+   Useful for reasoning
    
+2. Some kind of ApiInput and ApiOutput data structures between renderer and main.
+   Will include session ID and transaction ID.
+
+3. Main side will be hit by concurrency.
+   Metadata lookup happens on a new login, a token refresh, or a logout request.
+   Drive this from my client side concurrency logic.
+   Server side initialize method needed due to client side strict mode???
