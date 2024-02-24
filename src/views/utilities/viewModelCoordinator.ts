@@ -6,7 +6,7 @@ import {UIError} from '../../plumbing/errors/uiError';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {ViewModelFetchEvent} from '../../plumbing/events/viewModelFetchEvent';
 import {LoginRequiredEvent} from '../../plumbing/events/loginRequiredEvent';
-import {Authenticator} from '../../plumbing/oauth/authenticator';
+import {AuthenticatorClient} from '../../plumbing/oauth/authenticatorClient';
 
 /*
  * Coordinates API requests from multiple views, and notifies once all API calls are complete
@@ -16,7 +16,7 @@ export class ViewModelCoordinator {
 
     private readonly _eventBus: EventBus;
     private readonly _fetchCache: FetchCache;
-    private readonly _authenticator: Authenticator;
+    private readonly _authenticatorClient: AuthenticatorClient;
     private _mainCacheKey: string;
     private _loadingCount: number;
     private _loadedCount: number;
@@ -24,11 +24,11 @@ export class ViewModelCoordinator {
     /*
      * Set the initial state
      */
-    public constructor(eventBus: EventBus, fetchCache: FetchCache, authenticator: Authenticator) {
+    public constructor(eventBus: EventBus, fetchCache: FetchCache, authenticatorClient: AuthenticatorClient) {
 
         this._eventBus = eventBus;
         this._fetchCache = fetchCache;
-        this._authenticator = authenticator;
+        this._authenticatorClient = authenticatorClient;
         this._mainCacheKey = '';
         this._loadingCount = 0;
         this._loadedCount = 0;
@@ -122,7 +122,7 @@ export class ViewModelCoordinator {
             // The sample's user behavior is to present an error, after which clicking Home runs a new login redirect
             // This allows the frontend application to get new tokens, which may fix the problem in some cases
             if (oauthConfigurationError) {
-                await this._authenticator.clearLoginState();
+                await this._authenticatorClient.clearLoginState();
             }
         }
     }

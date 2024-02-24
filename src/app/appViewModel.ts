@@ -9,8 +9,8 @@ import {UIError} from '../plumbing/errors/uiError';
 import {EventNames} from '../plumbing/events/eventNames';
 import {ReloadDataEvent} from '../plumbing/events/reloadDataEvent';
 import {RendererEvents} from '../plumbing/ipc/rendererEvents';
-import {Authenticator} from '../plumbing/oauth/authenticator';
-import {AuthenticatorImpl} from '../plumbing/oauth/authenticatorImpl';
+import {AuthenticatorClient} from '../plumbing/oauth/authenticatorClient';
+import {AuthenticatorClientImpl} from '../plumbing/oauth/authenticatorClientImpl';
 import {CompaniesContainerViewModel} from '../views/companies/companiesContainerViewModel';
 import {TransactionsContainerViewModel} from '../views/transactions/transactionsContainerViewModel';
 import {UserInfoViewModel} from '../views/userInfo/userInfoViewModel';
@@ -23,7 +23,7 @@ export class AppViewModel {
 
     // Global objects
     private _configuration: Configuration | null;
-    private _authenticator: Authenticator | null;
+    private _authenticatorClient: AuthenticatorClient | null;
     private _fetchClient: FetchClient | null;
     private _viewModelCoordinator: ViewModelCoordinator | null;
 
@@ -53,7 +53,7 @@ export class AppViewModel {
 
         // Objects that need configuration are initially null
         this._configuration = null;
-        this._authenticator = null;
+        this._authenticatorClient = null;
         this._fetchClient = null;
         this._viewModelCoordinator = null;
 
@@ -106,8 +106,8 @@ export class AppViewModel {
         return this._configuration!;
     }
 
-    public get authenticator(): Authenticator {
-        return this._authenticator!;
+    public get authenticatorClient(): AuthenticatorClient {
+        return this._authenticatorClient!;
     }
 
     public get fetchClient(): FetchClient {
@@ -138,19 +138,19 @@ export class AppViewModel {
             this._configuration = await this._ipcEvents.loadConfiguration();
 
             // Initialize OpenID Connect handling
-            this._authenticator = new AuthenticatorImpl(this.configuration.oauth, this._ipcEvents);
-            await this._authenticator.initialise();
+            this._authenticatorClient = new AuthenticatorClientImpl(this.configuration.oauth, this._ipcEvents);
+            await this._authenticatorClient.initialise();
 
             // Create a client for calling the API
             this._fetchClient = new FetchClient(
                 this.configuration,
                 this._fetchCache,
-                this._authenticator);
+                this._authenticatorClient);
 
             this._viewModelCoordinator = new ViewModelCoordinator(
                 this._eventBus,
                 this._fetchCache,
-                this._authenticator);
+                this._authenticatorClient);
 
             // Inform the view that loading is complete
             this._updateIsLoaded(true);
@@ -180,7 +180,7 @@ export class AppViewModel {
         this._updateError(null);
 
         try {
-            await this._authenticator!.login();
+            await this._authenticatorClient!.login();
         } catch (e: any) {
             this._updateError(ErrorFactory.fromException(e));
         }
@@ -197,7 +197,7 @@ export class AppViewModel {
 
         try {
 
-            await this._authenticator!.logout();
+            await this._authenticatorClient!.logout();
 
         } catch (e: any) {
 
@@ -257,7 +257,7 @@ export class AppViewModel {
         try {
 
             this._updateError(null);
-            await this._authenticator?.expireAccessToken();
+            await this._authenticatorClient?.expireAccessToken();
 
         } catch (e: any) {
             this._updateError(ErrorFactory.fromException(e));
@@ -272,7 +272,7 @@ export class AppViewModel {
         try {
 
             this._updateError(null);
-            await this._authenticator?.expireRefreshToken();
+            await this._authenticatorClient?.expireRefreshToken();
 
         } catch (e: any) {
             this._updateError(ErrorFactory.fromException(e));

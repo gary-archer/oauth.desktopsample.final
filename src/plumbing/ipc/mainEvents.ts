@@ -46,12 +46,18 @@ export class MainEvents {
      * Register to receive IPC messages from the renderer process
      */
     public register(): void {
+        ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
         ipcMain.on(IpcEventNames.ON_GET_CONFIGURATION, this._getConfiguration);
         ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
         ipcMain.on(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, this._openSystemBrowser);
         ipcMain.on(IpcEventNames.ON_LOAD_TOKENS, this._loadTokens);
         ipcMain.on(IpcEventNames.ON_SAVE_TOKENS, this._saveTokens);
         ipcMain.on(IpcEventNames.ON_DELETE_TOKENS, this._deleteTokens);
+    }
+
+    private _onLogin() {
+        console.log('*** RECEIVED login EVENT ON MAIN SIDE');
+        this._sendResponse(IpcEventNames.ON_LOGIN, {message: 'LOGIN RESPONSE FROM MAIN'}, null);
     }
 
     /*

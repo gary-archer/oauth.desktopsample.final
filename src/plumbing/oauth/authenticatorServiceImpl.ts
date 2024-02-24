@@ -10,7 +10,7 @@ import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorFactory} from '../errors/errorFactory';
 import {RendererEvents} from '../ipc/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
-import {Authenticator} from './authenticator';
+import {AuthenticatorService} from './authenticatorService';
 import {CustomRequestor} from './customRequestor';
 import {LoginAsyncAdapter} from './login/loginAsyncAdapter';
 import {LoginRedirectResult} from './login/loginRedirectResult';
@@ -20,9 +20,9 @@ import {LogoutState} from './logout/logoutState';
 import {TokenData} from './tokenData';
 
 /*
- * The entry point class for login and token related requests
+ * The entry point class for OAuth related requests in the main process
  */
-export class AuthenticatorImpl implements Authenticator {
+export class AuthenticatorServiceImpl implements AuthenticatorService {
 
     private readonly _configuration: OAuthConfiguration;
     private readonly _events: RendererEvents;

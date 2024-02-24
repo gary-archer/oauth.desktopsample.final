@@ -1,7 +1,7 @@
 /*
- * An interface to represent authentication related operations
+ * An interface to represent OAuth related operations on the main side of the app
  */
-export interface Authenticator {
+export interface AuthenticatorService {
 
     // Setup that requires async calls
     initialise(): Promise<void>;

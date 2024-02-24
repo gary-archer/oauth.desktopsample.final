@@ -4,6 +4,9 @@
 export class IpcEventNames {
 
     // The UI calls the main process to load configuration
+    public static readonly ON_LOGIN = 'login';
+
+    // The UI calls the main process to load configuration
     public static readonly ON_GET_CONFIGURATION = 'get_configuration';
 
     // The UI calls the main process to open the system browser

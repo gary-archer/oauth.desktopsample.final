@@ -27,5 +27,5 @@ contextBridge.exposeInMainWorld('api', {
         ipcRenderer.on(name, (event, responseData) => {
             callback(responseData);
         });
-    }
+    },
 });
