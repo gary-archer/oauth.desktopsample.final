@@ -1,5 +1,4 @@
 import {BrowserWindow, ipcMain} from 'electron';
-import Opener from 'opener';
 import {Configuration} from '../../configuration/configuration';
 import {ErrorFactory} from '../errors/errorFactory';
 import {AuthenticatorService} from '../oauth/authenticatorService';
@@ -40,7 +39,6 @@ export class MainEvents {
         ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
         ipcMain.on(IpcEventNames.ON_GET_CONFIGURATION, this._getConfiguration);
         ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
-        ipcMain.on(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, this._openSystemBrowser);
         ipcMain.on(IpcEventNames.ON_LOAD_TOKENS, this._loadTokens);
         ipcMain.on(IpcEventNames.ON_SAVE_TOKENS, this._saveTokens);
         ipcMain.on(IpcEventNames.ON_DELETE_TOKENS, this._deleteTokens);
@@ -60,6 +58,7 @@ export class MainEvents {
 
         try {
             await this._authenticatorService.login();
+            this._sendResponse(IpcEventNames.ON_LOGIN, null, null);
 
         } catch (e: any) {
 
@@ -100,24 +99,6 @@ export class MainEvents {
      */
     private _getDeepLinkStartupUrl(): void {
         this._sendResponse(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._deepLinkStartupUrl, null);
-    }
-
-    /*
-     * Open the system browser at the supplied URL
-     */
-    private _openSystemBrowser(...args: any[]): void {
-
-        try {
-
-            // Start the browser process and indicate success
-            Opener(args[1]);
-            this._sendResponse(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, null, null);
-
-        } catch (e: any) {
-
-            // Return an error on failure
-            this._sendResponse(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, null, e);
-        }
     }
 
     /*
@@ -185,7 +166,6 @@ export class MainEvents {
         this._onLogin = this._onLogin.bind(this);
         this._getConfiguration = this._getConfiguration.bind(this);
         this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
-        this._openSystemBrowser = this._openSystemBrowser.bind(this);
         this._loadTokens = this._loadTokens.bind(this);
         this._saveTokens = this._saveTokens.bind(this);
         this._deleteTokens = this._deleteTokens.bind(this);

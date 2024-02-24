@@ -180,6 +180,7 @@ export class AppViewModel {
 
         try {
             await this._authenticatorClient!.login();
+
         } catch (e: any) {
             this._updateError(ErrorFactory.fromException(e));
         }

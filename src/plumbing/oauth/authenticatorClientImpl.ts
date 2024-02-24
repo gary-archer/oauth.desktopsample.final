@@ -11,7 +11,6 @@ import {RendererEvents} from '../ipc/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {AuthenticatorClient} from './authenticatorClient';
 import {CustomRequestor} from './customRequestor';
-import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
 import {TokenData} from './tokenData';
@@ -24,7 +23,6 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     private readonly _configuration: OAuthConfiguration;
     private readonly _events: RendererEvents;
     private readonly _concurrencyHandler: ConcurrentActionHandler;
-    private readonly _loginState: LoginState;
     private readonly _logoutState: LogoutState;
     private _metadata: AuthorizationServiceConfiguration | null;
     private _tokens: TokenData | null;
@@ -44,9 +42,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
         this._setupCallbacks();
 
         // Initialise state, used to correlate responses from the system browser to the original request
-        this._loginState = new LoginState();
         this._logoutState = new LogoutState();
-        this._events.setOAuthDetails(this._loginState, this._logoutState, this._configuration.logoutCallbackPath);
     }
 
     /*
@@ -92,18 +88,10 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     }
 
     /*
-     * Call the main side of the app to perform the login work
+     * Forward to the main side of the app to perform the login work
      */
     public async login(): Promise<void> {
-
-        try {
-
-            await this._events.login();
-
-        } catch (e: any) {
-
-            throw ErrorFactory.fromException(e);
-        }
+        await this._events.login();
     }
 
     /*

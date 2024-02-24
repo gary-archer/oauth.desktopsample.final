@@ -272,41 +272,49 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     private async _endLogin(result: LoginRedirectResult): Promise<void> {
 
-        // Get the PKCE verifier
-        const codeVerifier = result.request.internal!['code_verifier'];
+        try {
 
-        // Supply PKCE parameters for the code exchange
-        const extras: StringMap = {
-            code_verifier: codeVerifier,
-        };
+            // Get the PKCE verifier
+            const codeVerifier = result.request.internal!['code_verifier'];
 
-        // Create the token request
-        const requestJson = {
-            grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
-            code: result.response!.code,
-            redirect_uri: this._configuration.redirectUri,
-            client_id: this._configuration.clientId,
-            extras,
-        };
-        const tokenRequest = new TokenRequest(requestJson);
+            // Supply PKCE parameters for the code exchange
+            const extras: StringMap = {
+                code_verifier: codeVerifier,
+            };
 
-        // Execute the request to swap the code for tokens
-        const requestor = new CustomRequestor();
-        const tokenHandler = new BaseTokenRequestHandler(requestor);
+            // Create the token request
+            const requestJson = {
+                grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
+                code: result.response!.code,
+                redirect_uri: this._configuration.redirectUri,
+                client_id: this._configuration.clientId,
+                extras,
+            };
+            const tokenRequest = new TokenRequest(requestJson);
 
-        // Perform the authorization code grant exchange
-        const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
+            // Execute the request to swap the code for tokens
+            const requestor = new CustomRequestor();
+            const tokenHandler = new BaseTokenRequestHandler(requestor);
 
-        // Set values from the response
-        const newTokenData = {
-            accessToken: tokenResponse.accessToken,
-            refreshToken: tokenResponse.refreshToken ? tokenResponse.refreshToken : null,
-            idToken: tokenResponse.idToken ? tokenResponse.idToken : null,
-        };
+            // Perform the authorization code grant exchange
+            const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
 
-        // Update tokens in memory and secure storage
-        this._tokens = newTokenData;
-        await this._tokenStorage.save(this._tokens);
+            // Set values from the response
+            const newTokenData = {
+                accessToken: tokenResponse.accessToken,
+                refreshToken: tokenResponse.refreshToken ? tokenResponse.refreshToken : null,
+                idToken: tokenResponse.idToken ? tokenResponse.idToken : null,
+            };
+
+            // Update tokens in memory and secure storage
+            this._tokens = newTokenData;
+            this._tokenStorage.save(this._tokens);
+
+        } catch (e: any) {
+
+            // Do error translation if required
+            throw ErrorFactory.fromLoginOperation(e, ErrorCodes.loginRequestFailed);
+        }
     }
 
     /*

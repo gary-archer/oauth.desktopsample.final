@@ -2,11 +2,9 @@ import EventBus from 'js-event-bus';
 import {Configuration} from '../../configuration/configuration';
 import {DeepLinkEvent} from '../../plumbing/events/deepLinkEvent';
 import {EventNames} from '../../plumbing/events/eventNames';
-import {LoginState} from '../oauth/login/loginState';
-import {LogoutState} from '../oauth/logout/logoutState';
+import {UIError} from '../errors/uiError';
 import {IpcEventNames} from './ipcEventNames';
 import {TokenData} from '../oauth/tokenData';
-import { UIError } from '../errors/uiError';
 
 /*
  * A class to encapsulate IPC messages sent and received by the renderer side of our app
@@ -15,16 +13,10 @@ export class RendererEvents {
 
     private readonly _eventBus: EventBus;
     private readonly _api: any;
-    private _loginState: LoginState | null;
-    private _logoutState: LogoutState | null;
-    private _logoutCallbackPath: string | null;
 
     public constructor(eventBus: EventBus) {
         this._eventBus = eventBus;
         this._api = (window as any).api;
-        this._loginState = null;
-        this._logoutState = null;
-        this._logoutCallbackPath = null;
         this._setupCallbacks();
     }
 
@@ -36,15 +28,6 @@ export class RendererEvents {
         this._api.receiveIpcMessage(
             IpcEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION,
             this._handlePrivateUriSchemeNotification);
-    }
-
-    /*
-     * Receive details from the authenticator to enable us to process OAuth responses
-     */
-    public setOAuthDetails(loginState: LoginState, logoutState: LogoutState, logoutCallbackPath: string): void {
-        this._loginState = loginState;
-        this._logoutState = logoutState;
-        this._logoutCallbackPath = logoutCallbackPath;
     }
 
     /*
@@ -78,15 +61,8 @@ export class RendererEvents {
      * Run a login on the main side of the app
      */
     public async login(): Promise<void> {
+
         await this._sendIpcMessage(IpcEventNames.ON_LOGIN, {});
-    }
-
-    /*
-     * Call the main side of the application to open the system browser
-     */
-    public async openSystemBrowser(url: string): Promise<void> {
-
-        await this._sendIpcMessage(IpcEventNames.ON_OPEN_SYSTEM_BROWSER, url);
     }
 
     /*
@@ -132,25 +108,10 @@ export class RendererEvents {
     private _handlePrivateUriSchemeNotification(data: any): void {
 
         const url = this._tryParseUrl(data as string);
-        if (url) {
+        if (url && url.pathname) {
 
-            const args = new URLSearchParams(url.search);
-            const state = args.get('state');
-            if (url.pathname.toLowerCase() === this._logoutCallbackPath?.toLowerCase()) {
-
-                // Handle logout responses
-                this._logoutState!.handleLogoutResponse(args);
-
-            } else if (state) {
-
-                // Otherwise, if there is a state parameter we will classify this as a login response
-                this._loginState!.handleLoginResponse(args);
-
-            } else if (url.pathname) {
-
-                // Otherwise we will treat it a deep linking request and update the hash location
-                this._handleDeepLinkingNotification(url.pathname);
-            }
+            // Otherwise we will treat it a deep linking request and update the hash location
+            this._handleDeepLinkingNotification(url.pathname);
         }
     }
 
