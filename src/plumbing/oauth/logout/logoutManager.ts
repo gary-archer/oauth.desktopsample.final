@@ -1,4 +1,5 @@
 import {AuthorizationServiceConfiguration} from '@openid/appauth';
+import Opener from 'opener';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
 import {CognitoLogoutUrlBuilder} from './cognitoLogoutUrlBuilder';
 import {LogoutState} from './logoutState';
@@ -50,7 +51,7 @@ export class LogoutManager {
 
                 // Ask the main side of the app to open the system browser
                 console.log('*** OPEN SYSTEM BROWSER FOR LOGOUT: ' + logoutUrl);
-                // await this._events.openSystemBrowser(logoutUrl);
+                Opener(logoutUrl);
 
             } catch (e: any) {
 

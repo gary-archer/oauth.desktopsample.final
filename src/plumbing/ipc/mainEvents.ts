@@ -1,11 +1,11 @@
 import {BrowserWindow, ipcMain} from 'electron';
 import Opener from 'opener';
 import {Configuration} from '../../configuration/configuration';
+import {ErrorFactory} from '../errors/errorFactory';
 import {AuthenticatorService} from '../oauth/authenticatorService';
 import {AuthenticatorServiceImpl} from '../oauth/authenticatorServiceImpl';
 import {TokenData} from '../oauth/tokenData';
 import {IpcEventNames} from './ipcEventNames';
-import { ErrorFactory } from '../errors/errorFactory';
 
 /*
  * A class to encapsulate IPC messages sent and received by the main side of our app

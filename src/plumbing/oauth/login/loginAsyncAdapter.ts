@@ -4,9 +4,9 @@ import {
     AuthorizationRequest,
     AuthorizationResponse,
     AuthorizationServiceConfiguration,
-    DefaultCrypto,
     StringMap} from '@openid/appauth';
 import {OAuthConfiguration} from '../../../configuration/oauthConfiguration';
+import {NodeCrypto} from '../../utilities/nodeCrypto';
 import {BrowserLoginRequestHandler} from './browserLoginRequestHandler';
 import {LoginRedirectResult} from './loginRedirectResult';
 import {LoginState} from './loginState';
@@ -49,7 +49,7 @@ export class LoginAsyncAdapter {
         };
 
         // Create the authorization request message
-        const authorizationRequest = new AuthorizationRequest(requestJson, new DefaultCrypto(), true);
+        const authorizationRequest = new AuthorizationRequest(requestJson, new NodeCrypto(), true);
         authorizationRequest.extras = extras;
 
         // Set up PKCE for the redirect, which avoids native app vulnerabilities

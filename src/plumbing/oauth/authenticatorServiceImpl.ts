@@ -221,10 +221,6 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
         try {
 
-            if (new Date().getTime() > 1) {
-                throw new Error('bang from server');
-            }
-
             // Initialise if required
             await this.initialise();
 

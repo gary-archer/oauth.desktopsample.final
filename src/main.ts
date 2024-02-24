@@ -201,6 +201,9 @@ class Main {
      */
     private _receiveNotificationInRunningInstance(privateSchemeUrl: string) {
 
+        console.log('*** NOTIFICATION RECEIVED');
+        console.log(privateSchemeUrl);
+        
         // The existing instance of the app brings itself to the foreground
         if (this._window) {
 
