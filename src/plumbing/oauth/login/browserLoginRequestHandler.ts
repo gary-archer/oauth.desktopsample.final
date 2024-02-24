@@ -55,7 +55,6 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         const loginUrl = this.buildRequestUrl(metadata, request);
 
         // Ask the main side of the app to open the system browser
-        console.log('*** OPEN SYSTEM BROWSER FOR LOGIN: ' + loginUrl);
         Opener(loginUrl);
     }
 
@@ -75,6 +74,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         request: AuthorizationRequest): AuthorizationRequestResponse {
 
         // Get strongly typed fields
+        console.log('*** BROWSER REQUEST HANDLER');
         const state = args.get('state') || '';
         const code = args.get('code') || '';
         const error = args.get('error') || '';
@@ -86,6 +86,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         if (error) {
 
             // Handle error responses if required
+            console.log('*** ERROR RESPONSE: ' + error);
             const errorDescription = args.get('error_description') || '';
             const errorJson = {
                 error,
@@ -96,6 +97,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         } else {
 
             // Create a success response containing the code, which we will next swap for tokens
+            console.log('*** SUCCESS RESPONSE');
             const responseJson = {
                 code,
                 state,

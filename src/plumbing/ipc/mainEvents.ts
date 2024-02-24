@@ -5,6 +5,7 @@ import {ErrorFactory} from '../errors/errorFactory';
 import {AuthenticatorService} from '../oauth/authenticatorService';
 import {AuthenticatorServiceImpl} from '../oauth/authenticatorServiceImpl';
 import {TokenData} from '../oauth/tokenData';
+import {UrlParser} from '../utilities/urlParser';
 import {IpcEventNames} from './ipcEventNames';
 
 /*
@@ -59,7 +60,6 @@ export class MainEvents {
 
         try {
             await this._authenticatorService.login();
-            this._sendResponse(IpcEventNames.ON_LOGIN, null, null);
 
         } catch (e: any) {
 
@@ -68,6 +68,25 @@ export class MainEvents {
             console.log(errorJson);
             this._sendResponse(IpcEventNames.ON_LOGIN, null, errorJson);
         }
+    }
+
+    /*
+     * Receive URL notifications from the main side of the Electron app
+     */
+    public handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean {
+
+        if (this._authenticatorService.handlePrivateUriSchemeNotification(privateSchemeUrl)) {
+            return true;
+        }
+
+        const url = UrlParser.tryParse(privateSchemeUrl);
+        if (url && url.pathname) {
+
+            // Otherwise we will treat it a deep linking request and update the hash location
+            // this._handleDeepLinkingNotification(url.pathname);
+        }
+
+        return false;
     }
 
     /*

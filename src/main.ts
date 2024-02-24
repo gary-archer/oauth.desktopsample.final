@@ -68,7 +68,7 @@ class Main {
     }
 
     /*
-     * Do initialisation after the ready eventF
+     * Do initialisation after the ready event
      */
     private _onReady(): void {
 
@@ -119,7 +119,7 @@ class Main {
     /*
      * On Windows and Linux, this is where we receive login responses or other deep links
      */
-    private _onSecondInstance(event: any, argv: any) {
+    private _onSecondInstance(event: any, argv: any): void {
 
         const url = this._getDeepLinkUrl(argv);
         if (url) {
@@ -181,14 +181,15 @@ class Main {
     /*
      * On MacOS this is where we receive login responses or other deep links
      */
-    private _onOpenUrl(event: any, schemeData: string) {
+    private async _onOpenUrl(event: any, schemeData: string): Promise<void> {
 
         event.preventDefault();
 
         if (this._window) {
 
             // If we have a running window we can just forward the notification to it
-            this._receiveNotificationInRunningInstance(schemeData);
+            await this._receiveNotificationInRunningInstance(schemeData);
+
         } else {
 
             // If this is a startup deep linking message we need to store it until after startup
@@ -199,11 +200,8 @@ class Main {
     /*
      * When the OS sends a private uri scheme notification, the existing instance of the app receives it
      */
-    private _receiveNotificationInRunningInstance(privateSchemeUrl: string) {
+    private _receiveNotificationInRunningInstance(privateSchemeUrl: string): void {
 
-        console.log('*** NOTIFICATION RECEIVED');
-        console.log(privateSchemeUrl);
-        
         // The existing instance of the app brings itself to the foreground
         if (this._window) {
 
@@ -215,7 +213,7 @@ class Main {
         }
 
         // Send the event to the renderer side of the app
-        this._ipcEvents?.sendPrivateSchemeNotificationUrl(privateSchemeUrl);
+        this._ipcEvents?.handlePrivateUriSchemeNotification(privateSchemeUrl);
     }
 
     /*
@@ -255,7 +253,7 @@ class Main {
     /*
      * Handle private URI scheme registration
      */
-    private async _registerPrivateUriScheme(): Promise<void> {
+    private _registerPrivateUriScheme(): void {
 
         if (process.platform === 'win32') {
 

@@ -66,6 +66,7 @@ export class LoginAsyncAdapter {
                 error: AuthorizationError | null) => {
 
                 try {
+                    console.log('*** LoginAsyncAdapter completing');
                     resolve({request, response, error});
 
                 } catch (e: any) {

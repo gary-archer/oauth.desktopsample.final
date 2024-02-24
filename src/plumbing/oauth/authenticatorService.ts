@@ -15,8 +15,11 @@ export interface AuthenticatorService {
     // Try to refresh the access token
     synchronizedRefresh(): Promise<string>;
 
-    // Do the login redirect and process the response
+    // Run the login on the system browser
     login(): Promise<void>;
+
+    // Process any private URI scheme notifications that are OAuth responses
+    handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean;
 
     // Do the logout redirect and process the response
     logout(): Promise<void>;

@@ -9,6 +9,7 @@ import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorFactory} from '../errors/errorFactory';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
+import {UrlParser} from '../utilities/urlParser';
 import {AuthenticatorService} from './authenticatorService';
 import {CustomRequestor} from './customRequestor';
 import {LoginAsyncAdapter} from './login/loginAsyncAdapter';
@@ -129,6 +130,33 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
+     * Process OAuth private URI scheme responses
+     */
+    public handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean {
+
+        const url = UrlParser.tryParse(privateSchemeUrl);
+        if (url) {
+
+            const args = new URLSearchParams(url.search);
+            const state = args.get('state');
+            if (url.pathname.toLowerCase() === this._configuration.logoutCallbackPath?.toLowerCase()) {
+
+                // Handle logout responses
+                this._logoutState!.handleLogoutResponse(args);
+                return true;
+
+            } else if (state) {
+
+                // Otherwise, if there is a state parameter we will classify this as a login response
+                this._loginState!.handleLoginResponse(args);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /*
      * Implement full logout by clearing tokens and also redirecting to remove the Authorization Server session cookie
      */
     public async logout(): Promise<void> {
@@ -215,7 +243,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
-     * Do the work of starting a login redirect
+     * Start the login on the system browser
      */
     private async _startLogin(): Promise<LoginRedirectResult> {
 
@@ -225,11 +253,12 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             await this.initialise();
 
             // Run a login on the system browser and get the result
-            const loginManager = new LoginAsyncAdapter(
+            const adapter = new LoginAsyncAdapter(
                 this._configuration,
                 this._metadata!,
                 this._loginState);
-            return await loginManager.login();
+
+            return await adapter.login();
 
         } catch (e: any) {
 
@@ -239,7 +268,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
-     * Swap the authorizasion code for a refresh token and access token
+     * Swap the authorization code for tokens
      */
     private async _endLogin(result: LoginRedirectResult): Promise<void> {
 
