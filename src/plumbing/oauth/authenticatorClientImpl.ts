@@ -51,10 +51,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * Allow the login state to be cleared when required
      */
     public async clearLoginState(): Promise<void> {
-
-        // TODO: remote call
-        // this._tokens = null;
-        // await this._events.deleteTokens();
+        await this._events.clearLoginState();
     }
 
     /*
@@ -62,8 +59,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * The corrupted access token will be sent to the API but rejected when introspected
      */
     public async expireAccessToken(): Promise<void> {
-
-        // TODO: remote call
+        await this._events.expireAccessToken();
     }
 
     /*
@@ -71,8 +67,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * The corrupted refresh token will be sent to the Authorization Server but rejected
      */
     public async expireRefreshToken(): Promise<void> {
-
-        // TODO: remote call
+        await this._events.expireRefreshToken();
     }
 
     /*

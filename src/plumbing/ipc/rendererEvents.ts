@@ -4,7 +4,6 @@ import {DeepLinkEvent} from '../../plumbing/events/deepLinkEvent';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {UIError} from '../errors/uiError';
 import {IpcEventNames} from './ipcEventNames';
-import {TokenData} from '../oauth/tokenData';
 import {UrlParser} from '../utilities/urlParser';
 
 /*
@@ -54,7 +53,6 @@ export class RendererEvents {
      * Make an API request to get companies
      */
     public async getCompanyList(options: FetchOptions) : Promise<any> {
-
         return await this._sendRequestResponseIpcMessages(IpcEventNames.ON_GET_COMPANIES, {options});
     }
 
@@ -94,24 +92,24 @@ export class RendererEvents {
     }
 
     /*
-     * Call the main side of the application to load tokens
+     * Ask the main side of the app to clear login state after certain errors
      */
-    public async loadTokens(): Promise<TokenData | null> {
-
-        return null;
+    public async clearLoginState(): Promise<void> {
+        await this._sendRequestResponseIpcMessages(IpcEventNames.ON_CLEAR_LOGIN_STATE, {});
     }
 
     /*
-     * Call the main side of the application to save tokens
+     * For testing, ask the main side to make the access token act expired
      */
-    public async saveTokens(tokenData: TokenData): Promise<void> {
-        console.log(tokenData);
+    public async expireAccessToken(): Promise<void> {
+        await this._sendRequestResponseIpcMessages(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, {});
     }
 
     /*
-     * Call the main side of the application to remove tokens
+     * For testing, ask the main side to make the refresh token act expired
      */
-    public async deleteTokens(): Promise<void> {
+    public async expireRefreshToken(): Promise<void> {
+        await this._sendRequestResponseIpcMessages(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, {});
     }
 
     /*

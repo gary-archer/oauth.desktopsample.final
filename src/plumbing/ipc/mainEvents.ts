@@ -39,12 +39,16 @@ export class MainEvents {
      */
     public register(): void {
 
-        ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
-        ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
         ipcMain.on(IpcEventNames.ON_GET_COMPANIES, this._onGetCompanyList);
         ipcMain.on(IpcEventNames.ON_GET_TRANSACTIONS, this._onGetCompanyTransactions);
         ipcMain.on(IpcEventNames.ON_GET_OAUTH_USER_INFO, this._onGetOAuthUserInfo);
         ipcMain.on(IpcEventNames.ON_GET_API_USER_INFO, this._onGetApiUserInfo);
+
+        ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
+        ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
+        ipcMain.on(IpcEventNames.ON_CLEAR_LOGIN_STATE, this._onClearLoginState);
+        ipcMain.on(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, this._onExpireAccessToken);
+        ipcMain.on(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, this._onExpireRefreshToken);
 
         ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
     }
@@ -153,6 +157,54 @@ export class MainEvents {
     }
 
     /*
+     * Clear login state after certain errors
+     */
+    private async _onClearLoginState(): Promise<void> {
+
+        try {
+            await this._authenticatorService.clearLoginState();
+            this._sendResponse(IpcEventNames.ON_CLEAR_LOGIN_STATE, null, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_CLEAR_LOGIN_STATE, null, errorJson);
+        }
+    }
+
+    /*
+     * For testing, make the access token act expired
+     */
+    private async _onExpireAccessToken(): Promise<void> {
+
+        try {
+            await this._authenticatorService.expireAccessToken();
+            this._sendResponse(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, null, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, null, errorJson);
+        }
+    }
+
+    /*
+     * For testing, make the refresh token act expired
+     */
+    private async _onExpireRefreshToken(): Promise<void> {
+
+        try {
+            await this._authenticatorService.expireRefreshToken();
+            this._sendResponse(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, null, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, null, errorJson);
+        }
+    }
+
+    /*
      * Receive URL notifications from the main side of the Electron app
      */
     public handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean {
@@ -195,8 +247,12 @@ export class MainEvents {
         this._onGetCompanyTransactions = this._onGetCompanyTransactions.bind(this);
         this._onGetOAuthUserInfo = this._onGetOAuthUserInfo.bind(this);
         this._onGetApiUserInfo = this._onGetApiUserInfo.bind(this);
+
         this._onLogin = this._onLogin.bind(this);
         this._onLogout = this._onLogout.bind(this);
+        this._onClearLoginState = this._onClearLoginState.bind(this);
+        this._onExpireAccessToken = this._onExpireAccessToken.bind(this);
+        this._onExpireRefreshToken = this._onExpireRefreshToken.bind(this);
 
         this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
     }
