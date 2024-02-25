@@ -91,7 +91,6 @@ export class FetchService {
                 throw ErrorFactory.fromLoginRequired();
             }
 
-            console.log(accessToken);
             const headers: any = {
 
                 // The required authorization header

@@ -2,7 +2,6 @@ import EventBus from 'js-event-bus';
 import {Dispatch, SetStateAction, useState} from 'react';
 import {FetchCache} from '../api/client/fetchCache';
 import {FetchClient} from '../api/client/fetchClient';
-import {Configuration} from '../configuration/configuration';
 import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
 import {ErrorFactory} from '../plumbing/errors/errorFactory';
 import {UIError} from '../plumbing/errors/uiError';
@@ -22,7 +21,6 @@ import {ViewModelCoordinator} from '../views/utilities/viewModelCoordinator';
 export class AppViewModel {
 
     // Global objects
-    private _configuration: Configuration | null;
     private _authenticatorClient: AuthenticatorClient | null;
     private _fetchClient: FetchClient | null;
     private _viewModelCoordinator: ViewModelCoordinator | null;
@@ -52,7 +50,6 @@ export class AppViewModel {
     public constructor() {
 
         // Objects that need configuration are initially null
-        this._configuration = null;
         this._authenticatorClient = null;
         this._fetchClient = null;
         this._viewModelCoordinator = null;
@@ -102,10 +99,6 @@ export class AppViewModel {
         return this._error;
     }
 
-    public get configuration(): Configuration {
-        return this._configuration!;
-    }
-
     public get authenticatorClient(): AuthenticatorClient {
         return this._authenticatorClient!;
     }
@@ -133,9 +126,6 @@ export class AppViewModel {
             // Prevent re-entrancy due to React strict mode
             this._isLoading = true;
             this._updateError(null);
-
-            // Load configuration from the main side of the app
-            this._configuration = await this._ipcEvents.loadConfiguration();
 
             // Create an object to initiate OAuth requests
             this._authenticatorClient = new AuthenticatorClientImpl(this._ipcEvents);

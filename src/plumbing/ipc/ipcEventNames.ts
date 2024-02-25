@@ -13,9 +13,6 @@ export class IpcEventNames {
     public static readonly ON_LOGIN = 'oauth_login';
     public static readonly ON_LOGOUT = 'oauth_logout';
 
-    // The UI calls the main process to load configuration
-    public static readonly ON_GET_CONFIGURATION = 'get_configuration';
-
     // The UI calls the main process at startup to see if there is a deep link startup URL
     public static readonly ON_GET_DEEP_LINK_STARTUP_URL = 'get_startup_url';
 

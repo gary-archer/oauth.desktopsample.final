@@ -2,7 +2,7 @@
 
 2. Tidy up code
    Drive session ID from the client side and send it in options
-   Remove configuration from renderer side
+   Initialize code in app and view model
    Trim down the React code
   
 3. Enable strict mode
@@ -16,5 +16,9 @@
 4. Deep links to get working and final code tidy ups
    Look at each file and think more about naming
    Use UIEvents to distinguish it from IpcEvents
+   Private scheme name to be passed through to renderer if needed
 
 5. Blog updates
+   Mention use of a proxy for debugging - as for any other desktop app
+   Test against local API
+   Update config to have an HTTP proxy setting

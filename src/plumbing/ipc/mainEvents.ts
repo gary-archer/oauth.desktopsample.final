@@ -46,7 +46,6 @@ export class MainEvents {
         ipcMain.on(IpcEventNames.ON_GET_OAUTH_USER_INFO, this._onGetOAuthUserInfo);
         ipcMain.on(IpcEventNames.ON_GET_API_USER_INFO, this._onGetApiUserInfo);
 
-        ipcMain.on(IpcEventNames.ON_GET_CONFIGURATION, this._getConfiguration);
         ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
     }
 
@@ -173,13 +172,6 @@ export class MainEvents {
     }
 
     /*
-     * Return the configuration data
-     */
-    private async _getConfiguration(): Promise<void> {
-        this._sendResponse(IpcEventNames.ON_GET_CONFIGURATION, this._configuration, null);
-    }
-
-    /*
      * The app could have been started via deep linking
      * In this case the renderer side of the app can send us a message to get the startup URL
      */
@@ -206,7 +198,6 @@ export class MainEvents {
         this._onLogin = this._onLogin.bind(this);
         this._onLogout = this._onLogout.bind(this);
 
-        this._getConfiguration = this._getConfiguration.bind(this);
         this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
     }
 }

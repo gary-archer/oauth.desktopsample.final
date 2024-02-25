@@ -1,6 +1,5 @@
 import EventBus from 'js-event-bus';
 import {FetchOptions} from '../../api/client/fetchOptions';
-import {Configuration} from '../../configuration/configuration';
 import {DeepLinkEvent} from '../../plumbing/events/deepLinkEvent';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {UIError} from '../errors/uiError';
@@ -30,14 +29,6 @@ export class RendererEvents {
         this._api.receiveIpcMessage(
             IpcEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION,
             this._handlePrivateUriSchemeNotification);
-    }
-
-    /*
-     * Call the main side of the application to read the file system
-     */
-    public async loadConfiguration(): Promise<Configuration> {
-
-        return this._sendRequestResponseIpcMessages(IpcEventNames.ON_GET_CONFIGURATION, {});
     }
 
     /*

@@ -143,8 +143,7 @@ class Main {
             callback({cancel: false, requestHeaders: details.requestHeaders});
         });
 
-        // Set a content security policy as a security best practice
-        // This prevents show dev tools from working, so control this via a property that can be set during development
+        // Set a content security policy as a security best practice unless temporarily disabled
         session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 
             let policy = '';

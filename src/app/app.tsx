@@ -120,7 +120,8 @@ export function App(props: AppProps): JSX.Element {
      */
     function onDeepLink(event: DeepLinkEvent): void {
 
-        const prefix = `${props.viewModel.configuration.oauth.privateSchemeName}:`;
+        // GJA
+        const prefix = 'MYSCHEME';
         const reactLocation = event.path.replace(prefix, '');
         navigate(reactLocation);
     }
