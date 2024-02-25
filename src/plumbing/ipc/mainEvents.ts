@@ -1,4 +1,5 @@
-import {BrowserWindow, ipcMain} from 'electron';
+import {BrowserWindow, IpcMainEvent, ipcMain} from 'electron';
+import {FetchService} from '../../api/client/fetchService';
 import {Configuration} from '../../configuration/configuration';
 import {ErrorFactory} from '../errors/errorFactory';
 import {AuthenticatorService} from '../oauth/authenticatorService';
@@ -14,12 +15,14 @@ export class MainEvents {
     private readonly _configuration: Configuration;
     private readonly _window: BrowserWindow;
     private readonly _authenticatorService: AuthenticatorService;
+    private readonly _fetchService: FetchService;
     private _deepLinkStartupUrl: string | null;
 
     public constructor(configuration: Configuration, window: BrowserWindow) {
         this._configuration = configuration;
         this._window = window;
         this._authenticatorService = new AuthenticatorServiceImpl(this._configuration.oauth);
+        this._fetchService = new FetchService(this._configuration, this._authenticatorService);
         this._deepLinkStartupUrl = null;
         this._setupCallbacks();
     }
@@ -35,8 +38,14 @@ export class MainEvents {
      * Register to receive IPC messages from the renderer process
      */
     public register(): void {
+
         ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
         ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
+        ipcMain.on(IpcEventNames.ON_GET_COMPANIES, this._onGetCompanyList);
+        ipcMain.on(IpcEventNames.ON_GET_TRANSACTIONS, this._onGetCompanyTransactions);
+        ipcMain.on(IpcEventNames.ON_GET_OAUTH_USER_INFO, this._onGetOAuthUserInfo);
+        ipcMain.on(IpcEventNames.ON_GET_API_USER_INFO, this._onGetApiUserInfo);
+
         ipcMain.on(IpcEventNames.ON_GET_CONFIGURATION, this._getConfiguration);
         ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
     }
@@ -46,6 +55,70 @@ export class MainEvents {
      */
     public sendPrivateSchemeNotificationUrl(url: string): void {
         this._window!.webContents.send(IpcEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, url);
+    }
+
+    /*
+     * Make an API request to get companies
+     */
+    private async _onGetCompanyList(event: IpcMainEvent, args: any): Promise<void> {
+
+        try {
+            const response = await this._fetchService.getCompanyList(args.options);
+            this._sendResponse(IpcEventNames.ON_GET_COMPANIES, response, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_GET_COMPANIES, null, errorJson);
+        }
+    }
+
+    /*
+     * Make an API request to get transactions
+     */
+    private async _onGetCompanyTransactions(event: IpcMainEvent, args: any): Promise<void> {
+
+        try {
+            const response = await this._fetchService.getCompanyTransactions(args.id, args.options);
+            this._sendResponse(IpcEventNames.ON_GET_TRANSACTIONS, response, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_GET_TRANSACTIONS, null, errorJson);
+        }
+    }
+
+    /*
+     * Make an API request to get OAuth user info
+     */
+    private async _onGetOAuthUserInfo(event: IpcMainEvent, args: any): Promise<void> {
+
+        try {
+            const response = await this._fetchService.getOAuthUserInfo(args.options);
+            this._sendResponse(IpcEventNames.ON_GET_OAUTH_USER_INFO, response, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_GET_OAUTH_USER_INFO, null, errorJson);
+        }
+    }
+
+    /*
+     * Make an API request to get API user info
+     */
+    private async _onGetApiUserInfo(event: IpcMainEvent, args: any): Promise<void> {
+
+        try {
+            const response = await this._fetchService.getApiUserInfo(args.options);
+            this._sendResponse(IpcEventNames.ON_GET_API_USER_INFO, response, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_GET_API_USER_INFO, null, errorJson);
+        }
     }
 
     /*
@@ -125,8 +198,14 @@ export class MainEvents {
      * Ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks() {
+
+        this._onGetCompanyList = this._onGetCompanyList.bind(this);
+        this._onGetCompanyTransactions = this._onGetCompanyTransactions.bind(this);
+        this._onGetOAuthUserInfo = this._onGetOAuthUserInfo.bind(this);
+        this._onGetApiUserInfo = this._onGetApiUserInfo.bind(this);
         this._onLogin = this._onLogin.bind(this);
         this._onLogout = this._onLogout.bind(this);
+
         this._getConfiguration = this._getConfiguration.bind(this);
         this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
     }

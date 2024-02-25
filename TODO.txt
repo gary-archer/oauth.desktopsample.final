@@ -1,14 +1,24 @@
-1. Add FetchClient and FetchService implementations and interfaces
-   Useful for reasoning
-   
-2. Some kind of ApiInput and ApiOutput data structures between renderer and main.
-   Will include session ID and transaction ID.
+1. Get an API mechanism basically working that just throws a loginRequired error back
+   Disable strict mode initially
+   This will simplify FetchClient
+   If will also get FetchService in better shape
+   Perhaps add ApiInput and ApiOutput data structures between renderer and main.
+   This will include session ID and transaction ID.
+   It could involve a switch on operation name in order to get the base URL for user info.
 
+2. Remove configuration from renderer
+   Simplify the React code
+   _sendRequestResponseIpcMessages should return JSON.parse
+   
 3. Main side will be hit by concurrency.
    Metadata lookup happens on a new login, a token refresh, or a logout request.
    Drive this from my client side concurrency logic.
    Server side initialize method needed due to client side strict mode???
+   I may need to call server side initialize, to prevent concurrent API requests all calling getMetadata
+   Get strict mode working
 
-4. Deep links to focus on
+4. Deep links to get working and final code tidy ups
+   Look at each file and think more about naming
+   Use UIEvents to distinguish it from IpcEvents
 
 5. Blog updates

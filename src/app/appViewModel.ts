@@ -138,10 +138,10 @@ export class AppViewModel {
             this._configuration = await this._ipcEvents.loadConfiguration();
 
             // Create an object to initiate OAuth requests
-            this._authenticatorClient = new AuthenticatorClientImpl(this.configuration.oauth, this._ipcEvents);
+            this._authenticatorClient = new AuthenticatorClientImpl(this._ipcEvents);
 
             // Create a client for calling the API
-            this._fetchClient = new FetchClient(this._fetchCache);
+            this._fetchClient = new FetchClient(this._fetchCache, this._ipcEvents, this.authenticatorClient);
 
             // Create an object to manage concurrent API requests from view models
             this._viewModelCoordinator = new ViewModelCoordinator(

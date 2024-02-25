@@ -294,6 +294,6 @@ try {
 
     // Handle startup errors
     const error = ErrorFactory.fromException(e);
-    console.log(error.toJson());
+    console.log(error.toJson(true));
     app.exit();
 }

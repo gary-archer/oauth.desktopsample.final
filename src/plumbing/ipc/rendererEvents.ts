@@ -1,10 +1,12 @@
 import EventBus from 'js-event-bus';
+import {FetchOptions} from '../../api/client/fetchOptions';
 import {Configuration} from '../../configuration/configuration';
 import {DeepLinkEvent} from '../../plumbing/events/deepLinkEvent';
 import {EventNames} from '../../plumbing/events/eventNames';
 import {UIError} from '../errors/uiError';
 import {IpcEventNames} from './ipcEventNames';
 import {TokenData} from '../oauth/tokenData';
+import {UrlParser} from '../utilities/urlParser';
 
 /*
  * A class to encapsulate IPC messages sent and received by the renderer side of our app
@@ -35,7 +37,7 @@ export class RendererEvents {
      */
     public async loadConfiguration(): Promise<Configuration> {
 
-        return this._sendIpcMessage(IpcEventNames.ON_GET_CONFIGURATION, {});
+        return this._sendRequestResponseIpcMessages(IpcEventNames.ON_GET_CONFIGURATION, {});
     }
 
     /*
@@ -44,13 +46,13 @@ export class RendererEvents {
     public async setDeepLinkStartupUrlIfRequired(): Promise<void> {
 
         // See if the app was started by a deep link
-        const urlString = await this._sendIpcMessage(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
+        const urlString = await this._sendRequestResponseIpcMessages(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, {});
 
         // If there was a startup URL set the hash location of the React app accordingly
         // This ensures that we move straight to the linked page rather than rendering the default page first
         if (urlString) {
 
-            const url = this._tryParseUrl(urlString);
+            const url = UrlParser.tryParse(urlString);
             if (url && url.pathname) {
                 this._handleDeepLinkingNotification(url.pathname);
             }
@@ -58,19 +60,46 @@ export class RendererEvents {
     }
 
     /*
+     * Make an API request to get companies
+     */
+    public async getCompanyList(options: FetchOptions) : Promise<any> {
+
+        return await this._sendRequestResponseIpcMessages(IpcEventNames.ON_GET_COMPANIES, {options});
+    }
+
+    /*
+     * Make an API request to get company transactions
+     */
+    public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<any> {
+        return await this._sendRequestResponseIpcMessages(IpcEventNames.ON_GET_TRANSACTIONS, {id, options});
+    }
+
+    /*
+     * Make an API request to get OAuth user info
+     */
+    public async getOAuthUserInfo(options: FetchOptions) : Promise<any> {
+        return await this._sendRequestResponseIpcMessages(IpcEventNames.ON_GET_OAUTH_USER_INFO, {options});
+    }
+
+    /*
+     * Make an API request to get API user info
+     */
+    public async getApiUserInfo(options: FetchOptions) : Promise<any> {
+        return await this._sendRequestResponseIpcMessages(IpcEventNames.ON_GET_API_USER_INFO, {options});
+    }
+
+    /*
      * Run a login on the main side of the app
      */
     public async login(): Promise<void> {
-
-        await this._sendIpcMessage(IpcEventNames.ON_LOGIN, {});
+        await this._sendRequestResponseIpcMessages(IpcEventNames.ON_LOGIN, {});
     }
 
     /*
      * Run a logout on the main side of the app
      */
     public async logout(): Promise<void> {
-
-        await this._sendIpcMessage(IpcEventNames.ON_LOGOUT, {});
+        await this._sendRequestResponseIpcMessages(IpcEventNames.ON_LOGOUT, {});
     }
 
     /*
@@ -97,7 +126,7 @@ export class RendererEvents {
     /*
      * Encapsulate making an IPC call and returning data
      */
-    private async _sendIpcMessage(eventName: string, requestData: any): Promise<any> {
+    private async _sendRequestResponseIpcMessages(eventName: string, requestData: any): Promise<any> {
 
         const result = await this._api.sendIpcMessage(eventName, requestData);
         if (result.error) {
@@ -112,7 +141,7 @@ export class RendererEvents {
      */
     private _handlePrivateUriSchemeNotification(data: any): void {
 
-        const url = this._tryParseUrl(data as string);
+        const url = UrlParser.tryParse(data as string);
         if (url && url.pathname) {
 
             // Otherwise we will treat it a deep linking request and update the hash location
@@ -125,18 +154,6 @@ export class RendererEvents {
      */
     private _handleDeepLinkingNotification(path: string): void {
         this._eventBus.emit(EventNames.DeepLink, null, new DeepLinkEvent(path));
-    }
-
-    /*
-     * Private URI scheme notifications could provide malformed input, so parse them safely
-     */
-    private _tryParseUrl(url: string): URL | null {
-
-        try {
-            return new URL(url);
-        } catch (e: any) {
-            return null;
-        }
     }
 
     /*

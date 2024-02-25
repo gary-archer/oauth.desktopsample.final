@@ -104,7 +104,7 @@ export class UIError extends Error {
     /*
      * Serialize the error to JSON when the main side of the app returns an error to the renderer
      */
-    public toJson(): string {
+    public toJson(pretty = false): string {
 
         const error: any = {
             area: this._area,
@@ -138,7 +138,11 @@ export class UIError extends Error {
             error.stack = frames;
         }
 
-        return JSON.stringify(error, null, 2);
+        if (pretty) {
+            return JSON.stringify(error, null, 2);
+        } else {
+            return JSON.stringify(error);
+        }
     }
 
     /*

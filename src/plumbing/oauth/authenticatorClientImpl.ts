@@ -1,4 +1,3 @@
-import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {RendererEvents} from '../ipc/rendererEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {AuthenticatorClient} from './authenticatorClient';
@@ -13,7 +12,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     private _isLoading: boolean;
     private _isLoaded: boolean;
 
-    public constructor(configuration: OAuthConfiguration, events: RendererEvents) {
+    public constructor(events: RendererEvents) {
 
         // Initialise properties
         this._events = events;

@@ -5,6 +5,7 @@ import {ApiUserInfo} from '../entities/apiUserInfo';
 import {CompanyTransactions} from '../entities/companyTransactions';
 import {OAuthUserInfo} from '../entities/oauthUserInfo';
 import {Configuration} from '../../configuration/configuration';
+import {ErrorFactory} from '../../plumbing/errors/errorFactory';
 import {AuthenticatorService} from '../../plumbing/oauth/authenticatorService';
 import {AxiosUtils} from '../../plumbing/utilities/axiosUtils';
 import {FetchOptions} from './fetchOptions';
@@ -26,19 +27,12 @@ export class FetchService {
     }
 
     /*
-     * Return the session ID for display
-     */
-    public get sessionId(): string {
-        return this._sessionId;
-    }
-
-    /*
      * Get a list of companies
      */
     public async getCompanyList(options: FetchOptions) : Promise<Company[] | null> {
 
         const url = `${this._configuration.app.apiBaseUrl}/companies`;
-        return this._callApi('GET', url, options);
+        return await this._callApi('GET', url, options);
     }
 
     /*
@@ -47,7 +41,7 @@ export class FetchService {
     public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<CompanyTransactions | null> {
 
         const url = `${this._configuration.app.apiBaseUrl}/companies/${id}/transactions`;
-        return this._callApi('GET', url, options);
+        return await this._callApi('GET', url, options);
     }
 
     /*
@@ -77,7 +71,7 @@ export class FetchService {
     public async getApiUserInfo(options: FetchOptions) : Promise<ApiUserInfo | null> {
 
         const url = `${this._configuration.app.apiBaseUrl}/userinfo`;
-        return this._callApi('GET', url, options);
+        return await this._callApi('GET', url, options);
     }
 
     /*
@@ -89,32 +83,44 @@ export class FetchService {
         options: FetchOptions,
         dataToSend: any = null): Promise<any> {
 
-        const accessToken = '';
-        const headers: any = {
+        try {
 
-            // The required authorization header
-            'Authorization': `Bearer ${accessToken}`,
+            if (new Date().getTime() > 1) {
+                throw new Error('Bang from entry point: ' + url);
+            }
 
-            // Context headers included in API logs
-            'x-mycompany-api-client':     'FinalDesktopApp',
-            'x-mycompany-session-id':     this._sessionId,
-            'x-mycompany-correlation-id': Guid.create().toString(),
-        };
+            const accessToken = '';
+            const headers: any = {
 
-        // A special header can be sent to ask the API to throw a simulated exception
-        if (options.causeError) {
-            headers['x-mycompany-test-exception'] = 'SampleApi';
+                // The required authorization header
+                'Authorization': `Bearer ${accessToken}`,
+
+                // Context headers included in API logs
+                'x-mycompany-api-client':     'FinalDesktopApp',
+                'x-mycompany-session-id':     this._sessionId,
+                'x-mycompany-correlation-id': Guid.create().toString(),
+            };
+
+            // A special header can be sent to ask the API to throw a simulated exception
+            if (options.causeError) {
+                headers['x-mycompany-test-exception'] = 'SampleApi';
+            }
+
+            const requestOptions = {
+                url,
+                method,
+                data: dataToSend,
+                headers,
+            } as AxiosRequestConfig;
+
+            const response = await axios.request(requestOptions);
+            AxiosUtils.checkJson(response.data);
+            return response.data;
+
+        } catch (e: any) {
+
+            // Report refresh errors
+            throw ErrorFactory.fromHttpError(e, url, 'API');
         }
-
-        const requestOptions = {
-            url,
-            method,
-            data: dataToSend,
-            headers,
-        } as AxiosRequestConfig;
-
-        const response = await axios.request(requestOptions);
-        AxiosUtils.checkJson(response.data);
-        return response.data;
     }
 }
