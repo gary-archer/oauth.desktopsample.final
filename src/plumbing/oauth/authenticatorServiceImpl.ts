@@ -8,9 +8,8 @@ import {
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorFactory} from '../errors/errorFactory';
-import {RendererEvents} from '../ipc/rendererEvents';
-import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
-import {Authenticator} from './authenticator';
+import {UrlParser} from '../utilities/urlParser';
+import {AuthenticatorService} from './authenticatorService';
 import {CustomRequestor} from './customRequestor';
 import {LoginAsyncAdapter} from './login/loginAsyncAdapter';
 import {LoginRedirectResult} from './login/loginRedirectResult';
@@ -18,74 +17,52 @@ import {LoginState} from './login/loginState';
 import {LogoutManager} from './logout/logoutManager';
 import {LogoutState} from './logout/logoutState';
 import {TokenData} from './tokenData';
+import {TokenStorage} from './tokenStorage';
 
 /*
- * The entry point class for login and token related requests
+ * The entry point class for OAuth related requests in the main process
  */
-export class AuthenticatorImpl implements Authenticator {
+export class AuthenticatorServiceImpl implements AuthenticatorService {
 
     private readonly _configuration: OAuthConfiguration;
-    private readonly _events: RendererEvents;
-    private readonly _concurrencyHandler: ConcurrentActionHandler;
     private readonly _loginState: LoginState;
     private readonly _logoutState: LogoutState;
-    private _metadata: AuthorizationServiceConfiguration | null;
+    private _tokenStorage: TokenStorage | null;
     private _tokens: TokenData | null;
-    private _isLoading: boolean;
-    private _isLoaded: boolean;
+    private _metadata: AuthorizationServiceConfiguration | null;
 
-    public constructor(configuration: OAuthConfiguration, events: RendererEvents) {
+    public constructor(configuration: OAuthConfiguration) {
 
-        // Initialise properties
         this._configuration = configuration;
-        this._metadata = null;
-        this._events = events;
-        this._concurrencyHandler = new ConcurrentActionHandler();
-        this._tokens = null;
-        this._isLoading = false;
-        this._isLoaded = false;
-        this._setupCallbacks();
-
-        // Initialise state, used to correlate responses from the system browser to the original request
         this._loginState = new LoginState();
         this._logoutState = new LogoutState();
-        this._events.setOAuthDetails(this._loginState, this._logoutState, this._configuration.logoutCallbackPath);
+        this._tokenStorage = null;
+        this._tokens = null;
+        this._metadata = null;
+        this._setupCallbacks();
     }
 
     /*
-     * Initialize the app upon startup, or retry if the initial load fails
-     * The loading flag prevents duplicate metadata requests due to React strict mode
+     * Use safe storage to load tokens once the window has initialised
      */
-    public async initialise(): Promise<void> {
-
-        if (!this._isLoaded && !this._isLoading) {
-
-            this._isLoading = true;
-
-            try {
-
-                await this._loadMetadata();
-                this._tokens = await this._events.loadTokens();
-                this._isLoaded = true;
-
-            } finally {
-
-                this._isLoading = false;
-            }
-        }
+    public initialise(): void {
+        this._tokenStorage = new TokenStorage();
+        this._tokens = this._tokenStorage.load();
     }
 
     /*
      * Provide the user info endpoint to the fetch client
      */
     public async getUserInfoEndpoint(): Promise<string | null> {
+
+        await this._loadMetadata();
         return this._metadata?.userInfoEndpoint || null;
     }
 
     /*
      * Try to get an access token
      */
-    public async getAccessToken(): Promise<string | null> {
+    public getAccessToken(): string | null {
 
         // Return the existing token if present
         if (this._tokens && this._tokens.accessToken) {
@@ -97,24 +74,17 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Try to refresh an access token
+     * Try to refresh tokens
      */
-    public async synchronizedRefresh(): Promise<string> {
+    public async tokenRefresh(): Promise<void> {
 
-        // Try to use the refresh token to get a new access token
         if (this._tokens && this._tokens.refreshToken) {
-
-            // The concurrency handler will only do the refresh work for the first UI view that requests it
-            await this._concurrencyHandler.execute(this._performTokenRefresh);
-
-            // Return the new token on success
-            if (this._tokens && this._tokens.accessToken) {
-                return this._tokens.accessToken;
-            }
+            await this._performTokenRefresh();
         }
 
-        // Trigger a login redirect if there are no unexpected errors but we cannot refresh
-        throw ErrorFactory.fromLoginRequired();
+        if (!this._tokens || !this._tokens.accessToken) {
+            throw ErrorFactory.fromLoginRequired();
+        }
     }
 
     /*
@@ -131,7 +101,7 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Implement full logout by clearing tokens and also redirecting to remove the Authorization Server session cookie
+     * Implement full logout by clearing tokens and also redirecting to remove the authorization server session cookie
      */
     public async logout(): Promise<void> {
 
@@ -140,18 +110,17 @@ export class AuthenticatorImpl implements Authenticator {
             if (this._tokens && this._tokens.idToken) {
 
                 // Initialise if required
-                await this.initialise();
+                await this._loadMetadata();
 
                 // Reset state
                 const idToken = this._tokens.idToken;
-                await this.clearLoginState();
+                this.clearLoginState();
 
                 // Start the logout redirect to remove the authorization server's session cookie
                 const logout = new LogoutManager(
                     this._configuration,
                     this._metadata!,
                     this._logoutState,
-                    this._events,
                     idToken);
                 await logout.start();
             }
@@ -164,22 +133,50 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
+     * This class handles OAuth login and logout responses but not other types of deep link
+     */
+    public handleDeepLink(deepLinkUrl: string): boolean {
+
+        const url = UrlParser.tryParse(deepLinkUrl);
+        if (url) {
+
+            const args = new URLSearchParams(url.search);
+            const state = args.get('state');
+            if (url.pathname.toLowerCase() === this._configuration.logoutCallbackPath?.toLowerCase()) {
+
+                // Handle logout responses
+                this._logoutState!.handleLogoutResponse(args);
+                return true;
+
+            } else if (state) {
+
+                // Otherwise, if there is a state parameter we will classify this as a login response
+                this._loginState!.handleLoginResponse(args);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /*
      * Allow the login state to be cleared when required
      */
-    public async clearLoginState(): Promise<void> {
+    public clearLoginState(): void {
         this._tokens = null;
-        await this._events.deleteTokens();
+        this._tokenStorage?.delete();
     }
 
     /*
      * This method is for testing only, to make the access token fail and act like it has expired
      * The corrupted access token will be sent to the API but rejected when introspected
      */
-    public async expireAccessToken(): Promise<void> {
+    public expireAccessToken(): void {
 
         if (this._tokens && this._tokens.accessToken) {
+
             this._tokens.accessToken = `${this._tokens.accessToken}x`;
-            await this._events.saveTokens(this._tokens);
+            this._tokenStorage?.save(this._tokens);
         }
     }
 
@@ -187,12 +184,13 @@ export class AuthenticatorImpl implements Authenticator {
      * This method is for testing only, to make the refresh token fail and act like it has expired
      * The corrupted refresh token will be sent to the Authorization Server but rejected
      */
-    public async expireRefreshToken(): Promise<void> {
+    public expireRefreshToken(): void {
 
         if (this._tokens && this._tokens.refreshToken) {
+
             this._tokens.accessToken = `${this._tokens.accessToken}x`;
             this._tokens.refreshToken = `${this._tokens.refreshToken}x`;
-            await this._events.saveTokens(this._tokens);
+            this._tokenStorage?.save(this._tokens);
         }
     }
 
@@ -218,22 +216,22 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Do the work of starting a login redirect
+     * Start the login on the system browser
      */
     private async _startLogin(): Promise<LoginRedirectResult> {
 
         try {
 
             // Initialise if required
-            await this.initialise();
+            await this._loadMetadata();
 
             // Run a login on the system browser and get the result
-            const loginManager = new LoginAsyncAdapter(
+            const adapter = new LoginAsyncAdapter(
                 this._configuration,
                 this._metadata!,
-                this._loginState,
-                this._events);
-            return await loginManager.login();
+                this._loginState);
+
+            return await adapter.login();
 
         } catch (e: any) {
 
@@ -243,45 +241,53 @@ export class AuthenticatorImpl implements Authenticator {
     }
 
     /*
-     * Swap the authorizasion code for a refresh token and access token
+     * Swap the authorization code for tokens
      */
     private async _endLogin(result: LoginRedirectResult): Promise<void> {
 
-        // Get the PKCE verifier
-        const codeVerifier = result.request.internal!['code_verifier'];
+        try {
 
-        // Supply PKCE parameters for the code exchange
-        const extras: StringMap = {
-            code_verifier: codeVerifier,
-        };
+            // Get the PKCE verifier
+            const codeVerifier = result.request.internal!['code_verifier'];
 
-        // Create the token request
-        const requestJson = {
-            grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
-            code: result.response!.code,
-            redirect_uri: this._configuration.redirectUri,
-            client_id: this._configuration.clientId,
-            extras,
-        };
-        const tokenRequest = new TokenRequest(requestJson);
+            // Supply PKCE parameters for the code exchange
+            const extras: StringMap = {
+                code_verifier: codeVerifier,
+            };
 
-        // Execute the request to swap the code for tokens
-        const requestor = new CustomRequestor();
-        const tokenHandler = new BaseTokenRequestHandler(requestor);
+            // Create the token request
+            const requestJson = {
+                grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
+                code: result.response!.code,
+                redirect_uri: this._configuration.redirectUri,
+                client_id: this._configuration.clientId,
+                extras,
+            };
+            const tokenRequest = new TokenRequest(requestJson);
 
-        // Perform the authorization code grant exchange
-        const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
+            // Execute the request to swap the code for tokens
+            const requestor = new CustomRequestor();
+            const tokenHandler = new BaseTokenRequestHandler(requestor);
 
-        // Set values from the response
-        const newTokenData = {
-            accessToken: tokenResponse.accessToken,
-            refreshToken: tokenResponse.refreshToken ? tokenResponse.refreshToken : null,
-            idToken: tokenResponse.idToken ? tokenResponse.idToken : null,
-        };
+            // Perform the authorization code grant exchange
+            const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
 
-        // Update tokens in memory and secure storage
-        this._tokens = newTokenData;
-        await this._events.saveTokens(this._tokens);
+            // Set values from the response
+            const newTokenData = {
+                accessToken: tokenResponse.accessToken,
+                refreshToken: tokenResponse.refreshToken ? tokenResponse.refreshToken : null,
+                idToken: tokenResponse.idToken ? tokenResponse.idToken : null,
+            };
+
+            // Update tokens in memory and secure storage
+            this._tokens = newTokenData;
+            this._tokenStorage?.save(this._tokens);
+
+        } catch (e: any) {
+
+            // Do error translation if required
+            throw ErrorFactory.fromLoginOperation(e, ErrorCodes.loginRequestFailed);
+        }
     }
 
     /*
@@ -292,7 +298,7 @@ export class AuthenticatorImpl implements Authenticator {
         try {
 
             // Initialise if required
-            await this.initialise();
+            await this._loadMetadata();
 
             // Supply the scope for access tokens
             const extras: StringMap = {
@@ -331,14 +337,14 @@ export class AuthenticatorImpl implements Authenticator {
 
             // Update tokens in memory and secure storage
             this._tokens = newTokenData;
-            await this._events.saveTokens(this._tokens);
+            this._tokenStorage?.save(this._tokens);
 
         } catch (e: any) {
 
             if (e.error === ErrorCodes.refreshTokenExpired) {
 
                 // For invalid_grant errors, clear token data and return success, to force a login redirect
-                await this.clearLoginState();
+                this.clearLoginState();
 
             } else {
 
@@ -353,6 +359,5 @@ export class AuthenticatorImpl implements Authenticator {
      */
     private _setupCallbacks() {
         this._endLogin = this._endLogin.bind(this);
-        this._performTokenRefresh = this._performTokenRefresh.bind(this);
     }
 }

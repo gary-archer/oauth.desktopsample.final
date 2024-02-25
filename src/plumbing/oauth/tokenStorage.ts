@@ -7,20 +7,30 @@ import {TokenData} from './tokenData';
  */
 export class TokenStorage {
 
-    private static _key = 'EncryptedData';
-    private static _store = new Store<Record<string, string>>({
+    private readonly _key = 'EncryptedData';
+    private _store = new Store<Record<string, string>>({
         name: 'tokens'
     });
 
     /*
+     * Safe storage uses an operating system service but make sure we are not saving tokens insecurely
+     */
+    public constructor() {
+
+        if (!safeStorage.isEncryptionAvailable()) {
+            throw new Error('The environment does not support safe storage');
+        }
+    }
+
+    /*
      * Load token data or return null
      */
-    public static load(): TokenData | null {
+    public load(): TokenData | null {
 
         try {
 
             // Try to read the file
-            const encryptedBytesBase64 = this._store.get(TokenStorage._key);
+            const encryptedBytesBase64 = this._store.get(this._key);
             if (!encryptedBytesBase64) {
                 return null;
             }
@@ -31,8 +41,7 @@ export class TokenStorage {
 
         } catch (e: any) {
 
-            // Fail gracefully if the encryption key has been deleted
-            console.log(`Decrpyion failure in TokenStorage.load: ${e}`);
+            // Fail gracefully, eg if the encryption key has been deleted
             return null;
         }
     }
@@ -40,23 +49,18 @@ export class TokenStorage {
     /*
      * This saves token data to base64 encrypted bytes in a text file under the user profile
      */
-    public static save(data: TokenData): void {
-
-        // Safe storage uses an operating system service but make sure we are not saving tokens insecurely
-        if (!safeStorage.isEncryptionAvailable()) {
-            throw new Error('The environment does not support safe storage');
-        }
+    public save(data: TokenData): void {
 
         const json = JSON.stringify(data);
         const buffer = safeStorage.encryptString(json);
         const encryptedBytesBase64 = buffer.toString('base64');
-        this._store.set(TokenStorage._key, encryptedBytesBase64);
+        this._store.set(this._key, encryptedBytesBase64);
     }
 
     /*
      * Delete token data after logout
      */
-    public static delete(): void {
-        this._store.delete(TokenStorage._key);
+    public delete(): void {
+        this._store.delete(this._key);
     }
 }

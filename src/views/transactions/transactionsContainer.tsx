@@ -1,9 +1,9 @@
 import React, {useEffect} from 'react';
 import {useLocation, useParams} from 'react-router-dom';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
-import {EventNames} from '../../plumbing/events/eventNames';
 import {NavigatedEvent} from '../../plumbing/events/navigatedEvent';
 import {ReloadDataEvent} from '../../plumbing/events/reloadDataEvent';
+import {UIEventNames} from '../../plumbing/events/uiEventNames';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
 import {CurrentLocation} from '../utilities/currentLocation';
@@ -36,10 +36,10 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
     async function startup(): Promise<void> {
 
         // Inform other parts of the app that the main view is active
-        model.eventBus.emit(EventNames.Navigated, null, new NavigatedEvent(true));
+        model.eventBus.emit(UIEventNames.Navigated, null, new NavigatedEvent(true));
 
         // Subscribe for reload events
-        model.eventBus.on(EventNames.ReloadData, onReload);
+        model.eventBus.on(UIEventNames.ReloadData, onReload);
 
         // Do the initial load of data
         await loadData();
@@ -49,7 +49,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
      * Unsubscribe when we unload
      */
     function cleanup(): void {
-        model.eventBus.detach(EventNames.ReloadData, onReload);
+        model.eventBus.detach(UIEventNames.ReloadData, onReload);
     }
 
     /*

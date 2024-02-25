@@ -1,7 +1,7 @@
 /*
- * Constants for event names
+ * Constants for UI events used by the React app
  */
-export class EventNames {
+export class UIEventNames {
     public static Navigated      = 'Navigate';
     public static ViewModelFetch = 'ViewModelFetch';
     public static LoginRequired  = 'LoginRequired';

@@ -6,7 +6,7 @@ const {contextBridge, ipcRenderer} = require('electron');
 contextBridge.exposeInMainWorld('api', {
 
     /*
-     * Send a command to the main process and wait for a response
+     * Push a command from the renderer to the main process and wait for a response
      */
     sendIpcMessage: async function(name, requestData) {
 
@@ -20,12 +20,12 @@ contextBridge.exposeInMainWorld('api', {
     },
 
     /*
-     * Receive data from the main process
+     * Pull data from the main process
      */
     receiveIpcMessage: function(name, callback) {
 
         ipcRenderer.on(name, (event, responseData) => {
             callback(responseData);
         });
-    }
+    },
 });

@@ -2,8 +2,8 @@ import React, {useEffect} from 'react';
 import Modal from 'react-modal';
 import {Route, Routes, useNavigate} from 'react-router-dom';
 import {DeepLinkEvent} from '../plumbing/events/deepLinkEvent';
-import {EventNames} from '../plumbing/events/eventNames';
 import {LoginStartedEvent} from '../plumbing/events/loginStartedEvent';
+import {UIEventNames} from '../plumbing/events/uiEventNames';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {CompaniesContainerProps} from '../views/companies/companiesContainerProps';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
@@ -47,17 +47,10 @@ export function App(props: AppProps): JSX.Element {
         Modal.setAppElement('#root');
 
         // Subscribe to application events
-        model.eventBus.on(EventNames.LoginRequired, onLoginRequired);
-        model.eventBus.on(EventNames.DeepLink, onDeepLink);
+        model.eventBus.on(UIEventNames.LoginRequired, onLoginRequired);
+        model.eventBus.on(UIEventNames.DeepLink, onDeepLink);
 
-        // Create global objects
-        await initialiseData();
-    }
-
-    /*
-     * Initialise the model on startup
-     */
-    async function initialiseData(): Promise<void> {
+        // Initialise the model
         await model.initialise();
     }
 
@@ -67,8 +60,8 @@ export function App(props: AppProps): JSX.Element {
     function cleanup() {
 
         // Unsubscribe from application events
-        model.eventBus.detach(EventNames.LoginRequired, onLoginRequired);
-        model.eventBus.detach(EventNames.DeepLink, onDeepLink);
+        model.eventBus.detach(UIEventNames.LoginRequired, onLoginRequired);
+        model.eventBus.detach(UIEventNames.DeepLink, onDeepLink);
     }
 
     /*
@@ -83,27 +76,19 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onHome(): Promise<void> {
 
-        // Handle retrying failed loads
-        if (!model.isLoaded) {
-            await initialiseData();
-        }
+        if (CurrentLocation.path === '/loggedout') {
 
-        if (model.isLoaded) {
+            // Trigger a login when the Home button is clicked in the Login Required view
+            await login();
 
-            if (CurrentLocation.path === '/loggedout') {
+        } else {
 
-                // Trigger a login when the Home button is clicked in the Login Required view
-                await login();
+            // Otherwise navigate to the home view
+            navigate('/');
 
-            } else {
-
-                // Otherwise navigate to the home view
-                navigate('/');
-
-                // Force a data reload if recovering from errors
-                if (model.hasError()) {
-                    await model.reloadData(false);
-                }
+            // Force a data reload if recovering from errors
+            if (model.hasError()) {
+                model.reloadData(false);
             }
         }
     }
@@ -111,18 +96,15 @@ export function App(props: AppProps): JSX.Element {
     /*
      * Handle reloads and updating the error state
      */
-    async function onReloadData(causeError: boolean): Promise<void> {
-        await model.reloadData(causeError);
+    function onReloadData(causeError: boolean): void {
+        model.reloadData(causeError);
     }
 
     /*
      * Navigate to deep links such as x-mycompany-desktopapp:/companies/2
      */
     function onDeepLink(event: DeepLinkEvent): void {
-
-        const prefix = `${props.viewModel.configuration.oauth.privateSchemeName}:`;
-        const reactLocation = event.path.replace(prefix, '');
-        navigate(reactLocation);
+        navigate(event.path);
     }
 
     /*
@@ -131,7 +113,7 @@ export function App(props: AppProps): JSX.Element {
     async function login(): Promise<void> {
 
         // Update state to indicate a sign in is in progress
-        model.eventBus.emit(EventNames.LoginStarted, null, new LoginStartedEvent());
+        model.eventBus.emit(UIEventNames.LoginStarted, null, new LoginStartedEvent());
 
         // Do the work of the login
         await model.login();
@@ -170,20 +152,11 @@ export function App(props: AppProps): JSX.Element {
 
     function getTitleProps(): TitleViewProps {
 
-        if (model.isLoaded) {
-
-            return {
-                userInfo: {
-                    viewModel: model.getUserInfoViewModel(),
-                },
-            };
-
-        } else {
-
-            return {
-                userInfo: null,
-            };
-        }
+        return {
+            userInfo: {
+                viewModel: model.getUserInfoViewModel(),
+            },
+        };
     }
 
     function getHeaderButtonProps(): HeaderButtonsViewProps {
@@ -245,17 +218,15 @@ export function App(props: AppProps): JSX.Element {
             <TitleView {...getTitleProps()} />
             <HeaderButtonsView {...getHeaderButtonProps()} />
             {model.error && <ErrorSummaryView {...getErrorProps()} />}
-            {model.isLoaded &&
-                <>
-                    <SessionView {...getSessionProps()} />
-                    <Routes>
-                        <Route path='/'              element={<CompaniesContainer {...getCompaniesProps()} />} />
-                        <Route path='/companies/:id' element={<TransactionsContainer {...getTransactionsProps()} />} />
-                        <Route path='/loggedout'     element={<LoginRequiredView {...getLoginRequiredProps()} />} />
-                        <Route path='*'              element={<CompaniesContainer {...getCompaniesProps()} />} />
-                    </Routes>
-                </>
-            }
+            <>
+                <SessionView {...getSessionProps()} />
+                <Routes>
+                    <Route path='/'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                    <Route path='/companies/:id' element={<TransactionsContainer {...getTransactionsProps()} />} />
+                    <Route path='/loggedout'     element={<LoginRequiredView {...getLoginRequiredProps()} />} />
+                    <Route path='*'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                </Routes>
+            </>
         </>
     );
 }

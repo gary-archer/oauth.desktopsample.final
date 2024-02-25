@@ -12,6 +12,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 const props = {
     viewModel: new AppViewModel(),
 };
+
 root.render (
     <StrictMode>
         <ErrorBoundary>

@@ -3,10 +3,10 @@ import {FetchCache} from '../../api/client/fetchCache';
 import {FetchCacheKeys} from '../../api/client/fetchCacheKeys';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
 import {UIError} from '../../plumbing/errors/uiError';
-import {EventNames} from '../../plumbing/events/eventNames';
-import {ViewModelFetchEvent} from '../../plumbing/events/viewModelFetchEvent';
 import {LoginRequiredEvent} from '../../plumbing/events/loginRequiredEvent';
-import {Authenticator} from '../../plumbing/oauth/authenticator';
+import {UIEventNames} from '../../plumbing/events/uiEventNames';
+import {ViewModelFetchEvent} from '../../plumbing/events/viewModelFetchEvent';
+import {AuthenticatorClient} from '../../plumbing/oauth/authenticatorClient';
 
 /*
  * Coordinates API requests from multiple views, and notifies once all API calls are complete
@@ -16,7 +16,7 @@ export class ViewModelCoordinator {
 
     private readonly _eventBus: EventBus;
     private readonly _fetchCache: FetchCache;
-    private readonly _authenticator: Authenticator;
+    private readonly _authenticatorClient: AuthenticatorClient;
     private _mainCacheKey: string;
     private _loadingCount: number;
     private _loadedCount: number;
@@ -24,11 +24,11 @@ export class ViewModelCoordinator {
     /*
      * Set the initial state
      */
-    public constructor(eventBus: EventBus, fetchCache: FetchCache, authenticator: Authenticator) {
+    public constructor(eventBus: EventBus, fetchCache: FetchCache, authenticatorClient: AuthenticatorClient) {
 
         this._eventBus = eventBus;
         this._fetchCache = fetchCache;
-        this._authenticator = authenticator;
+        this._authenticatorClient = authenticatorClient;
         this._mainCacheKey = '';
         this._loadingCount = 0;
         this._loadedCount = 0;
@@ -44,7 +44,7 @@ export class ViewModelCoordinator {
         ++this._loadingCount;
 
         // Send an event so that a subscriber can show a UI effect, such as disabling header buttons
-        this._eventBus.emit(EventNames.ViewModelFetch, null, new ViewModelFetchEvent(false));
+        this._eventBus.emit(UIEventNames.ViewModelFetch, null, new ViewModelFetchEvent(false));
     }
 
     /*
@@ -59,7 +59,7 @@ export class ViewModelCoordinator {
         // On success, send an event so that a subscriber can show a UI effect such as enabling header buttons
         const found = this._fetchCache.getItem(cacheKey);
         if (found?.data) {
-            this._eventBus.emit(EventNames.ViewModelFetch, null, new ViewModelFetchEvent(true));
+            this._eventBus.emit(UIEventNames.ViewModelFetch, null, new ViewModelFetchEvent(true));
         }
 
         // Perform error logic after all views have loaded
@@ -110,7 +110,7 @@ export class ViewModelCoordinator {
             // The sample's user behavior is to automatically redirect the user to login
             const loginRequired = errors.find((e) => e.errorCode === ErrorCodes.loginRequired);
             if (loginRequired) {
-                this._eventBus.emit(EventNames.LoginRequired, new LoginRequiredEvent());
+                this._eventBus.emit(UIEventNames.LoginRequired, new LoginRequiredEvent());
                 return;
             }
 
@@ -122,7 +122,7 @@ export class ViewModelCoordinator {
             // The sample's user behavior is to present an error, after which clicking Home runs a new login redirect
             // This allows the frontend application to get new tokens, which may fix the problem in some cases
             if (oauthConfigurationError) {
-                await this._authenticator.clearLoginState();
+                await this._authenticatorClient.clearLoginState();
             }
         }
     }

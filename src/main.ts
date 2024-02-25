@@ -3,22 +3,23 @@ import path from 'path';
 import {Configuration} from './configuration/configuration';
 import {ConfigurationLoader} from './configuration/configurationLoader';
 import {ErrorFactory} from './plumbing/errors/errorFactory';
-import {MainEvents} from './plumbing/ipc/mainEvents';
+import {MainIpcEvents} from './plumbing/ipc/mainIpcEvents';
 
 /*
  * The Electron main process entry point
  */
 class Main {
 
+    private _configuration: Configuration;
+    private _ipcEvents: MainIpcEvents;
     private _window: BrowserWindow | null;
-    private _ipcEvents: MainEvents;
-    private _configuration: Configuration | null;
     private _useBasicContentSecurityPolicy: boolean;
 
     public constructor() {
+
+        this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
+        this._ipcEvents = new MainIpcEvents(this._configuration);
         this._window = null;
-        this._ipcEvents = new MainEvents();
-        this._configuration = null;
         this._useBasicContentSecurityPolicy = false;
         this._setupCallbacks();
     }
@@ -37,19 +38,6 @@ class Main {
 
         // Attempting to start a second instance will fire the following event to the running instance
         app.on('second-instance', this._onSecondInstance);
-
-        // Initialise the primary instance of the application
-        this._initializeApplication();
-    }
-
-    /*
-     * Set up our application the first time it is invoked
-     */
-    private _initializeApplication(): void {
-
-        // First load configuration
-        this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
-        this._ipcEvents.configuration = this._configuration;
 
         // This method will be called when Electron has finished initialization and is ready to create browser windows
         // Some APIs can only be used after this event occurs
@@ -72,9 +60,9 @@ class Main {
     }
 
     /*
-     * Do initialisation after the ready eventF
+     * Do initialisation after the ready event
      */
-    private _onReady(): void {
+    private async _onReady(): Promise<void> {
 
         // Create the window and use Electron recommended security options
         // https://www.electronjs.org/docs/tutorial/security
@@ -90,8 +78,8 @@ class Main {
             },
         });
 
-        // Set values against the events instance
-        this._ipcEvents.window = this._window;
+        // Store the window to send events to
+        this._ipcEvents.initialise(this._window);
 
         // Register for private URI scheme notifications
         this._registerPrivateUriScheme();
@@ -120,13 +108,13 @@ class Main {
     }
 
     /*
-     * On Windows and Linux, this is where we receive login responses or other deep links
+     * On Windows and Linux, this is called when we receive login responses or other deep links
      */
-    private _onSecondInstance(event: any, argv: any) {
+    private _onSecondInstance(event: any, argv: any): void {
 
         const url = this._getDeepLinkUrl(argv);
         if (url) {
-            this._receiveNotificationInRunningInstance(url);
+            this._handleDeepLink(url);
         }
     }
 
@@ -146,8 +134,7 @@ class Main {
             callback({cancel: false, requestHeaders: details.requestHeaders});
         });
 
-        // Set a content security policy as a security best practice
-        // This prevents show dev tools from working, so control this via a property that can be set during development
+        // Set a content security policy as a security best practice unless temporarily disabled
         session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 
             let policy = '';
@@ -184,14 +171,15 @@ class Main {
     /*
      * On MacOS this is where we receive login responses or other deep links
      */
-    private _onOpenUrl(event: any, schemeData: string) {
+    private _onOpenUrl(event: any, schemeData: string): void {
 
         event.preventDefault();
 
         if (this._window) {
 
             // If we have a running window we can just forward the notification to it
-            this._receiveNotificationInRunningInstance(schemeData);
+            this._handleDeepLink(schemeData);
+
         } else {
 
             // If this is a startup deep linking message we need to store it until after startup
@@ -200,9 +188,9 @@ class Main {
     }
 
     /*
-     * When the OS sends a private uri scheme notification, the existing instance of the app receives it
+     * When the OS sends a deep link notification, the existing instance of the app receives it
      */
-    private _receiveNotificationInRunningInstance(privateSchemeUrl: string) {
+    private _handleDeepLink(deepLinkUrl: string): void {
 
         // The existing instance of the app brings itself to the foreground
         if (this._window) {
@@ -215,11 +203,11 @@ class Main {
         }
 
         // Send the event to the renderer side of the app
-        this._ipcEvents.sendPrivateSchemeNotificationUrl(privateSchemeUrl);
+        this._ipcEvents.handleDeepLink(deepLinkUrl);
     }
 
     /*
-     * Look for a deep linked URL as a command line parameter
+     * Look for a deep link URL as a command line parameter
      * Note also that Chromium may add its own parameters
      */
     private _getDeepLinkUrl(argv: any): string | null {
@@ -255,7 +243,7 @@ class Main {
     /*
      * Handle private URI scheme registration
      */
-    private async _registerPrivateUriScheme(): Promise<void> {
+    private _registerPrivateUriScheme(): void {
 
         if (process.platform === 'win32') {
 
@@ -281,7 +269,7 @@ class Main {
         this._onActivate = this._onActivate.bind(this);
         this._onSecondInstance = this._onSecondInstance.bind(this);
         this._onOpenUrl = this._onOpenUrl.bind(this);
-        this._receiveNotificationInRunningInstance = this._receiveNotificationInRunningInstance.bind(this);
+        this._handleDeepLink = this._handleDeepLink.bind(this);
         this._onClosed = this._onClosed.bind(this);
         this._onAllWindowsClosed = this._onAllWindowsClosed.bind(this);
     }
@@ -296,6 +284,6 @@ try {
 
     // Handle startup errors
     const error = ErrorFactory.fromException(e);
-    console.log(error.toLogFormat());
+    console.log(error.toJson(true));
     app.exit();
 }

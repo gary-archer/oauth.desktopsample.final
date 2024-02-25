@@ -102,9 +102,9 @@ export class UIError extends Error {
     }
 
     /*
-     * Output a JSON representation of the error
+     * Serialize the error to JSON when the main side of the app returns an error to the renderer
      */
-    public toLogFormat(): string {
+    public toJson(pretty = false): string {
 
         const error: any = {
             area: this._area,
@@ -138,6 +138,31 @@ export class UIError extends Error {
             error.stack = frames;
         }
 
-        return JSON.stringify(error, null, 2);
+        if (pretty) {
+            return JSON.stringify(error, null, 2);
+        } else {
+            return JSON.stringify(error);
+        }
+    }
+
+    /*
+     * Deserialize the error from JSON, when the renderer receives an error from the main side of the app
+     */
+    public static fromJson(json: string): UIError {
+
+        const data = JSON.parse(json);
+        const error = new UIError(
+            data.area || '',
+            data.code || '',
+            data.message || '',
+            data.userAction || '');
+
+        error._utcTime = data.utcTime || '';
+        error._statusCode = data.statusCode || 0;
+        error._instanceId = data.instanceId || 0;
+        error._details = data.details || '';
+        error._url = data.url || '';
+        error.stack = (data.stack || []).join('\n');
+        return error;
     }
 }

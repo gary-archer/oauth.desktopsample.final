@@ -1,5 +1,5 @@
 /*
- * Used to bubble up deep link events to the main view
+ * Used to bubble up deep link events to the React app
  */
 export class DeepLinkEvent {
 
