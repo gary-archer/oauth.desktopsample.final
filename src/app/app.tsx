@@ -50,14 +50,7 @@ export function App(props: AppProps): JSX.Element {
         model.eventBus.on(EventNames.LoginRequired, onLoginRequired);
         model.eventBus.on(EventNames.DeepLink, onDeepLink);
 
-        // Create global objects
-        await initialiseData();
-    }
-
-    /*
-     * Initialise the model on startup
-     */
-    async function initialiseData(): Promise<void> {
+        // Initialise the model
         await model.initialise();
     }
 
@@ -83,27 +76,19 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onHome(): Promise<void> {
 
-        // Handle retrying failed loads
-        if (!model.isLoaded) {
-            await initialiseData();
-        }
+        if (CurrentLocation.path === '/loggedout') {
 
-        if (model.isLoaded) {
+            // Trigger a login when the Home button is clicked in the Login Required view
+            await login();
 
-            if (CurrentLocation.path === '/loggedout') {
+        } else {
 
-                // Trigger a login when the Home button is clicked in the Login Required view
-                await login();
+            // Otherwise navigate to the home view
+            navigate('/');
 
-            } else {
-
-                // Otherwise navigate to the home view
-                navigate('/');
-
-                // Force a data reload if recovering from errors
-                if (model.hasError()) {
-                    await model.reloadData(false);
-                }
+            // Force a data reload if recovering from errors
+            if (model.hasError()) {
+                model.reloadData(false);
             }
         }
     }
@@ -111,19 +96,16 @@ export function App(props: AppProps): JSX.Element {
     /*
      * Handle reloads and updating the error state
      */
-    async function onReloadData(causeError: boolean): Promise<void> {
-        await model.reloadData(causeError);
+    function onReloadData(causeError: boolean): void {
+        model.reloadData(causeError);
     }
 
     /*
      * Navigate to deep links such as x-mycompany-desktopapp:/companies/2
      */
     function onDeepLink(event: DeepLinkEvent): void {
-
-        // GJA
-        const prefix = 'MYSCHEME';
-        const reactLocation = event.path.replace(prefix, '');
-        navigate(reactLocation);
+        console.log('*** React app navigating to ' + event.path);
+        navigate(event.path);
     }
 
     /*
@@ -171,20 +153,11 @@ export function App(props: AppProps): JSX.Element {
 
     function getTitleProps(): TitleViewProps {
 
-        if (model.isLoaded) {
-
-            return {
-                userInfo: {
-                    viewModel: model.getUserInfoViewModel(),
-                },
-            };
-
-        } else {
-
-            return {
-                userInfo: null,
-            };
-        }
+        return {
+            userInfo: {
+                viewModel: model.getUserInfoViewModel(),
+            },
+        };
     }
 
     function getHeaderButtonProps(): HeaderButtonsViewProps {
@@ -246,17 +219,15 @@ export function App(props: AppProps): JSX.Element {
             <TitleView {...getTitleProps()} />
             <HeaderButtonsView {...getHeaderButtonProps()} />
             {model.error && <ErrorSummaryView {...getErrorProps()} />}
-            {model.isLoaded &&
-                <>
-                    <SessionView {...getSessionProps()} />
-                    <Routes>
-                        <Route path='/'              element={<CompaniesContainer {...getCompaniesProps()} />} />
-                        <Route path='/companies/:id' element={<TransactionsContainer {...getTransactionsProps()} />} />
-                        <Route path='/loggedout'     element={<LoginRequiredView {...getLoginRequiredProps()} />} />
-                        <Route path='*'              element={<CompaniesContainer {...getCompaniesProps()} />} />
-                    </Routes>
-                </>
-            }
+            <>
+                <SessionView {...getSessionProps()} />
+                <Routes>
+                    <Route path='/'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                    <Route path='/companies/:id' element={<TransactionsContainer {...getTransactionsProps()} />} />
+                    <Route path='/loggedout'     element={<LoginRequiredView {...getLoginRequiredProps()} />} />
+                    <Route path='*'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                </Routes>
+            </>
         </>
     );
 }

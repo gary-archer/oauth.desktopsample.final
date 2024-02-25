@@ -20,20 +20,19 @@ import {ViewModelCoordinator} from '../views/utilities/viewModelCoordinator';
  */
 export class AppViewModel {
 
-    // Global objects
-    private _authenticatorClient: AuthenticatorClient | null;
-    private _fetchClient: FetchClient | null;
-    private _viewModelCoordinator: ViewModelCoordinator | null;
-
-    // Other infrastructure
-    private _eventBus: EventBus;
-    private _ipcEvents: RendererEvents;
+    // Infrastructure
+    private readonly _eventBus: EventBus;
+    private readonly _ipcEvents: RendererEvents;
     private readonly _fetchCache: FetchCache;
+
+    // OAuth and API requests
+    private readonly _authenticatorClient: AuthenticatorClient;
+    private readonly _fetchClient: FetchClient;
+    private readonly _viewModelCoordinator: ViewModelCoordinator;
 
     // State
     private _error: UIError | null;
     private _isLoading: boolean;
-    private _isLoaded: boolean;
 
     // Child view models
     private _companiesViewModel: CompaniesContainerViewModel | null;
@@ -41,18 +40,12 @@ export class AppViewModel {
     private _userInfoViewModel: UserInfoViewModel | null;
 
     // Callbacks to set model properties that affect view rendering
-    private _setIsLoaded: Dispatch<SetStateAction<boolean>> | null;
     private _setError: Dispatch<SetStateAction<UIError | null>> | null;
 
     /*
      * Set the initial state when the app starts
      */
     public constructor() {
-
-        // Objects that need configuration are initially null
-        this._authenticatorClient = null;
-        this._fetchClient = null;
-        this._viewModelCoordinator = null;
 
         // Create objects used for coordination
         this._eventBus = new EventBus();
@@ -62,11 +55,17 @@ export class AppViewModel {
         this._ipcEvents = new RendererEvents(this._eventBus);
         this._ipcEvents.register();
 
+        // Create objects to manage OAuth and API requests
+        this._authenticatorClient = new AuthenticatorClientImpl(this._ipcEvents);
+        this._fetchClient = new FetchClient(this._fetchCache, this._ipcEvents, this.authenticatorClient);
+        this._viewModelCoordinator = new ViewModelCoordinator(
+            this._eventBus,
+            this._fetchCache,
+            this._authenticatorClient);
+
         // Initialize state
         this._error = null;
         this._isLoading = false;
-        this._isLoaded = false;
-        this._setIsLoaded = null;
         this._setError = null;
 
         // Initialize child view models
@@ -81,18 +80,8 @@ export class AppViewModel {
      */
     public useState(): void {
 
-        const [, setIsLoaded] = useState(this._isLoaded);
-        this._setIsLoaded = setIsLoaded;
-
         const [, setError] = useState(this._error);
         this._setError = setError;
-    }
-
-    /*
-     * Return details to the view
-     */
-    public get isLoaded(): boolean {
-        return this._isLoaded;
     }
 
     public get error(): UIError | null {
@@ -100,11 +89,11 @@ export class AppViewModel {
     }
 
     public get authenticatorClient(): AuthenticatorClient {
-        return this._authenticatorClient!;
+        return this._authenticatorClient;
     }
 
     public get fetchClient(): FetchClient {
-        return this._fetchClient!;
+        return this._fetchClient;
     }
 
     public get eventBus(): EventBus {
@@ -112,12 +101,11 @@ export class AppViewModel {
     }
 
     /*
-     * Some global objects are created after downloading configuration, which is only done once
-     * The app view can be created many times and will get the same instance of the model
+     * Initialize the application to finalize the view model
      */
     public async initialise(): Promise<void> {
 
-        if (this._isLoaded || this._isLoading) {
+        if (this._isLoading) {
             return;
         }
 
@@ -126,21 +114,6 @@ export class AppViewModel {
             // Prevent re-entrancy due to React strict mode
             this._isLoading = true;
             this._updateError(null);
-
-            // Create an object to initiate OAuth requests
-            this._authenticatorClient = new AuthenticatorClientImpl(this._ipcEvents);
-
-            // Create a client for calling the API
-            this._fetchClient = new FetchClient(this._fetchCache, this._ipcEvents, this.authenticatorClient);
-
-            // Create an object to manage concurrent API requests from view models
-            this._viewModelCoordinator = new ViewModelCoordinator(
-                this._eventBus,
-                this._fetchCache,
-                this._authenticatorClient);
-
-            // Inform the view that loading is complete
-            this._updateIsLoaded(true);
 
             // If we were started via a deep link, navigate to that location
             await this._ipcEvents.setDeepLinkStartupUrlIfRequired();
@@ -282,14 +255,6 @@ export class AppViewModel {
      */
     public hasError(): boolean {
         return !!this._error || this._viewModelCoordinator!.hasErrors();
-    }
-
-    /*
-     * Update loaded state and the binding system
-     */
-    private _updateIsLoaded(isLoaded: boolean): void {
-        this._isLoaded = isLoaded;
-        this._setIsLoaded!(isLoaded);
     }
 
     /*

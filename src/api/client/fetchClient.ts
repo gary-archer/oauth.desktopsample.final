@@ -38,34 +38,34 @@ export class FetchClient {
      * Get a list of companies
      */
     public async getCompanyList(options: FetchOptions) : Promise<Company[] | null> {
-        return await this._callApi(options, () => this._events.getCompanyList(options));
+        return await this._getDataFromApi(options, () => this._events.getCompanyList(options));
     }
 
     /*
      * Get a list of transactions for a single company
      */
     public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<CompanyTransactions | null> {
-        return await this._callApi(options, () => this._events.getCompanyTransactions(id, options));
+        return await this._getDataFromApi(options, () => this._events.getCompanyTransactions(id, options));
     }
 
     /*
      * Get user information from the authorization server
      */
     public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo | null> {
-        return await this._callApi(options, () => this._events.getOAuthUserInfo(options));
+        return await this._getDataFromApi(options, () => this._events.getOAuthUserInfo(options));
     }
 
     /*
      * Download user attributes the UI needs that are not stored in the authorization server
      */
     public async getApiUserInfo(options: FetchOptions) : Promise<ApiUserInfo | null> {
-        return await this._callApi(options, () => this._events.getApiUserInfo(options));
+        return await this._getDataFromApi(options, () => this._events.getApiUserInfo(options));
     }
 
     /*
      * A parameterized method containing application specific logic for managing API calls
      */
-    private async _callApi(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
+    private async _getDataFromApi(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
 
         // Remove the item from the cache when a reload is requested
         if (options.forceReload) {
@@ -85,6 +85,7 @@ export class FetchClient {
         try {
 
             // Call the API and return data on success
+            options.sessionId = this._sessionId;
             const data1 = await callback();
             cacheItem.data = data1;
             return data1;

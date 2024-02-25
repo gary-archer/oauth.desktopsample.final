@@ -7,6 +7,7 @@ export class UrlParser {
 
         try {
             return new URL(url);
+
         } catch (e: any) {
             return null;
         }

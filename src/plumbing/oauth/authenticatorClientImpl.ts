@@ -9,15 +9,11 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
 
     private readonly _events: RendererEvents;
     private readonly _concurrencyHandler: ConcurrentActionHandler;
-    private _isLoading: boolean;
-    private _isLoaded: boolean;
 
     public constructor(events: RendererEvents) {
 
         this._events = events;
         this._concurrencyHandler = new ConcurrentActionHandler();
-        this._isLoading = false;
-        this._isLoaded = false;
         this._setupCallbacks();
     }
 
@@ -70,30 +66,6 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      */
     private async _performTokenRefresh(): Promise<void> {
         await this._events.tokenRefresh();
-    }
-
-    /*
-     * Initialize the app upon startup, or retry if the initial load fails
-     * The loading flag prevents duplicate metadata requests due to React strict mode
-     */
-    private async _initialise(): Promise<void> {
-
-        // TODO: I can probably delete this */
-        /*if (!this._isLoaded && !this._isLoading) {
-
-            this._isLoading = true;
-
-            try {
-
-                await this._loadMetadata();
-                this._tokens = await this._events.loadTokens();
-                this._isLoaded = true;
-
-            } finally {
-
-                this._isLoading = false;
-            }
-        }*/
     }
 
     /*

@@ -16,22 +16,15 @@ export class MainEvents {
     private readonly _window: BrowserWindow;
     private readonly _authenticatorService: AuthenticatorService;
     private readonly _fetchService: FetchService;
-    private _deepLinkStartupUrl: string | null;
+    private _deepLinkStartupPath: string | null;
 
     public constructor(configuration: Configuration, window: BrowserWindow) {
         this._configuration = configuration;
         this._window = window;
         this._authenticatorService = new AuthenticatorServiceImpl(this._configuration.oauth);
         this._fetchService = new FetchService(this._configuration, this._authenticatorService);
-        this._deepLinkStartupUrl = null;
+        this._deepLinkStartupPath = null;
         this._setupCallbacks();
-    }
-
-    /*
-     * Set a deep link startup URL if applicable
-     */
-    public set deepLinkStartupUrl(startupUrl: string) {
-        this._deepLinkStartupUrl = startupUrl;
     }
 
     /*
@@ -43,22 +36,13 @@ export class MainEvents {
         ipcMain.on(IpcEventNames.ON_GET_TRANSACTIONS, this._onGetCompanyTransactions);
         ipcMain.on(IpcEventNames.ON_GET_OAUTH_USER_INFO, this._onGetOAuthUserInfo);
         ipcMain.on(IpcEventNames.ON_GET_API_USER_INFO, this._onGetApiUserInfo);
-
         ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
         ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
         ipcMain.on(IpcEventNames.ON_TOKEN_REFRESH, this._onTokenRefresh);
         ipcMain.on(IpcEventNames.ON_CLEAR_LOGIN_STATE, this._onClearLoginState);
         ipcMain.on(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, this._onExpireAccessToken);
         ipcMain.on(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, this._onExpireRefreshToken);
-
-        ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
-    }
-
-    /*
-     * When a login response or deep link is received, forward it to the renderer process
-     */
-    public sendPrivateSchemeNotificationUrl(url: string): void {
-        this._window!.webContents.send(IpcEventNames.ON_PRIVATE_URI_SCHEME_NOTIFICATION, url);
+        ipcMain.on(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, this._getDeepLinkStartupPath);
     }
 
     /*
@@ -222,19 +206,31 @@ export class MainEvents {
     }
 
     /*
-     * Receive URL notifications from the main side of the Electron app
+     * Set a deep link startup URL if applicable
      */
-    public handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean {
+    public set deepLinkStartupUrl(startupUrl: string) {
+        console.log('*** STARTUP DEEP LINK URL: ' + startupUrl);
+        this._deepLinkStartupPath = startupUrl.replace(this._configuration.oauth.privateSchemeName, '');
+        console.log('*** STARTUP DEEP LINK PATH: ' + this._deepLinkStartupPath);
+    }
 
-        if (this._authenticatorService.handlePrivateUriSchemeNotification(privateSchemeUrl)) {
+    /*
+     * Receive deep links on the main side of the Electron app
+     */
+    public handleDeepLink(deepLinkUrl: string): boolean {
+
+        // Handle OAuth login or logout responses
+        if (this._authenticatorService.handleDeepLink(deepLinkUrl)) {
             return true;
         }
 
-        const url = UrlParser.tryParse(privateSchemeUrl);
+        // If not handled, forward to the React app, which will update its hash location based on the path
+        const url = UrlParser.tryParse(deepLinkUrl);
         if (url && url.pathname) {
-
-            // Otherwise we will treat it a deep linking request and update the hash location
-            // this._handleDeepLinkingNotification(url.pathname);
+            console.log('*** RUNTIME DEEP LINK URL: ' + url.pathname);
+            const path = url.pathname.replace(this._configuration.oauth.privateSchemeName, '');
+            console.log('*** RUNTIME DEEP LINK PATH: ' + path);
+            this._window!.webContents.send(IpcEventNames.ON_DEEP_LINK, url);
         }
 
         return false;
@@ -244,8 +240,8 @@ export class MainEvents {
      * The app could have been started via deep linking
      * In this case the renderer side of the app can send us a message to get the startup URL
      */
-    private _getDeepLinkStartupUrl(): void {
-        this._sendResponse(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._deepLinkStartupUrl, null);
+    private _getDeepLinkStartupPath(): void {
+        this._sendResponse(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, this._deepLinkStartupPath, null);
     }
 
     /*
@@ -264,14 +260,12 @@ export class MainEvents {
         this._onGetCompanyTransactions = this._onGetCompanyTransactions.bind(this);
         this._onGetOAuthUserInfo = this._onGetOAuthUserInfo.bind(this);
         this._onGetApiUserInfo = this._onGetApiUserInfo.bind(this);
-
         this._onLogin = this._onLogin.bind(this);
         this._onLogout = this._onLogout.bind(this);
         this._onTokenRefresh = this._onTokenRefresh.bind(this);
         this._onClearLoginState = this._onClearLoginState.bind(this);
         this._onExpireAccessToken = this._onExpireAccessToken.bind(this);
         this._onExpireRefreshToken = this._onExpireRefreshToken.bind(this);
-
-        this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
+        this._getDeepLinkStartupPath = this._getDeepLinkStartupPath.bind(this);
     }
 }

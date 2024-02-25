@@ -17,13 +17,11 @@ export class FetchService {
 
     private readonly _configuration: Configuration;
     private readonly _authenticatorService: AuthenticatorService;
-    private readonly _sessionId: string;
 
     public constructor(configuration: Configuration, authenticatorService: AuthenticatorService) {
 
         this._configuration = configuration;
         this._authenticatorService = authenticatorService;
-        this._sessionId = Guid.create().toString();
     }
 
     /*
@@ -98,7 +96,7 @@ export class FetchService {
 
                 // Context headers included in API logs
                 'x-mycompany-api-client':     'FinalDesktopApp',
-                'x-mycompany-session-id':     this._sessionId,
+                'x-mycompany-session-id':     options.sessionId,
                 'x-mycompany-correlation-id': Guid.create().toString(),
             };
 

@@ -18,7 +18,7 @@ export class IpcEventNames {
     public static readonly ON_EXPIRE_REFRESH_TOKEN = 'oauth_expirerefreshtoken';
 
     // The UI calls the main process at startup to see if there is a deep link startup URL
-    // The main process calls the renderer process to deliver private uri scheme notifications
-    public static readonly ON_GET_DEEP_LINK_STARTUP_URL = 'get_startup_url';
-    public static readonly ON_PRIVATE_URI_SCHEME_NOTIFICATION = 'private_scheme_url';
+    // The main process calls the renderer process to deliver deep links
+    public static readonly ON_DEEP_LINK_STARTUP_PATH = 'get_startup_url';
+    public static readonly ON_DEEP_LINK = 'private_scheme_url';
 }

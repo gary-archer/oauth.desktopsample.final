@@ -35,17 +35,11 @@ class Main {
             return;
         }
 
+        // First load configuration
+        this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
+
         // Attempting to start a second instance will fire the following event to the running instance
         app.on('second-instance', this._onSecondInstance);
-
-        // Initialise the primary instance of the application
-        this._initializeApplication();
-    }
-
-    /*
-     * Set up our application the first time it is invoked
-     */
-    private _initializeApplication(): void {
 
         // This method will be called when Electron has finished initialization and is ready to create browser windows
         // Some APIs can only be used after this event occurs
@@ -61,10 +55,10 @@ class Main {
         app.on('open-url', this._onOpenUrl);
 
         // For Windows or Linux we receive a startup deep link URL as a command line parameter
-        /*const startupUrl = this._getDeepLinkUrl(process.argv);
-        if (startupUrl) {
-            this._ipcEvents?.deepLinkStartupUrl = startupUrl;
-        }*/
+        const startupUrl = this._getDeepLinkUrl(process.argv);
+        if (startupUrl && this._ipcEvents) {
+            this._ipcEvents.deepLinkStartupUrl = startupUrl;
+        }
     }
 
     /*
@@ -117,13 +111,13 @@ class Main {
     }
 
     /*
-     * On Windows and Linux, this is where we receive login responses or other deep links
+     * On Windows and Linux, this is called when we receive login responses or other deep links
      */
     private _onSecondInstance(event: any, argv: any): void {
 
         const url = this._getDeepLinkUrl(argv);
         if (url) {
-            this._receiveNotificationInRunningInstance(url);
+            this._handleDeepLink(url);
         }
     }
 
@@ -187,19 +181,21 @@ class Main {
         if (this._window) {
 
             // If we have a running window we can just forward the notification to it
-            this._receiveNotificationInRunningInstance(schemeData);
+            this._handleDeepLink(schemeData);
 
         } else {
 
             // If this is a startup deep linking message we need to store it until after startup
-            // this._ipcEvents.deepLinkStartupUrl = schemeData;
+            if (this._ipcEvents) {
+                this._ipcEvents.deepLinkStartupUrl = schemeData;
+            }
         }
     }
 
     /*
-     * When the OS sends a private uri scheme notification, the existing instance of the app receives it
+     * When the OS sends a deep link notification, the existing instance of the app receives it
      */
-    private _receiveNotificationInRunningInstance(privateSchemeUrl: string): void {
+    private _handleDeepLink(deepLinkUrl: string): void {
 
         // The existing instance of the app brings itself to the foreground
         if (this._window) {
@@ -212,11 +208,11 @@ class Main {
         }
 
         // Send the event to the renderer side of the app
-        this._ipcEvents?.handlePrivateUriSchemeNotification(privateSchemeUrl);
+        this._ipcEvents?.handleDeepLink(deepLinkUrl);
     }
 
     /*
-     * Look for a deep linked URL as a command line parameter
+     * Look for a deep link URL as a command line parameter
      * Note also that Chromium may add its own parameters
      */
     private _getDeepLinkUrl(argv: any): string | null {
@@ -278,7 +274,7 @@ class Main {
         this._onActivate = this._onActivate.bind(this);
         this._onSecondInstance = this._onSecondInstance.bind(this);
         this._onOpenUrl = this._onOpenUrl.bind(this);
-        this._receiveNotificationInRunningInstance = this._receiveNotificationInRunningInstance.bind(this);
+        this._handleDeepLink = this._handleDeepLink.bind(this);
         this._onClosed = this._onClosed.bind(this);
         this._onAllWindowsClosed = this._onAllWindowsClosed.bind(this);
     }

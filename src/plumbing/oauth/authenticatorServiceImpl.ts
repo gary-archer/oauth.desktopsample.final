@@ -30,28 +30,24 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     private readonly _logoutState: LogoutState;
     private _metadata: AuthorizationServiceConfiguration | null;
     private _tokens: TokenData | null;
-    private _isLoading: boolean;
-    private _isLoaded: boolean;
 
     public constructor(configuration: OAuthConfiguration) {
 
         this._configuration = configuration;
         this._tokenStorage = new TokenStorage();
-        this._metadata = null;
-        this._tokens = null;
-        this._isLoading = false;
-        this._isLoaded = false;
-        this._setupCallbacks();
-
-        // Initialise state to correlate responses from the system browser to original requests
         this._loginState = new LoginState();
         this._logoutState = new LogoutState();
+        this._setupCallbacks();
+        this._metadata = null;
+        this._tokens = this._tokenStorage.load();
     }
 
     /*
      * Provide the user info endpoint to the fetch client
      */
     public async getUserInfoEndpoint(): Promise<string | null> {
+
+        await this._loadMetadata();
         return this._metadata?.userInfoEndpoint || null;
     }
 
@@ -106,7 +102,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             if (this._tokens && this._tokens.idToken) {
 
                 // Initialise if required
-                await this._initialise();
+                await this._loadMetadata();
 
                 // Reset state
                 const idToken = this._tokens.idToken;
@@ -129,11 +125,11 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
-     * Process OAuth login and logout responses
+     * This class handles OAuth login and logout responses but not other types of deep link
      */
-    public handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean {
+    public handleDeepLink(deepLinkUrl: string): boolean {
 
-        const url = UrlParser.tryParse(privateSchemeUrl);
+        const url = UrlParser.tryParse(deepLinkUrl);
         if (url) {
 
             const args = new URLSearchParams(url.search);
@@ -191,29 +187,6 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
-     * Initialize the app upon startup, or retry if the initial load fails
-     * The loading flag prevents duplicate metadata requests due to React strict mode
-     */
-    private async _initialise(): Promise<void> {
-
-        if (!this._isLoaded && !this._isLoading) {
-
-            this._isLoading = true;
-
-            try {
-
-                await this._loadMetadata();
-                this._tokens = this._tokenStorage.load();
-                this._isLoaded = true;
-
-            } finally {
-
-                this._isLoading = false;
-            }
-        }
-    }
-
-    /*
      * Load metadata if not already loaded
      */
     private async _loadMetadata() {
@@ -242,7 +215,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         try {
 
             // Initialise if required
-            await this._initialise();
+            await this._loadMetadata();
 
             // Run a login on the system browser and get the result
             const adapter = new LoginAsyncAdapter(
@@ -317,7 +290,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         try {
 
             // Initialise if required
-            await this._initialise();
+            await this._loadMetadata();
 
             // Supply the scope for access tokens
             const extras: StringMap = {
