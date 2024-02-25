@@ -4,6 +4,7 @@ import {Configuration} from './configuration/configuration';
 import {ConfigurationLoader} from './configuration/configurationLoader';
 import {ErrorFactory} from './plumbing/errors/errorFactory';
 import {MainIpcEvents} from './plumbing/ipc/mainIpcEvents';
+import {ExtraCaCerts} from './plumbing/utilities/extraCaCerts';
 
 /*
  * The Electron main process entry point
@@ -18,6 +19,7 @@ class Main {
     public constructor() {
 
         this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
+        ExtraCaCerts.initialize();
         this._ipcEvents = new MainIpcEvents(this._configuration);
         this._window = null;
         this._useBasicContentSecurityPolicy = false;
