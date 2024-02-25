@@ -2,8 +2,8 @@ import React, {useEffect} from 'react';
 import Modal from 'react-modal';
 import {Route, Routes, useNavigate} from 'react-router-dom';
 import {DeepLinkEvent} from '../plumbing/events/deepLinkEvent';
-import {EventNames} from '../plumbing/events/eventNames';
 import {LoginStartedEvent} from '../plumbing/events/loginStartedEvent';
+import {UIEventNames} from '../plumbing/events/uiEventNames';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {CompaniesContainerProps} from '../views/companies/companiesContainerProps';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
@@ -47,8 +47,8 @@ export function App(props: AppProps): JSX.Element {
         Modal.setAppElement('#root');
 
         // Subscribe to application events
-        model.eventBus.on(EventNames.LoginRequired, onLoginRequired);
-        model.eventBus.on(EventNames.DeepLink, onDeepLink);
+        model.eventBus.on(UIEventNames.LoginRequired, onLoginRequired);
+        model.eventBus.on(UIEventNames.DeepLink, onDeepLink);
 
         // Initialise the model
         await model.initialise();
@@ -60,8 +60,8 @@ export function App(props: AppProps): JSX.Element {
     function cleanup() {
 
         // Unsubscribe from application events
-        model.eventBus.detach(EventNames.LoginRequired, onLoginRequired);
-        model.eventBus.detach(EventNames.DeepLink, onDeepLink);
+        model.eventBus.detach(UIEventNames.LoginRequired, onLoginRequired);
+        model.eventBus.detach(UIEventNames.DeepLink, onDeepLink);
     }
 
     /*
@@ -113,7 +113,7 @@ export function App(props: AppProps): JSX.Element {
     async function login(): Promise<void> {
 
         // Update state to indicate a sign in is in progress
-        model.eventBus.emit(EventNames.LoginStarted, null, new LoginStartedEvent());
+        model.eventBus.emit(UIEventNames.LoginStarted, null, new LoginStartedEvent());
 
         // Do the work of the login
         await model.login();

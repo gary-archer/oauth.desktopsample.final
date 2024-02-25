@@ -5,8 +5,8 @@ import {FetchClient} from '../api/client/fetchClient';
 import {ErrorConsoleReporter} from '../plumbing/errors/errorConsoleReporter';
 import {ErrorFactory} from '../plumbing/errors/errorFactory';
 import {UIError} from '../plumbing/errors/uiError';
-import {EventNames} from '../plumbing/events/eventNames';
 import {ReloadDataEvent} from '../plumbing/events/reloadDataEvent';
+import {UIEventNames} from '../plumbing/events/uiEventNames';
 import {RendererEvents} from '../plumbing/ipc/rendererEvents';
 import {AuthenticatorClient} from '../plumbing/oauth/authenticatorClient';
 import {AuthenticatorClientImpl} from '../plumbing/oauth/authenticatorClientImpl';
@@ -247,7 +247,7 @@ export class AppViewModel {
 
         this._updateError(null);
         this._viewModelCoordinator!.resetState();
-        this._eventBus.emit(EventNames.ReloadData, null, new ReloadDataEvent(causeError));
+        this._eventBus.emit(UIEventNames.ReloadData, null, new ReloadDataEvent(causeError));
     }
 
     /*

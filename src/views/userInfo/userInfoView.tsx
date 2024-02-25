@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react';
 import {ErrorCodes} from '../../plumbing/errors/errorCodes';
-import {EventNames} from '../../plumbing/events/eventNames';
 import {NavigatedEvent} from '../../plumbing/events/navigatedEvent';
 import {ReloadDataEvent} from '../../plumbing/events/reloadDataEvent';
+import {UIEventNames} from '../../plumbing/events/uiEventNames';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
 import {ViewLoadOptions} from '../utilities/viewLoadOptions';
@@ -25,16 +25,16 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
      * Subscribe for load related events
      */
     async function startup(): Promise<void> {
-        model.eventBus.on(EventNames.ReloadData, onReload);
-        model.eventBus.on(EventNames.Navigated, onNavigate);
+        model.eventBus.on(UIEventNames.ReloadData, onReload);
+        model.eventBus.on(UIEventNames.Navigated, onNavigate);
     }
 
     /*
      * Unsubscribe when we unload
      */
     function cleanup(): void {
-        model.eventBus.detach(EventNames.ReloadData, onReload);
-        model.eventBus.detach(EventNames.Navigated, onNavigate);
+        model.eventBus.detach(UIEventNames.ReloadData, onReload);
+        model.eventBus.detach(UIEventNames.Navigated, onNavigate);
     }
 
     /*

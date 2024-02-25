@@ -1,7 +1,7 @@
 import EventBus from 'js-event-bus';
 import {FetchOptions} from '../../api/client/fetchOptions';
 import {DeepLinkEvent} from '../../plumbing/events/deepLinkEvent';
-import {EventNames} from '../../plumbing/events/eventNames';
+import {UIEventNames} from '../../plumbing/events/uiEventNames';
 import {UIError} from '../errors/uiError';
 import {IpcEventNames} from './ipcEventNames';
 
@@ -117,7 +117,7 @@ export class RendererEvents {
 
         const path = await this._sendRequestResponseIpcMessage(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, {});
         if (path) {
-            this._eventBus.emit(EventNames.DeepLink, null, new DeepLinkEvent(path));
+            this._eventBus.emit(UIEventNames.DeepLink, null, new DeepLinkEvent(path));
         }
     }
 
@@ -128,7 +128,7 @@ export class RendererEvents {
 
         const path = args as string;
         if (path) {
-            this._eventBus.emit(EventNames.DeepLink, null, new DeepLinkEvent(path));
+            this._eventBus.emit(UIEventNames.DeepLink, null, new DeepLinkEvent(path));
         }
     }
 

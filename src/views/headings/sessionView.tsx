@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {EventNames} from '../../plumbing/events/eventNames';
 import {NavigatedEvent} from '../../plumbing/events/navigatedEvent';
+import {UIEventNames} from '../../plumbing/events/uiEventNames';
 import {SessionViewProps} from './sessionViewProps';
 
 /*
@@ -17,11 +17,11 @@ export function SessionView(props: SessionViewProps): JSX.Element {
     }, []);
 
     function startup() {
-        props.eventBus.on(EventNames.Navigated, onNavigate);
+        props.eventBus.on(UIEventNames.Navigated, onNavigate);
     }
 
     function cleanup() {
-        props.eventBus.detach(EventNames.Navigated, onNavigate);
+        props.eventBus.detach(UIEventNames.Navigated, onNavigate);
     }
 
     /*

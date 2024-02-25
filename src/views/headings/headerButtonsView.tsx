@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {EventNames} from '../../plumbing/events/eventNames';
+import {UIEventNames} from '../../plumbing/events/uiEventNames';
 import {ViewModelFetchEvent} from '../../plumbing/events/viewModelFetchEvent';
 import {HeaderButtonsViewProps} from './headerButtonsViewProps';
 
@@ -16,11 +16,11 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
     }, []);
 
     function startup() {
-        props.eventBus.on(EventNames.ViewModelFetch, onViewModelFetch);
+        props.eventBus.on(UIEventNames.ViewModelFetch, onViewModelFetch);
     }
 
     function cleanup() {
-        props.eventBus.detach(EventNames.ViewModelFetch, onViewModelFetch);
+        props.eventBus.detach(UIEventNames.ViewModelFetch, onViewModelFetch);
     }
 
     // Settings related to button long clicks
