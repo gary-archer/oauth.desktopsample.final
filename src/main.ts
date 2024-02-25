@@ -3,7 +3,7 @@ import path from 'path';
 import {Configuration} from './configuration/configuration';
 import {ConfigurationLoader} from './configuration/configurationLoader';
 import {ErrorFactory} from './plumbing/errors/errorFactory';
-import {MainEvents} from './plumbing/ipc/mainEvents';
+import {MainIpcEvents} from './plumbing/ipc/mainIpcEvents';
 
 /*
  * The Electron main process entry point
@@ -11,14 +11,14 @@ import {MainEvents} from './plumbing/ipc/mainEvents';
 class Main {
 
     private _configuration: Configuration;
-    private _ipcEvents: MainEvents;
+    private _ipcEvents: MainIpcEvents;
     private _window: BrowserWindow | null;
     private _useBasicContentSecurityPolicy: boolean;
 
     public constructor() {
 
         this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
-        this._ipcEvents = new MainEvents(this._configuration);
+        this._ipcEvents = new MainIpcEvents(this._configuration);
         this._window = null;
         this._useBasicContentSecurityPolicy = false;
         this._setupCallbacks();

@@ -8,7 +8,7 @@ import {IpcEventNames} from './ipcEventNames';
 /*
  * A class to encapsulate IPC messages sent and received by the renderer side of our app
  */
-export class RendererEvents {
+export class RendererIpcEvents {
 
     private readonly _eventBus: EventBus;
     private readonly _api: any;

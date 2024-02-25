@@ -1,10 +1,7 @@
-1. Rename classes to UIEvents and IpcEvents
-
-2. Get MITM and SSL trust working so that I can view messages in future
+1. Get MITM and SSL trust working so that I can view messages in future
    Update config with HTTP proxy settings if needed
    Test against local Node.js API
-
-3. Quick test on Windows and macOS then merge
+   Quick test on Windows and macOS then merge
  
-4. Blog updates
+2. Blog updates
    Mention use of a proxy for debugging - as for any other desktop app

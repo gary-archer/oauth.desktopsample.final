@@ -1,4 +1,4 @@
-import {RendererEvents} from '../ipc/rendererEvents';
+import {RendererIpcEvents} from '../ipc/rendererIpcEvents';
 import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {AuthenticatorClient} from './authenticatorClient';
 
@@ -7,12 +7,12 @@ import {AuthenticatorClient} from './authenticatorClient';
  */
 export class AuthenticatorClientImpl implements AuthenticatorClient {
 
-    private readonly _events: RendererEvents;
+    private readonly _ipcEvents: RendererIpcEvents;
     private readonly _concurrencyHandler: ConcurrentActionHandler;
 
-    public constructor(events: RendererEvents) {
+    public constructor(ipcEvents: RendererIpcEvents) {
 
-        this._events = events;
+        this._ipcEvents = ipcEvents;
         this._concurrencyHandler = new ConcurrentActionHandler();
         this._setupCallbacks();
     }
@@ -21,14 +21,14 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * Forward to the main side of the app to perform the login work
      */
     public async login(): Promise<void> {
-        await this._events.login();
+        await this._ipcEvents.login();
     }
 
     /*
      * Forward to the main side of the app to perform the logout work
      */
     public async logout(): Promise<void> {
-        await this._events.logout();
+        await this._ipcEvents.logout();
     }
 
     /*
@@ -42,7 +42,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * Allow the login state to be cleared when required
      */
     public async clearLoginState(): Promise<void> {
-        await this._events.clearLoginState();
+        await this._ipcEvents.clearLoginState();
     }
 
     /*
@@ -50,7 +50,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * The corrupted access token will be sent to the API but rejected when introspected
      */
     public async expireAccessToken(): Promise<void> {
-        await this._events.expireAccessToken();
+        await this._ipcEvents.expireAccessToken();
     }
 
     /*
@@ -58,14 +58,14 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * The corrupted refresh token will be sent to the Authorization Server but rejected
      */
     public async expireRefreshToken(): Promise<void> {
-        await this._events.expireRefreshToken();
+        await this._ipcEvents.expireRefreshToken();
     }
 
     /*
      * Do a token refresh on the main side of the app
      */
     private async _performTokenRefresh(): Promise<void> {
-        await this._events.tokenRefresh();
+        await this._ipcEvents.tokenRefresh();
     }
 
     /*

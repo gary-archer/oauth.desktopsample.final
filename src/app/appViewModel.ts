@@ -7,7 +7,7 @@ import {ErrorFactory} from '../plumbing/errors/errorFactory';
 import {UIError} from '../plumbing/errors/uiError';
 import {ReloadDataEvent} from '../plumbing/events/reloadDataEvent';
 import {UIEventNames} from '../plumbing/events/uiEventNames';
-import {RendererEvents} from '../plumbing/ipc/rendererEvents';
+import {RendererIpcEvents} from '../plumbing/ipc/rendererIpcEvents';
 import {AuthenticatorClient} from '../plumbing/oauth/authenticatorClient';
 import {AuthenticatorClientImpl} from '../plumbing/oauth/authenticatorClientImpl';
 import {CompaniesContainerViewModel} from '../views/companies/companiesContainerViewModel';
@@ -22,7 +22,7 @@ export class AppViewModel {
 
     // Infrastructure
     private readonly _eventBus: EventBus;
-    private readonly _ipcEvents: RendererEvents;
+    private readonly _ipcEvents: RendererIpcEvents;
     private readonly _fetchCache: FetchCache;
 
     // OAuth and API requests
@@ -52,7 +52,7 @@ export class AppViewModel {
         this._fetchCache = new FetchCache();
 
         // Register to receive Electron events from the main side of the app
-        this._ipcEvents = new RendererEvents(this._eventBus);
+        this._ipcEvents = new RendererIpcEvents(this._eventBus);
         this._ipcEvents.register();
 
         // Create objects to manage OAuth and API requests

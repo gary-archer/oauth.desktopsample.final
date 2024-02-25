@@ -4,7 +4,7 @@ import {ApiUserInfo} from '../entities/apiUserInfo';
 import {CompanyTransactions} from '../entities/companyTransactions';
 import {OAuthUserInfo} from '../entities/oauthUserInfo';
 import {ErrorFactory} from '../../plumbing/errors/errorFactory';
-import {RendererEvents} from '../../plumbing/ipc/rendererEvents';
+import {RendererIpcEvents} from '../../plumbing/ipc/rendererIpcEvents';
 import {AuthenticatorClient} from '../../plumbing/oauth/authenticatorClient';
 import {FetchCache} from './fetchCache';
 import {FetchOptions} from './fetchOptions';
@@ -15,14 +15,14 @@ import {FetchOptions} from './fetchOptions';
 export class FetchClient {
 
     private readonly _fetchCache: FetchCache;
-    private readonly _events: RendererEvents;
+    private readonly _ipcEvents: RendererIpcEvents;
     private readonly _authenticatorClient: AuthenticatorClient;
     private readonly _sessionId: string;
 
-    public constructor(fetchCache: FetchCache, events: RendererEvents, authenticatorClient: AuthenticatorClient) {
+    public constructor(fetchCache: FetchCache, ipcEvents: RendererIpcEvents, authenticatorClient: AuthenticatorClient) {
 
         this._fetchCache = fetchCache;
-        this._events = events;
+        this._ipcEvents = ipcEvents;
         this._authenticatorClient = authenticatorClient;
         this._sessionId = Guid.create().toString();
     }
@@ -38,28 +38,28 @@ export class FetchClient {
      * Get a list of companies
      */
     public async getCompanyList(options: FetchOptions) : Promise<Company[] | null> {
-        return await this._getDataFromApi(options, () => this._events.getCompanyList(options));
+        return await this._getDataFromApi(options, () => this._ipcEvents.getCompanyList(options));
     }
 
     /*
      * Get a list of transactions for a single company
      */
     public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<CompanyTransactions | null> {
-        return await this._getDataFromApi(options, () => this._events.getCompanyTransactions(id, options));
+        return await this._getDataFromApi(options, () => this._ipcEvents.getCompanyTransactions(id, options));
     }
 
     /*
      * Get user information from the authorization server
      */
     public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo | null> {
-        return await this._getDataFromApi(options, () => this._events.getOAuthUserInfo(options));
+        return await this._getDataFromApi(options, () => this._ipcEvents.getOAuthUserInfo(options));
     }
 
     /*
      * Download user attributes the UI needs that are not stored in the authorization server
      */
     public async getApiUserInfo(options: FetchOptions) : Promise<ApiUserInfo | null> {
-        return await this._getDataFromApi(options, () => this._events.getApiUserInfo(options));
+        return await this._getDataFromApi(options, () => this._ipcEvents.getApiUserInfo(options));
     }
 
     /*

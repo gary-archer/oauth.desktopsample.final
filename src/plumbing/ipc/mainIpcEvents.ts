@@ -10,7 +10,7 @@ import {IpcEventNames} from './ipcEventNames';
 /*
  * A class to encapsulate IPC messages sent and received by the main side of our app
  */
-export class MainEvents {
+export class MainIpcEvents {
 
     private readonly _configuration: Configuration;
     private readonly _authenticatorService: AuthenticatorService;
