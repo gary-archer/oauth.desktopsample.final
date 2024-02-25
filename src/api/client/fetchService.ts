@@ -85,11 +85,13 @@ export class FetchService {
 
         try {
 
-            if (new Date().getTime() > 1) {
-                throw new Error('Bang from entry point: ' + url);
+            // A logic is required if we don't have an access token
+            const accessToken = await this._authenticatorService.getAccessToken();
+            if (!accessToken) {
+                throw ErrorFactory.fromLoginRequired();
             }
 
-            const accessToken = '';
+            console.log(accessToken);
             const headers: any = {
 
                 // The required authorization header

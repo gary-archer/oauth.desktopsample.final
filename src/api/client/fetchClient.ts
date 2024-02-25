@@ -99,6 +99,10 @@ export class FetchClient {
                 throw error1;
             }
 
+            if (new Date().getTime() > 1) {
+                throw new Error('Bang from token refresh');
+            }
+
             try {
                 // Try to refresh the access token
                 await this._authenticatorClient.synchronizedRefresh();
