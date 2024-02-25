@@ -1,4 +1,3 @@
-import {IpcRendererEvent} from 'electron';
 import EventBus from 'js-event-bus';
 import {FetchOptions} from '../../api/client/fetchOptions';
 import {DeepLinkEvent} from '../../plumbing/events/deepLinkEvent';
@@ -116,10 +115,8 @@ export class RendererEvents {
      */
     public async setDeepLinkStartupUrlIfRequired(): Promise<void> {
 
-        console.log('*** REACT STARTUP DEEP LINK CHECK');
         const path = await this._sendRequestResponseIpcMessage(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, {});
         if (path) {
-            console.log('*** REACT STARTUP DEEP LINK: ' + path);
             this._eventBus.emit(EventNames.DeepLink, null, new DeepLinkEvent(path));
         }
     }
@@ -127,14 +124,10 @@ export class RendererEvents {
     /*
      * Receive deep links from the main side of the Electron app and raise a UI event to views
      */
-    private _handleDeepLink(event: IpcRendererEvent, args: any): void {
+    private _handleDeepLink(args: any): void {
 
-        console.log('*** REACT RUNTIME DEEP LINK');
-        console.log(event);
-        console.log(args);
         const path = args as string;
         if (path) {
-            console.log('*** REACT RUNTIME DEEP LINK PATH: ' + path);
             this._eventBus.emit(EventNames.DeepLink, null, new DeepLinkEvent(path));
         }
     }

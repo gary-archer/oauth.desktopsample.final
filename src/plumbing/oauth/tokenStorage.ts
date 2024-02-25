@@ -13,6 +13,16 @@ export class TokenStorage {
     });
 
     /*
+     * Safe storage uses an operating system service but make sure we are not saving tokens insecurely
+     */
+    public constructor() {
+
+        if (!safeStorage.isEncryptionAvailable()) {
+            throw new Error('The environment does not support safe storage');
+        }
+    }
+
+    /*
      * Load token data or return null
      */
     public load(): TokenData | null {
@@ -31,8 +41,7 @@ export class TokenStorage {
 
         } catch (e: any) {
 
-            // Fail gracefully if the encryption key has been deleted
-            console.log(`Load failure in TokenStorage: ${e}`);
+            // Fail gracefully, eg if the encryption key has been deleted
             return null;
         }
     }
@@ -41,11 +50,6 @@ export class TokenStorage {
      * This saves token data to base64 encrypted bytes in a text file under the user profile
      */
     public save(data: TokenData): void {
-
-        // Safe storage uses an operating system service but make sure we are not saving tokens insecurely
-        if (!safeStorage.isEncryptionAvailable()) {
-            throw new Error('The environment does not support safe storage');
-        }
 
         const json = JSON.stringify(data);
         const buffer = safeStorage.encryptString(json);

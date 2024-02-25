@@ -1,14 +1,10 @@
-1. Deep links to get working and final code tidy ups
-   Private scheme name to be passed through to renderer if needed
-   Rename classes to UIEvents and IpcEvents
+1. Rename classes to UIEvents and IpcEvents
 
 2. Get MITM and SSL trust working so that I can view messages in future
    Update config with HTTP proxy settings if needed
    Test against local Node.js API
 
-3. Final testing
-   Test on Windows and macOS
-   Then merge
+3. Quick test on Windows and macOS then merge
  
 4. Blog updates
    Mention use of a proxy for debugging - as for any other desktop app

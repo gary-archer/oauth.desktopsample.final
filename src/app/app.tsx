@@ -104,7 +104,6 @@ export function App(props: AppProps): JSX.Element {
      * Navigate to deep links such as x-mycompany-desktopapp:/companies/2
      */
     function onDeepLink(event: DeepLinkEvent): void {
-        console.log('*** React app navigating to ' + event.path);
         navigate(event.path);
     }
 

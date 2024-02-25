@@ -63,12 +63,12 @@ export class AppViewModel {
             this._fetchCache,
             this._authenticatorClient);
 
-        // Initialize state
+        // Initialise state
         this._error = null;
         this._isLoading = false;
         this._setError = null;
 
-        // Initialize child view models
+        // Initialise child view models
         this._companiesViewModel = null;
         this._transactionsViewModel = null;
         this._userInfoViewModel = null;
@@ -76,7 +76,7 @@ export class AppViewModel {
     }
 
     /*
-     * For the correct React behavior, the view initializes state every time it loads
+     * For the correct React behavior, the view initialises state every time it loads
      */
     public useState(): void {
 
@@ -101,7 +101,7 @@ export class AppViewModel {
     }
 
     /*
-     * Initialize the application to finalize the view model
+     * Initialise the application to finalize the view model
      */
     public async initialise(): Promise<void> {
 

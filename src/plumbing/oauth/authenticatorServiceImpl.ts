@@ -25,20 +25,28 @@ import {TokenStorage} from './tokenStorage';
 export class AuthenticatorServiceImpl implements AuthenticatorService {
 
     private readonly _configuration: OAuthConfiguration;
-    private readonly _tokenStorage: TokenStorage;
     private readonly _loginState: LoginState;
     private readonly _logoutState: LogoutState;
-    private _metadata: AuthorizationServiceConfiguration | null;
+    private _tokenStorage: TokenStorage | null;
     private _tokens: TokenData | null;
+    private _metadata: AuthorizationServiceConfiguration | null;
 
     public constructor(configuration: OAuthConfiguration) {
 
         this._configuration = configuration;
-        this._tokenStorage = new TokenStorage();
         this._loginState = new LoginState();
         this._logoutState = new LogoutState();
-        this._setupCallbacks();
+        this._tokenStorage = null;
+        this._tokens = null;
         this._metadata = null;
+        this._setupCallbacks();
+    }
+
+    /*
+     * Use safe storage to load tokens once the window has initialised
+     */
+    public initialise(): void {
+        this._tokenStorage = new TokenStorage();
         this._tokens = this._tokenStorage.load();
     }
 
@@ -156,7 +164,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public clearLoginState(): void {
         this._tokens = null;
-        this._tokenStorage.delete();
+        this._tokenStorage?.delete();
     }
 
     /*
@@ -168,7 +176,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         if (this._tokens && this._tokens.accessToken) {
 
             this._tokens.accessToken = `${this._tokens.accessToken}x`;
-            this._tokenStorage.save(this._tokens);
+            this._tokenStorage?.save(this._tokens);
         }
     }
 
@@ -182,7 +190,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
             this._tokens.accessToken = `${this._tokens.accessToken}x`;
             this._tokens.refreshToken = `${this._tokens.refreshToken}x`;
-            this._tokenStorage.save(this._tokens);
+            this._tokenStorage?.save(this._tokens);
         }
     }
 
@@ -273,7 +281,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
             // Update tokens in memory and secure storage
             this._tokens = newTokenData;
-            this._tokenStorage.save(this._tokens);
+            this._tokenStorage?.save(this._tokens);
 
         } catch (e: any) {
 
@@ -329,7 +337,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
             // Update tokens in memory and secure storage
             this._tokens = newTokenData;
-            this._tokenStorage.save(this._tokens);
+            this._tokenStorage?.save(this._tokens);
 
         } catch (e: any) {
 

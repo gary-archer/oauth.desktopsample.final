@@ -39,7 +39,7 @@ export class TransactionsContainerViewModel {
     }
 
     /*
-     * For the correct React behavior, the view initializes state every time it loads
+     * For the correct React behavior, the view initialises state every time it loads
      */
     public useState(): void {
 

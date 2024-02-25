@@ -10,15 +10,16 @@ import {MainEvents} from './plumbing/ipc/mainEvents';
  */
 class Main {
 
+    private _configuration: Configuration;
+    private _ipcEvents: MainEvents;
     private _window: BrowserWindow | null;
-    private _ipcEvents: MainEvents | null;
-    private _configuration: Configuration | null;
     private _useBasicContentSecurityPolicy: boolean;
 
     public constructor() {
+
+        this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
+        this._ipcEvents = new MainEvents(this._configuration);
         this._window = null;
-        this._ipcEvents = null;
-        this._configuration = null;
         this._useBasicContentSecurityPolicy = false;
         this._setupCallbacks();
     }
@@ -34,9 +35,6 @@ class Main {
             app.quit();
             return;
         }
-
-        // First load configuration
-        this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
 
         // Attempting to start a second instance will fire the following event to the running instance
         app.on('second-instance', this._onSecondInstance);
@@ -56,7 +54,7 @@ class Main {
 
         // For Windows or Linux we receive a startup deep link URL as a command line parameter
         const startupUrl = this._getDeepLinkUrl(process.argv);
-        if (startupUrl && this._ipcEvents) {
+        if (startupUrl) {
             this._ipcEvents.deepLinkStartupUrl = startupUrl;
         }
     }
@@ -64,7 +62,7 @@ class Main {
     /*
      * Do initialisation after the ready event
      */
-    private _onReady(): void {
+    private async _onReady(): Promise<void> {
 
         // Create the window and use Electron recommended security options
         // https://www.electronjs.org/docs/tutorial/security
@@ -80,9 +78,8 @@ class Main {
             },
         });
 
-        // Load configuration and initialize server side classes
-        this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
-        this._ipcEvents = new MainEvents(this._configuration, this._window);
+        // Store the window to send events to
+        this._ipcEvents.initialise(this._window);
 
         // Register for private URI scheme notifications
         this._registerPrivateUriScheme();
@@ -97,7 +94,7 @@ class Main {
         this._window.on('closed', this._onClosed);
 
         // Register for event based communication with the renderer process
-        this._ipcEvents?.register();
+        this._ipcEvents.register();
     }
 
     /*
@@ -186,9 +183,7 @@ class Main {
         } else {
 
             // If this is a startup deep linking message we need to store it until after startup
-            if (this._ipcEvents) {
-                this._ipcEvents.deepLinkStartupUrl = schemeData;
-            }
+            this._ipcEvents.deepLinkStartupUrl = schemeData;
         }
     }
 
@@ -208,7 +203,7 @@ class Main {
         }
 
         // Send the event to the renderer side of the app
-        this._ipcEvents?.handleDeepLink(deepLinkUrl);
+        this._ipcEvents.handleDeepLink(deepLinkUrl);
     }
 
     /*

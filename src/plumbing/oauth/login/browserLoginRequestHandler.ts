@@ -78,7 +78,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         const code = args.get('code') || '';
         const error = args.get('error') || '';
 
-        // Initialize the result
+        // Initialise the result
         let authorizationResponse: AuthorizationResponse | null = null;
         let authorizationError: AuthorizationError | null = null;
 

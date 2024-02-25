@@ -13,18 +13,33 @@ import {IpcEventNames} from './ipcEventNames';
 export class MainEvents {
 
     private readonly _configuration: Configuration;
-    private readonly _window: BrowserWindow;
     private readonly _authenticatorService: AuthenticatorService;
     private readonly _fetchService: FetchService;
+    private _window: BrowserWindow | null;
     private _deepLinkStartupPath: string | null;
 
-    public constructor(configuration: Configuration, window: BrowserWindow) {
+    public constructor(configuration: Configuration) {
         this._configuration = configuration;
-        this._window = window;
+        this._window = null;
         this._authenticatorService = new AuthenticatorServiceImpl(this._configuration.oauth);
         this._fetchService = new FetchService(this._configuration, this._authenticatorService);
         this._deepLinkStartupPath = null;
         this._setupCallbacks();
+    }
+
+    /*
+     * Store the deep link startup URL if applicable
+     */
+    public set deepLinkStartupUrl(startupUrl: string) {
+        this._deepLinkStartupPath = startupUrl.replace(this._configuration.oauth.privateSchemeName + ':', '');
+    }
+
+    /*
+     * Initialise once the window is ready, at which point we can use safe storage
+     */
+    public initialise(window: BrowserWindow): void {
+        this._window = window;
+        this._authenticatorService.initialise();
     }
 
     /*
@@ -160,10 +175,10 @@ export class MainEvents {
     /*
      * Clear login state after certain errors
      */
-    private async _onClearLoginState(): Promise<void> {
+    private _onClearLoginState(): void {
 
         try {
-            await this._authenticatorService.clearLoginState();
+            this._authenticatorService.clearLoginState();
             this._sendResponse(IpcEventNames.ON_CLEAR_LOGIN_STATE, null, null);
 
         } catch (e: any) {
@@ -176,10 +191,10 @@ export class MainEvents {
     /*
      * For testing, make the access token act expired
      */
-    private async _onExpireAccessToken(): Promise<void> {
+    private _onExpireAccessToken(): void {
 
         try {
-            await this._authenticatorService.expireAccessToken();
+            this._authenticatorService.expireAccessToken();
             this._sendResponse(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, null, null);
 
         } catch (e: any) {
@@ -192,10 +207,10 @@ export class MainEvents {
     /*
      * For testing, make the refresh token act expired
      */
-    private async _onExpireRefreshToken(): Promise<void> {
+    private _onExpireRefreshToken(): void {
 
         try {
-            await this._authenticatorService.expireRefreshToken();
+            this._authenticatorService.expireRefreshToken();
             this._sendResponse(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, null, null);
 
         } catch (e: any) {
@@ -203,15 +218,6 @@ export class MainEvents {
             const errorJson = ErrorFactory.fromException(e).toJson();
             this._sendResponse(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, null, errorJson);
         }
-    }
-
-    /*
-     * Set a deep link startup URL if applicable
-     */
-    public set deepLinkStartupUrl(startupUrl: string) {
-        console.log('*** STARTUP DEEP LINK URL: ' + startupUrl);
-        this._deepLinkStartupPath = startupUrl.replace(this._configuration.oauth.privateSchemeName, '');
-        console.log('*** STARTUP DEEP LINK PATH: ' + this._deepLinkStartupPath);
     }
 
     /*
@@ -227,10 +233,8 @@ export class MainEvents {
         // If not handled, forward to the React app, which will update its hash location based on the path
         const url = UrlParser.tryParse(deepLinkUrl);
         if (url && url.pathname) {
-            console.log('*** RUNTIME DEEP LINK URL: ' + url.pathname);
-            const path = url.pathname.replace(this._configuration.oauth.privateSchemeName, '');
-            console.log('*** RUNTIME DEEP LINK PATH: ' + path);
-            this._window!.webContents.send(IpcEventNames.ON_DEEP_LINK, url);
+            const path = url.pathname.replace(this._configuration.oauth.privateSchemeName + ':', '');
+            this._window!.webContents.send(IpcEventNames.ON_DEEP_LINK, path);
         }
 
         return false;

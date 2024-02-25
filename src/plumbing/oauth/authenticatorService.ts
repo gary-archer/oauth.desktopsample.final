@@ -3,6 +3,9 @@
  */
 export interface AuthenticatorService {
 
+    // Do initial startup
+    initialise(): void;
+
     // Use the user info endpoint from metadata for API calls
     getUserInfoEndpoint(): Promise<string | null>;
 
