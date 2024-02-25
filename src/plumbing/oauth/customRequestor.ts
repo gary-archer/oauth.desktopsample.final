@@ -2,11 +2,19 @@ import axios, {AxiosRequestConfig, Method} from 'axios';
 import {Requestor} from '@openid/appauth';
 import {ErrorFactory} from '../errors/errorFactory';
 import {AxiosUtils} from '../utilities/axiosUtils';
+import {HttpProxy} from '../utilities/httpProxy';
 
 /*
  * Override the requestor object of AppAuthJS, so that OAuth error codes are returned
  */
 export class CustomRequestor extends Requestor {
+
+    private readonly _httpProxy: HttpProxy;
+
+    public constructor(httpProxy: HttpProxy) {
+        super();
+        this._httpProxy = httpProxy;
+    }
 
     /*
      * Run the request and return OAuth errors as objects
@@ -22,6 +30,11 @@ export class CustomRequestor extends Requestor {
                 data: settings.data,
                 headers: settings.headers as any,
             };
+
+            if (this._httpProxy.agent) {
+                options.httpsAgent = this._httpProxy.agent;
+            }
+
             const response = await axios.request(options);
 
             // All messages use a JSON response

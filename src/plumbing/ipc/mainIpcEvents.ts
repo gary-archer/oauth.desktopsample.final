@@ -1,6 +1,7 @@
 import {BrowserWindow, IpcMainEvent, ipcMain} from 'electron';
 import {FetchService} from '../../api/client/fetchService';
 import {Configuration} from '../../configuration/configuration';
+import {HttpProxy} from '../utilities/httpProxy';
 import {ErrorFactory} from '../errors/errorFactory';
 import {AuthenticatorService} from '../oauth/authenticatorService';
 import {AuthenticatorServiceImpl} from '../oauth/authenticatorServiceImpl';
@@ -13,6 +14,7 @@ import {IpcEventNames} from './ipcEventNames';
 export class MainIpcEvents {
 
     private readonly _configuration: Configuration;
+    private readonly _httpProxy: HttpProxy;
     private readonly _authenticatorService: AuthenticatorService;
     private readonly _fetchService: FetchService;
     private _window: BrowserWindow | null;
@@ -20,9 +22,10 @@ export class MainIpcEvents {
 
     public constructor(configuration: Configuration) {
         this._configuration = configuration;
+        this._httpProxy = new HttpProxy(this._configuration.app.useProxy, this._configuration.app.proxyUrl);
         this._window = null;
-        this._authenticatorService = new AuthenticatorServiceImpl(this._configuration.oauth);
-        this._fetchService = new FetchService(this._configuration, this._authenticatorService);
+        this._authenticatorService = new AuthenticatorServiceImpl(this._configuration.oauth, this._httpProxy);
+        this._fetchService = new FetchService(this._configuration, this._authenticatorService, this._httpProxy);
         this._deepLinkStartupPath = null;
         this._setupCallbacks();
     }

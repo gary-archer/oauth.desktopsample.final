@@ -38,6 +38,7 @@
     "electron-store": "^8.1.0",
     "fs-extra": "^11.1.1",
     "guid-typescript": "^1.0.9",
+    "https-proxy-agent": "^5.0.1",
     "js-event-bus": "^1.1.1",
     "moment": "2.29.4",
     "opener": "^1.5.2",
