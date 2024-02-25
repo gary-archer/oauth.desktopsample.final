@@ -1,7 +1,0 @@
-1. Get MITM and SSL trust working so that I can view messages in future
-   Update config with HTTP proxy settings if needed
-   Test against local Node.js API
-   Quick test on Windows and macOS then merge
- 
-2. Blog updates
-   Mention use of a proxy for debugging - as for any other desktop app
