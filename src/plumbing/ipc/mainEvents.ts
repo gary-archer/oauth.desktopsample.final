@@ -46,6 +46,7 @@ export class MainEvents {
 
         ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
         ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
+        ipcMain.on(IpcEventNames.ON_TOKEN_REFRESH, this._onTokenRefresh);
         ipcMain.on(IpcEventNames.ON_CLEAR_LOGIN_STATE, this._onClearLoginState);
         ipcMain.on(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, this._onExpireAccessToken);
         ipcMain.on(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, this._onExpireRefreshToken);
@@ -157,6 +158,22 @@ export class MainEvents {
     }
 
     /*
+     * Perform token refresh
+     */
+    private async _onTokenRefresh(): Promise<void> {
+
+        try {
+            await this._authenticatorService.tokenRefresh();
+            this._sendResponse(IpcEventNames.ON_TOKEN_REFRESH, null, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(IpcEventNames.ON_TOKEN_REFRESH, null, errorJson);
+        }
+    }
+
+    /*
      * Clear login state after certain errors
      */
     private async _onClearLoginState(): Promise<void> {
@@ -250,6 +267,7 @@ export class MainEvents {
 
         this._onLogin = this._onLogin.bind(this);
         this._onLogout = this._onLogout.bind(this);
+        this._onTokenRefresh = this._onTokenRefresh.bind(this);
         this._onClearLoginState = this._onClearLoginState.bind(this);
         this._onExpireAccessToken = this._onExpireAccessToken.bind(this);
         this._onExpireRefreshToken = this._onExpireRefreshToken.bind(this);

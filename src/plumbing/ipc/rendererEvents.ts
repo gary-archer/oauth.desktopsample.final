@@ -92,6 +92,13 @@ export class RendererEvents {
     }
 
     /*
+     * Run a token refresh on the main side of the app
+     */
+    public async tokenRefresh(): Promise<void> {
+        await this._sendRequestResponseIpcMessages(IpcEventNames.ON_TOKEN_REFRESH, {});
+    }
+
+    /*
      * Ask the main side of the app to clear login state after certain errors
      */
     public async clearLoginState(): Promise<void> {

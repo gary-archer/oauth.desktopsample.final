@@ -14,11 +14,11 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
 
     public constructor(events: RendererEvents) {
 
-        // Initialise properties
         this._events = events;
         this._concurrencyHandler = new ConcurrentActionHandler();
         this._isLoading = false;
         this._isLoaded = false;
+        this._setupCallbacks();
     }
 
     /*
@@ -39,12 +39,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
      * Try to refresh an access token
      */
     public async synchronizedRefresh(): Promise<void> {
-
-        // TODO: use concurrency handler
-        // await this._concurrencyHandler.execute(this._performTokenRefresh);
-
-        // TODO: handle the case where there are no unexpected errors but token refresh fails
-        // throw ErrorFactory.fromLoginRequired();
+        await this._concurrencyHandler.execute(this._performTokenRefresh);
     }
 
     /*
@@ -71,6 +66,13 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     }
 
     /*
+     * Do a token refresh on the main side of the app
+     */
+    private async _performTokenRefresh(): Promise<void> {
+        await this._events.tokenRefresh();
+    }
+
+    /*
      * Initialize the app upon startup, or retry if the initial load fails
      * The loading flag prevents duplicate metadata requests due to React strict mode
      */
@@ -92,5 +94,12 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
                 this._isLoading = false;
             }
         }*/
+    }
+
+    /*
+     * Ensure that the this parameter is available in async callbacks
+     */
+    private _setupCallbacks() {
+        this._performTokenRefresh = this._performTokenRefresh.bind(this);
     }
 }

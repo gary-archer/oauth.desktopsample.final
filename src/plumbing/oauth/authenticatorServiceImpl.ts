@@ -8,7 +8,6 @@ import {
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorFactory} from '../errors/errorFactory';
-import {ConcurrentActionHandler} from '../utilities/concurrentActionHandler';
 import {UrlParser} from '../utilities/urlParser';
 import {AuthenticatorService} from './authenticatorService';
 import {CustomRequestor} from './customRequestor';
@@ -27,7 +26,6 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
     private readonly _configuration: OAuthConfiguration;
     private readonly _tokenStorage: TokenStorage;
-    private readonly _concurrencyHandler: ConcurrentActionHandler;
     private readonly _loginState: LoginState;
     private readonly _logoutState: LogoutState;
     private _metadata: AuthorizationServiceConfiguration | null;
@@ -40,7 +38,6 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         this._configuration = configuration;
         this._tokenStorage = new TokenStorage();
         this._metadata = null;
-        this._concurrencyHandler = new ConcurrentActionHandler();
         this._tokens = null;
         this._isLoading = false;
         this._isLoaded = false;
@@ -61,7 +58,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     /*
      * Try to get an access token
      */
-    public async getAccessToken(): Promise<string | null> {
+    public getAccessToken(): string | null {
 
         // Return the existing token if present
         if (this._tokens && this._tokens.accessToken) {
@@ -73,24 +70,17 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
-     * Try to refresh an access token
+     * Try to refresh tokens
      */
-    public async synchronizedRefresh(): Promise<string> {
+    public async tokenRefresh(): Promise<void> {
 
-        // Try to use the refresh token to get a new access token
         if (this._tokens && this._tokens.refreshToken) {
-
-            // The concurrency handler will only do the refresh work for the first UI view that requests it
-            await this._concurrencyHandler.execute(this._performTokenRefresh);
-
-            // Return the new token on success
-            if (this._tokens && this._tokens.accessToken) {
-                return this._tokens.accessToken;
-            }
+            await this._performTokenRefresh();
         }
 
-        // Trigger a login redirect if there are no unexpected errors but we cannot refresh
-        throw ErrorFactory.fromLoginRequired();
+        if (!this._tokens || !this._tokens.accessToken) {
+            throw ErrorFactory.fromLoginRequired();
+        }
     }
 
     /*
@@ -120,7 +110,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
                 // Reset state
                 const idToken = this._tokens.idToken;
-                await this.clearLoginState();
+                this.clearLoginState();
 
                 // Start the logout redirect to remove the authorization server's session cookie
                 const logout = new LogoutManager(
@@ -168,20 +158,21 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     /*
      * Allow the login state to be cleared when required
      */
-    public async clearLoginState(): Promise<void> {
+    public clearLoginState(): void {
         this._tokens = null;
-        await this._tokenStorage.delete();
+        this._tokenStorage.delete();
     }
 
     /*
      * This method is for testing only, to make the access token fail and act like it has expired
      * The corrupted access token will be sent to the API but rejected when introspected
      */
-    public async expireAccessToken(): Promise<void> {
+    public expireAccessToken(): void {
 
         if (this._tokens && this._tokens.accessToken) {
+
             this._tokens.accessToken = `${this._tokens.accessToken}x`;
-            await this._tokenStorage.save(this._tokens);
+            this._tokenStorage.save(this._tokens);
         }
     }
 
@@ -189,12 +180,13 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      * This method is for testing only, to make the refresh token fail and act like it has expired
      * The corrupted refresh token will be sent to the Authorization Server but rejected
      */
-    public async expireRefreshToken(): Promise<void> {
+    public expireRefreshToken(): void {
 
         if (this._tokens && this._tokens.refreshToken) {
+
             this._tokens.accessToken = `${this._tokens.accessToken}x`;
             this._tokens.refreshToken = `${this._tokens.refreshToken}x`;
-            await this._tokenStorage.save(this._tokens);
+            this._tokenStorage.save(this._tokens);
         }
     }
 
@@ -211,7 +203,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             try {
 
                 await this._loadMetadata();
-                this._tokens = await this._tokenStorage.load();
+                this._tokens = this._tokenStorage.load();
                 this._isLoaded = true;
 
             } finally {
@@ -364,14 +356,14 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
             // Update tokens in memory and secure storage
             this._tokens = newTokenData;
-            await this._tokenStorage.save(this._tokens);
+            this._tokenStorage.save(this._tokens);
 
         } catch (e: any) {
 
             if (e.error === ErrorCodes.refreshTokenExpired) {
 
                 // For invalid_grant errors, clear token data and return success, to force a login redirect
-                await this.clearLoginState();
+                this.clearLoginState();
 
             } else {
 
@@ -386,6 +378,5 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     private _setupCallbacks() {
         this._endLogin = this._endLogin.bind(this);
-        this._performTokenRefresh = this._performTokenRefresh.bind(this);
     }
 }

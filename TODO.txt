@@ -1,31 +1,30 @@
-1. Get OAuth calls working to enable wider testing
-   ClearLoginState / ExpireAccessToken / ExpireRefreshToken
-   Then Refresh
-   Test and reduce OAuth code
+1. Get MITM and SSL trust working so that I can view messages in future
+   Update config with HTTP proxy settings if needed
 
-2. Tidy up and reduce other code
+2. Concurrency
+   Drive initialize from client side
+   But do I need it?
+   Prevent multiple API requests all calling getMetadata
+   Metadata lookup happens on a new login, a token refresh, or a logout request
+   Put back strict mode
+   Test and reduce OAuth code
+   getUserInfoEndpoint may not need to be async, cf old code
+
+3. Tidy up and reduce other code
    Can I do more in AppViewModel constructor?
    Rename classes to UIEvents and IpcEvents
    Drive session ID from the client side and send it in options
    Initialize code in app and view model
    Trim down the React code
 
-3. Deep links to get working and final code tidy ups
+4. Deep links to get working and final code tidy ups
    Look at each file and think more about naming
    Use UIEvents to distinguish it from IpcEvents
    Private scheme name to be passed through to renderer if needed
    ON_PRIVATE_URI_SCHEME_NOTIFICATION -> ON_DEEP_LINK
 
-4. Enable strict mode
-   Think more about main side and concurrency, eg multiple clicks.
-   Metadata lookup happens on a new login, a token refresh, or a logout request.
-   Drive this from my client side concurrency logic.
-   Server side initialize method needed due to client side strict mode???
-   I may need to call server side initialize, to prevent concurrent API requests all calling getMetadata
-   Get strict mode working
-
 5. Blog updates
    Mention use of a proxy for debugging - as for any other desktop app
    Test against local API
    Test on Windows and macOS
-   Test using HTTP Proxy and update config if needed
+   

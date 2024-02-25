@@ -7,7 +7,10 @@ export interface AuthenticatorService {
     getUserInfoEndpoint(): Promise<string | null>;
 
     // Try to get an access token
-    getAccessToken(): Promise<string | null>;
+    getAccessToken(): string | null;
+
+    // Try to refresh tokens
+    tokenRefresh(): Promise<void>;
 
     // Run the login on the system browser
     login(): Promise<void>;
@@ -19,11 +22,11 @@ export interface AuthenticatorService {
     handlePrivateUriSchemeNotification(privateSchemeUrl: string): boolean;
 
     // Allow the app to clear its login state after certain errors
-    clearLoginState(): Promise<void>;
+    clearLoginState(): void;
 
     // For testing, make the access token act expired
-    expireAccessToken(): Promise<void>;
+    expireAccessToken(): void;
 
     // For testing, make the refresh token act expired
-    expireRefreshToken(): Promise<void>;
+    expireRefreshToken(): void;
 }
