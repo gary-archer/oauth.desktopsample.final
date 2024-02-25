@@ -8,6 +8,7 @@ import {
 import {OAuthConfiguration} from '../../configuration/oauthConfiguration';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorFactory} from '../errors/errorFactory';
+import {HttpProxy} from '../utilities/httpProxy';
 import {UrlParser} from '../utilities/urlParser';
 import {AuthenticatorService} from './authenticatorService';
 import {CustomRequestor} from './customRequestor';
@@ -25,15 +26,17 @@ import {TokenStorage} from './tokenStorage';
 export class AuthenticatorServiceImpl implements AuthenticatorService {
 
     private readonly _configuration: OAuthConfiguration;
+    private readonly _customRequestor: CustomRequestor;
     private readonly _loginState: LoginState;
     private readonly _logoutState: LogoutState;
     private _tokenStorage: TokenStorage | null;
     private _tokens: TokenData | null;
     private _metadata: AuthorizationServiceConfiguration | null;
 
-    public constructor(configuration: OAuthConfiguration) {
+    public constructor(configuration: OAuthConfiguration, httpProxy: HttpProxy) {
 
         this._configuration = configuration;
+        this._customRequestor = new CustomRequestor(httpProxy);
         this._loginState = new LoginState();
         this._logoutState = new LogoutState();
         this._tokenStorage = null;
@@ -205,7 +208,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
                 this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
                     this._configuration.authority,
-                    new CustomRequestor());
+                    this._customRequestor);
 
             } catch (e: any) {
 
@@ -266,8 +269,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const tokenRequest = new TokenRequest(requestJson);
 
             // Execute the request to swap the code for tokens
-            const requestor = new CustomRequestor();
-            const tokenHandler = new BaseTokenRequestHandler(requestor);
+            const tokenHandler = new BaseTokenRequestHandler(this._customRequestor);
 
             // Perform the authorization code grant exchange
             const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
@@ -316,8 +318,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const tokenRequest = new TokenRequest(requestJson);
 
             // Execute the request to send the refresh token and get new tokens
-            const requestor = new CustomRequestor();
-            const tokenHandler = new BaseTokenRequestHandler(requestor);
+            const tokenHandler = new BaseTokenRequestHandler(this._customRequestor);
             const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
 
             // Set values from the response, which may include a new rolling refresh token

@@ -8,6 +8,7 @@ import {Configuration} from '../../configuration/configuration';
 import {ErrorFactory} from '../../plumbing/errors/errorFactory';
 import {AuthenticatorService} from '../../plumbing/oauth/authenticatorService';
 import {AxiosUtils} from '../../plumbing/utilities/axiosUtils';
+import {HttpProxy} from '../../plumbing/utilities/httpProxy';
 import {FetchOptions} from './fetchOptions';
 
 /*
@@ -17,11 +18,16 @@ export class FetchService {
 
     private readonly _configuration: Configuration;
     private readonly _authenticatorService: AuthenticatorService;
+    private readonly _httpProxy: HttpProxy;
 
-    public constructor(configuration: Configuration, authenticatorService: AuthenticatorService) {
+    public constructor(
+        configuration: Configuration,
+        authenticatorService: AuthenticatorService,
+        httpProxy: HttpProxy) {
 
         this._configuration = configuration;
         this._authenticatorService = authenticatorService;
+        this._httpProxy = httpProxy;
     }
 
     /*
@@ -111,6 +117,10 @@ export class FetchService {
                 data: dataToSend,
                 headers,
             } as AxiosRequestConfig;
+
+            if (this._httpProxy.agent) {
+                requestOptions.httpsAgent = this._httpProxy.agent;
+            }
 
             const response = await axios.request(requestOptions);
             AxiosUtils.checkJson(response.data);
