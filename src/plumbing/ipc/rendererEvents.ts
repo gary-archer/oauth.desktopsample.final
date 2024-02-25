@@ -78,23 +78,20 @@ export class RendererEvents {
      */
     public async loadTokens(): Promise<TokenData | null> {
 
-        return this._sendIpcMessage(IpcEventNames.ON_LOAD_TOKENS, {});
+        return null;
     }
 
     /*
      * Call the main side of the application to save tokens
      */
     public async saveTokens(tokenData: TokenData): Promise<void> {
-
-        await this._sendIpcMessage(IpcEventNames.ON_SAVE_TOKENS, tokenData);
+        console.log(tokenData);
     }
 
     /*
      * Call the main side of the application to remove tokens
      */
     public async deleteTokens(): Promise<void> {
-
-        await this._sendIpcMessage(IpcEventNames.ON_DELETE_TOKENS, {});
     }
 
     /*

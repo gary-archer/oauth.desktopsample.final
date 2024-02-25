@@ -3,7 +3,6 @@ import {Configuration} from '../../configuration/configuration';
 import {ErrorFactory} from '../errors/errorFactory';
 import {AuthenticatorService} from '../oauth/authenticatorService';
 import {AuthenticatorServiceImpl} from '../oauth/authenticatorServiceImpl';
-import {TokenData} from '../oauth/tokenData';
 import {UrlParser} from '../utilities/urlParser';
 import {IpcEventNames} from './ipcEventNames';
 
@@ -40,9 +39,6 @@ export class MainEvents {
         ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
         ipcMain.on(IpcEventNames.ON_GET_CONFIGURATION, this._getConfiguration);
         ipcMain.on(IpcEventNames.ON_GET_DEEP_LINK_STARTUP_URL, this._getDeepLinkStartupUrl);
-        ipcMain.on(IpcEventNames.ON_LOAD_TOKENS, this._loadTokens);
-        ipcMain.on(IpcEventNames.ON_SAVE_TOKENS, this._saveTokens);
-        ipcMain.on(IpcEventNames.ON_DELETE_TOKENS, this._deleteTokens);
     }
 
     /*
@@ -119,57 +115,6 @@ export class MainEvents {
     }
 
     /*
-     * Load tokens from secure storage
-     */
-    private _loadTokens(): void {
-
-        try {
-            // const tokens = TokenStorage.load();
-            const tokens: TokenData | null = null;
-            this._sendResponse(IpcEventNames.ON_LOAD_TOKENS, tokens, null);
-
-        } catch (e: any) {
-
-            // Return an error on failure
-            this._sendResponse(IpcEventNames.ON_LOAD_TOKENS, null, e);
-        }
-    }
-
-    /*
-     * Save tokens to secure storage
-     */
-    private _saveTokens(...args: any[]): void {
-
-        try {
-            const data = args[1] as TokenData;
-            console.log(data);
-            // TokenStorage.save(data);
-            this._sendResponse(IpcEventNames.ON_SAVE_TOKENS, null, null);
-
-        } catch (e: any) {
-
-            // Return an error on failure
-            this._sendResponse(IpcEventNames.ON_SAVE_TOKENS, null, e);
-        }
-    }
-
-    /*
-     * Remove tokens from secure storage
-     */
-    private _deleteTokens(): void {
-
-        try {
-            // TokenStorage.delete();
-            this._sendResponse(IpcEventNames.ON_DELETE_TOKENS, null, null);
-
-        } catch (e: any) {
-
-            // Return an error on failure
-            this._sendResponse(IpcEventNames.ON_DELETE_TOKENS, null, e);
-        }
-    }
-
-    /*
      * Send the response to the renderer side of the application
      */
     private _sendResponse(eventName: string, data: any, error: any) {
@@ -184,8 +129,5 @@ export class MainEvents {
         this._onLogout = this._onLogout.bind(this);
         this._getConfiguration = this._getConfiguration.bind(this);
         this._getDeepLinkStartupUrl = this._getDeepLinkStartupUrl.bind(this);
-        this._loadTokens = this._loadTokens.bind(this);
-        this._saveTokens = this._saveTokens.bind(this);
-        this._deleteTokens = this._deleteTokens.bind(this);
     }
 }
