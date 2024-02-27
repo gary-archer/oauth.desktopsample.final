@@ -68,15 +68,9 @@ export class MainIpcEvents {
      */
     private async _onGetCompanyList(event: IpcMainEvent, args: any): Promise<void> {
 
-        try {
-            const response = await this._fetchService.getCompanyList(args.options);
-            this._sendResponse(IpcEventNames.ON_GET_COMPANIES, response, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_GET_COMPANIES, null, errorJson);
-        }
+        await this._processAsyncRequestResponseIpcMessage(
+            IpcEventNames.ON_GET_COMPANIES,
+            () => this._fetchService.getCompanyList(args.options));
     }
 
     /*
@@ -84,15 +78,9 @@ export class MainIpcEvents {
      */
     private async _onGetCompanyTransactions(event: IpcMainEvent, args: any): Promise<void> {
 
-        try {
-            const response = await this._fetchService.getCompanyTransactions(args.id, args.options);
-            this._sendResponse(IpcEventNames.ON_GET_TRANSACTIONS, response, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_GET_TRANSACTIONS, null, errorJson);
-        }
+        await this._processAsyncRequestResponseIpcMessage(
+            IpcEventNames.ON_GET_TRANSACTIONS,
+            () => this._fetchService.getCompanyTransactions(args.id, args.options));
     }
 
     /*
@@ -100,15 +88,9 @@ export class MainIpcEvents {
      */
     private async _onGetOAuthUserInfo(event: IpcMainEvent, args: any): Promise<void> {
 
-        try {
-            const response = await this._fetchService.getOAuthUserInfo(args.options);
-            this._sendResponse(IpcEventNames.ON_GET_OAUTH_USER_INFO, response, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_GET_OAUTH_USER_INFO, null, errorJson);
-        }
+        await this._processAsyncRequestResponseIpcMessage(
+            IpcEventNames.ON_GET_OAUTH_USER_INFO,
+            () => this._fetchService.getOAuthUserInfo(args.options));
     }
 
     /*
@@ -116,15 +98,9 @@ export class MainIpcEvents {
      */
     private async _onGetApiUserInfo(event: IpcMainEvent, args: any): Promise<void> {
 
-        try {
-            const response = await this._fetchService.getApiUserInfo(args.options);
-            this._sendResponse(IpcEventNames.ON_GET_API_USER_INFO, response, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_GET_API_USER_INFO, null, errorJson);
-        }
+        await this._processAsyncRequestResponseIpcMessage(
+            IpcEventNames.ON_GET_API_USER_INFO,
+            () => this._fetchService.getApiUserInfo(args.options));
     }
 
     /*
@@ -132,15 +108,9 @@ export class MainIpcEvents {
      */
     private async _onLogin(): Promise<void> {
 
-        try {
-            await this._authenticatorService.login();
-            this._sendResponse(IpcEventNames.ON_LOGIN, null, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_LOGIN, null, errorJson);
-        }
+        await this._processAsyncRequestResponseIpcMessage(
+            IpcEventNames.ON_LOGIN,
+            () => this._authenticatorService.login());
     }
 
     /*
@@ -148,15 +118,9 @@ export class MainIpcEvents {
      */
     private async _onLogout(): Promise<void> {
 
-        try {
-            await this._authenticatorService.logout();
-            this._sendResponse(IpcEventNames.ON_LOGOUT, null, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_LOGOUT, null, errorJson);
-        }
+        await this._processAsyncRequestResponseIpcMessage(
+            IpcEventNames.ON_LOGOUT,
+            () => this._authenticatorService.logout());
     }
 
     /*
@@ -164,31 +128,19 @@ export class MainIpcEvents {
      */
     private async _onTokenRefresh(): Promise<void> {
 
-        try {
-            await this._authenticatorService.tokenRefresh();
-            this._sendResponse(IpcEventNames.ON_TOKEN_REFRESH, null, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_TOKEN_REFRESH, null, errorJson);
-        }
+        await this._processAsyncRequestResponseIpcMessage(
+            IpcEventNames.ON_TOKEN_REFRESH,
+            () => this._authenticatorService.tokenRefresh());
     }
 
     /*
      * Clear login state after certain errors
      */
-    private _onClearLoginState(): void {
+    private async _onClearLoginState(): Promise<void> {
 
-        try {
-            this._authenticatorService.clearLoginState();
-            this._sendResponse(IpcEventNames.ON_CLEAR_LOGIN_STATE, null, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_CLEAR_LOGIN_STATE, null, errorJson);
-        }
+        this._processRequestResponseIpcMessage(
+            IpcEventNames.ON_CLEAR_LOGIN_STATE,
+            () => this._authenticatorService.clearLoginState());
     }
 
     /*
@@ -196,15 +148,9 @@ export class MainIpcEvents {
      */
     private _onExpireAccessToken(): void {
 
-        try {
-            this._authenticatorService.expireAccessToken();
-            this._sendResponse(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, null, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, null, errorJson);
-        }
+        this._processRequestResponseIpcMessage(
+            IpcEventNames.ON_EXPIRE_ACCESS_TOKEN,
+            () => this._authenticatorService.expireAccessToken());
     }
 
     /*
@@ -212,15 +158,9 @@ export class MainIpcEvents {
      */
     private _onExpireRefreshToken(): void {
 
-        try {
-            this._authenticatorService.expireRefreshToken();
-            this._sendResponse(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, null, null);
-
-        } catch (e: any) {
-
-            const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, null, errorJson);
-        }
+        this._processRequestResponseIpcMessage(
+            IpcEventNames.ON_EXPIRE_REFRESH_TOKEN,
+            () => this._authenticatorService.expireRefreshToken());
     }
 
     /*
@@ -241,6 +181,40 @@ export class MainIpcEvents {
         }
 
         return false;
+    }
+
+    /*
+     * Encapsulate processing an IPC call and returning response data
+     */
+    private async _processAsyncRequestResponseIpcMessage(
+        eventName: string,
+        action: () => Promise<any>): Promise<void> {
+
+        try {
+            const response = await action();
+            this._sendResponse(eventName, response, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(eventName, null, errorJson);
+        }
+    }
+
+    /*
+     * Encapsulate processing an IPC call and returning response data
+     */
+    private _processRequestResponseIpcMessage(eventName: string, action: () => any): void {
+
+        try {
+            const response = action();
+            this._sendResponse(eventName, response, null);
+
+        } catch (e: any) {
+
+            const errorJson = ErrorFactory.fromException(e).toJson();
+            this._sendResponse(eventName, null, errorJson);
+        }
     }
 
     /*

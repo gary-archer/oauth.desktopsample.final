@@ -97,7 +97,7 @@ export class RendererIpcEvents {
     }
 
     /*
-     * Encapsulate making an IPC call and returning data
+     * Encapsulate making an IPC call and receiving response data
      */
     private async _sendRequestResponseIpcMessage(eventName: string, requestData: any): Promise<any> {
 
