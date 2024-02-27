@@ -54,7 +54,7 @@
     "@types/react-modal": "^3.13.1",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
-    "electron": "^28.2.3",
+    "electron": "^29.0.1",
     "eslint": "^8.52.0",
     "eslint-plugin-react": "^7.33.2",
     "ts-loader": "^9.5.0",
