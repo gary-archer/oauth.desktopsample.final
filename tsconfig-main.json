@@ -2,8 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "target": "ES2022",
-    "lib": ["ES2022", "DOM"],
-    "jsx": "react",
+    "lib": ["ES2022"],
     "module": "CommonJS",
     "moduleResolution": "Node",
     "esModuleInterop": true,
@@ -11,7 +10,7 @@
     "sourceMap": true
   },
   "include": [
-    "./src"
+    "./src/**/*.ts"
   ],
   "exclude": [
     "node_modules"

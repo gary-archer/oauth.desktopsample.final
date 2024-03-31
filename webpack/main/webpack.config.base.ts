@@ -5,7 +5,7 @@ import webpack from 'webpack';
  * Performs tree shaking to avoid deploying redundant code to the main side of the app
  * This excludes code from the renderer side of the app from main bundles
  * Electron since version 28 supports building to ECMAScript modules
- * Yet currently the webpack electron-main target only supports CommonJS bundle output
+ * Yet currently the webpack electron-main target requires a CommonJS build
  */
 const dirname = process.cwd();
 const config: webpack.Configuration = {
