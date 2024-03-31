@@ -1,6 +1,9 @@
 import path from 'path';
 import webpack from 'webpack';
 
+/*
+ * Performs tree shaking to deploy minimal code to the renderer side of the app
+ */
 const dirname = process.cwd();
 const config: webpack.Configuration = {
 

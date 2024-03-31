@@ -1,6 +1,11 @@
 import path from 'path';
 import webpack from 'webpack';
 
+/*
+ * Performs tree shaking to avoid deploying redundant code to the main side of the app
+ * Electron since version 28 supports building to ECMAScript modules
+ * Yet the webpack electron-main target currently limits the whole project to CommonJS
+ */
 const dirname = process.cwd();
 const config: webpack.Configuration = {
 
