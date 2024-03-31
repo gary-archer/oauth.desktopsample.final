@@ -1,10 +1,16 @@
 import path from 'path';
 import webpack from 'webpack';
 
+/*
+ * Performs tree shaking to avoid deploying redundant code to the main side of the app
+ * This excludes code from the renderer side of the app from main bundles
+ * Electron since version 28 supports building to ECMAScript modules
+ * Yet currently the webpack electron-main target only supports CommonJS bundle output
+ */
 const dirname = process.cwd();
 const config: webpack.Configuration = {
 
-    // Indicate that we're building for the Electron Main process
+    // Build for electron main output
     target: ['electron-main'],
 
     // Always output source maps since we need to decompile bundles
@@ -22,8 +28,13 @@ const config: webpack.Configuration = {
             {
                 // Files with a .ts extension are loaded by the Typescript loader
                 test: /\.ts$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
+                use: [{
+                    loader: 'ts-loader',
+                    options: {
+                        configFile: '../tsconfig-main.json',
+                    },
+                }],
+                exclude: /node_modules/,
             }
         ]
     },

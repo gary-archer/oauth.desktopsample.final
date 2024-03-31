@@ -1,6 +1,10 @@
 import path from 'path';
 import webpack from 'webpack';
 
+/*
+ * Performs tree shaking to deploy minimal code to the renderer side of the app
+ * This excludes code from the main side of the app from renderer bundles
+ */
 const dirname = process.cwd();
 const config: webpack.Configuration = {
 
@@ -22,8 +26,13 @@ const config: webpack.Configuration = {
             {
                 // Files with a .ts extension are loaded by the Typescript loader
                 test: /\.(ts|tsx)$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
+                use: [{
+                    loader: 'ts-loader',
+                    options: {
+                        configFile: '../tsconfig-renderer.json',
+                    },
+                }],
+                exclude: /node_modules/,
             }
         ]
     },

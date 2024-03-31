@@ -25,7 +25,7 @@ Then build the app via this command, which will build the renderer side of the a
 ./build.sh
 ```
 
-Next run the app, to trigger the OpenID Connect desktop flow:
+Next run the app, to test the OpenID Connect desktop flow:
 
 ```bash
 ./run.sh
@@ -43,7 +43,12 @@ You can login to the desktop app using my AWS Cognito test account:
 - Password: GuestPassword1
 ```
 
-You can then test all lifecycle operations, including token refresh, expiry events and logout.
+You can then test all lifecycle operations, including token refresh, expiry events and logout.\
+Then build in release mode to a platform-specific executable and test the deployed behavior:
+
+```bash
+./deploy.sh
+```
 
 ## Further Information
 

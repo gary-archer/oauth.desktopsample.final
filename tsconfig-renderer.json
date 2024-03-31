@@ -4,15 +4,14 @@
     "target": "ES2017",
     "lib": ["ES2022", "DOM"],
     "jsx": "react",
-    "module": "CommonJS",
+    "module": "ES2015",
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "outDir": "dist",
     "sourceMap": true
   },
   "include": [
-    "./src",
-    "./webpack"
+    "./src"
   ],
   "exclude": [
     "node_modules"
