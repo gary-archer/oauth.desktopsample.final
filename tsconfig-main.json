@@ -11,8 +11,7 @@
     "sourceMap": true
   },
   "include": [
-    "./src",
-    "./webpack/main"
+    "./src"
   ],
   "exclude": [
     "node_modules"
