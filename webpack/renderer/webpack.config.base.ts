@@ -22,8 +22,13 @@ const config: webpack.Configuration = {
             {
                 // Files with a .ts extension are loaded by the Typescript loader
                 test: /\.(ts|tsx)$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
+                use: [{
+                    loader: 'ts-loader',
+                    options: {
+                        configFile: '../tsconfig-renderer.json',
+                    },
+                }],
+                exclude: /node_modules/,
             }
         ]
     },

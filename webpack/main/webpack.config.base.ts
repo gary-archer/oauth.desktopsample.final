@@ -4,7 +4,7 @@ import webpack from 'webpack';
 const dirname = process.cwd();
 const config: webpack.Configuration = {
 
-    // Indicate that we're building for the Electron Main process
+    // Build for electron main output
     target: ['electron-main'],
 
     // Always output source maps since we need to decompile bundles
@@ -22,8 +22,13 @@ const config: webpack.Configuration = {
             {
                 // Files with a .ts extension are loaded by the Typescript loader
                 test: /\.ts$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
+                use: [{
+                    loader: 'ts-loader',
+                    options: {
+                        configFile: '../tsconfig-main.json',
+                    },
+                }],
+                exclude: /node_modules/,
             }
         ]
     },

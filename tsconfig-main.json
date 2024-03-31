@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "sourceMap": true
+  },
+  "include": [
+    "./src",
+    "./webpack/main"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

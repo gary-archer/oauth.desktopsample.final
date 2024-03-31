@@ -1,7 +1,7 @@
 {
   "name": "finaldesktopapp",
   "version": "2.0.0",
-  "description": "The Final OpenID Connect secured Desktop App using the AppAuth-JS security",
+  "description": "The Final OpenID Connect secured Desktop App",
   "keywords": [],
   "author": "Gary Archer",
   "license": "MIT",
@@ -22,10 +22,10 @@
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "./build.sh",
     "start": "./start.sh",
-    "webpackMainDebug": "NODE_OPTIONS='--import tsx' webpack --config webpack/webpack.config.main.dev.ts",
-    "webpackMainRelease": "NODE_OPTIONS='--import tsx' webpack --config webpack/webpack.config.main.prod.ts",
-    "webpackRendererDebug": "NODE_OPTIONS='--import tsx' webpack --config webpack/webpack.config.renderer.dev.ts --watch",
-    "webpackRendererRelease": "NODE_OPTIONS='--import tsx' webpack --config webpack/webpack.config.renderer.prod.ts",
+    "webpackMainDebug": "NODE_OPTIONS='--import tsx' webpack --config webpack/main/webpack.config.dev.ts",
+    "webpackMainRelease": "NODE_OPTIONS='--import tsx' webpack --config webpack/main/webpack.config.prod.ts",
+    "webpackRendererDebug": "NODE_OPTIONS='--import tsx' webpack --config webpack/renderer/webpack.config.dev.ts --watch",
+    "webpackRendererRelease": "NODE_OPTIONS='--import tsx' webpack --config webpack/renderer/webpack.config.prod.ts",
     "pack": "./pack.sh"
   },
   "dependencies": {
