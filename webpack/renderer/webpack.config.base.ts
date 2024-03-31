@@ -2,8 +2,7 @@ import path from 'path';
 import webpack from 'webpack';
 
 /*
- * Performs tree shaking to deploy minimal code to the renderer side of the app
- * This excludes code from the main side of the app from renderer bundles
+ * Performs tree shaking to deploy main code to renderer bundles
  */
 const dirname = process.cwd();
 const config: webpack.Configuration = {
