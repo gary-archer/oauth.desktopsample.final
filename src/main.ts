@@ -74,7 +74,8 @@ class Main {
             webPreferences: {
                 nodeIntegration: false,
                 contextIsolation: true,
-                preload: path.join(app.getAppPath(), './preload.js'),
+                sandbox: false,
+                preload: path.join(app.getAppPath(), './preload.mjs'),
             },
         });
 

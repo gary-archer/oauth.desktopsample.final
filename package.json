@@ -6,7 +6,7 @@
   "author": "Gary Archer",
   "license": "MIT",
   "main": "main.bundle.js",
-  "type": "commonjs",
+  "type": "module",
   "engines": {
     "node": ">=20"
   },

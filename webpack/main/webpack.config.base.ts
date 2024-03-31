@@ -3,13 +3,15 @@ import webpack from 'webpack';
 
 /*
  * Performs tree shaking to avoid deploying renderer code to main bundles
- * Electron 28+ supports building to ECMAScript modules but the webpack electron-main target requires CommonJS
  */
 const dirname = process.cwd();
 const config: webpack.Configuration = {
 
-    // Build for electron main output
+    // Build for a node.js target that uses modules
     target: ['electron-main'],
+    experiments: {
+        outputModule: true,
+    },
 
     // Always output source maps since we need to decompile bundles
     devtool: 'source-map',
@@ -46,7 +48,8 @@ const config: webpack.Configuration = {
 
         // Output bundles to the dist folder
         path: path.resolve(dirname, './dist'),
-        filename: 'main.bundle.js'
+        filename: 'main.bundle.js',
+        chunkFormat: 'module',
     }
 };
 

@@ -50,7 +50,7 @@ if [ -d 'dist' ]; then
   rm -rf dist
 fi
 mkdir dist
-cp index.html desktop*.json *.css package.json src/preload.js dist
+cp index.html desktop*.json *.css package.json src/preload.mjs dist
 
 #
 # Make code quality checks

@@ -2,12 +2,12 @@ import path from 'path';
 import webpack from 'webpack';
 
 /*
- * Performs tree shaking to deploy main code to renderer bundles
+ * Performs tree shaking to avoid deploying main code to renderer bundles
  */
 const dirname = process.cwd();
 const config: webpack.Configuration = {
 
-    // Build for electron renderer output
+    // Build for a web target
     target: ['web'],
 
     // Always output source maps since we are building bundles
@@ -45,7 +45,7 @@ const config: webpack.Configuration = {
 
         // Output bundles to the dist folder
         path: path.resolve(dirname, './dist'),
-        filename: '[name].bundle.js'
+        filename: '[name].bundle.js',
     },
     optimization: {
 
@@ -56,7 +56,7 @@ const config: webpack.Configuration = {
                     chunks: 'initial',
                     name: 'vendor',
                     test: /node_modules/,
-                    enforce: true
+                    enforce: true,
                 },
             }
         }
