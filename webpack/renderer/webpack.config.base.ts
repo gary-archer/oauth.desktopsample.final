@@ -29,6 +29,7 @@ const config: webpack.Configuration = {
                 use: [{
                     loader: 'ts-loader',
                     options: {
+                        onlyCompileBundledFiles: true,
                         configFile: '../tsconfig-renderer.json',
                     },
                 }],
