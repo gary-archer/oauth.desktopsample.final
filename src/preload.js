@@ -1,7 +1,9 @@
-import {contextBridge, ipcRenderer} from 'electron';
+const {contextBridge, ipcRenderer} = require('electron');
 
 /*
- * Privileged operations called by the renderer process
+ * The preload script provides entry points to privileged operations called by the renderer process
+ * CommonJS is used for the preload script so that that process sandboxing can also be enabled
+ * 
  */
 contextBridge.exposeInMainWorld('api', {
 
