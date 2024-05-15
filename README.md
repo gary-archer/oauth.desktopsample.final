@@ -6,7 +6,7 @@
 
 ## Overview
 
-* The final OpenID Connect desktop code sample, referenced in my blog at https://authguidance.com
+* The final OpenID Connect desktop code sample
 * **The goal is to implement OpenID Connect desktop logins with best usability and reliability**
 
 ## Views
@@ -52,8 +52,8 @@ Then build in release mode to a platform-specific executable and test the deploy
 
 ## Further Information
 
-* See the [API Journey - Client Side](https://authguidance.com/api-journey-client-side/) for further information on the app's behaviour
-* Further details specific to the desktop app are provided, starting in the [Final Desktop Sample Overview](https://authguidance.com/final-desktop-sample-overview/)
+* See the [API Journey - Client Side](https://apisandclients.com/posts/api-journey-client-side) for further information on the app's behaviour
+* Further details specific to the desktop app are provided, starting in the [Final Desktop Sample Overview](https://apisandclients.com/posts/final-desktop-sample-overview)
 
 ## Programming Languages
 
