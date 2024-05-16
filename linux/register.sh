@@ -22,3 +22,10 @@ envsubst < finaldesktopapp.desktop.template > finaldesktopapp.desktop
 #
 cp finaldesktopapp.desktop $APP_REGISTRATION_PATH
 xdg-mime default finaldesktopapp.desktop x-scheme-handler/x-mycompany-desktopapp
+
+#
+# You may also need to run these commands on Linux
+# https://github.com/electron/electron/issues/17972
+#
+# sudo chown root node_modules/electron/dist/chrome-sandbox
+# sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
