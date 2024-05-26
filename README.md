@@ -44,10 +44,10 @@ You can login to the desktop app using my AWS Cognito test account:
 ```
 
 You can then test all lifecycle operations, including token refresh, expiry events and logout.\
-Then build in release mode to a platform-specific executable and test the deployed behavior:
+Then package a platform-specific executable and test the release build behavior:
 
 ```bash
-./deploy.sh
+./pack.sh
 ```
 
 ## Further Information
