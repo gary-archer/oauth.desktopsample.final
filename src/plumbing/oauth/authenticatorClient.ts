@@ -3,6 +3,9 @@
  */
 export interface AuthenticatorClient {
 
+    // See if logged in
+    isLoggedIn(): Promise<boolean>;
+
     // Do the login redirect and process the response
     login(): Promise<void>;
 

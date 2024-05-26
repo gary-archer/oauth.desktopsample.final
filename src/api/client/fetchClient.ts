@@ -101,6 +101,7 @@ export class FetchClient {
             }
 
             try {
+
                 // Try to refresh the access token
                 await this._authenticatorClient.synchronizedRefresh();
 

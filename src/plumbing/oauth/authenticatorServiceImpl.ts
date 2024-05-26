@@ -91,6 +91,13 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
+     * Return true if there are existing tokens
+     */
+    public async isLoggedIn(): Promise<boolean> {
+        return !!this._tokens;
+    }
+
+    /*
      * Do the login work
      */
     public async login(): Promise<void> {
@@ -328,10 +335,12 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
                 idToken: tokenResponse.idToken ? tokenResponse.idToken : null,
             };
 
-            // Maintain existing details if required
+            // Maintain the existing refresh token if a new one is not issued
             if (!newTokenData.refreshToken) {
                 newTokenData.refreshToken = this._tokens!.refreshToken;
             }
+
+            // Maintain the existing ID token if a new one is not issued
             if (!newTokenData.idToken) {
                 newTokenData.idToken = this._tokens!.idToken;
             }

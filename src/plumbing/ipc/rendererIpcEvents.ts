@@ -55,6 +55,13 @@ export class RendererIpcEvents {
     }
 
     /*
+     * Ask the main side of the app if it is logged in
+     */
+    public async isLoggedIn() : Promise<any> {
+        return await this._sendRequestResponseIpcMessage(IpcEventNames.ON_IS_LOGGED_IN, {});
+    }
+
+    /*
      * Run a login on the main side of the app
      */
     public async login(): Promise<void> {

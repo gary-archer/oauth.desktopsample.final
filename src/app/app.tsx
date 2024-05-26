@@ -19,7 +19,6 @@ import {LoginRequiredView} from '../views/loginRequired/loginRequiredView';
 import {TransactionsContainer} from '../views/transactions/transactionsContainer';
 import {TransactionsContainerProps} from '../views/transactions/transactionsContainerProps';
 import {CurrentLocation} from '../views/utilities/currentLocation';
-import {LoginNavigator} from '../views/utilities/loginNavigator';
 import {AppProps} from './appProps';
 
 /*
@@ -29,9 +28,7 @@ export function App(props: AppProps): JSX.Element {
 
     const model = props.viewModel;
     model.useState();
-
     const navigate = useNavigate();
-    const loginNavigator = new LoginNavigator(navigate);
 
     useEffect(() => {
         startup();
@@ -68,7 +65,7 @@ export function App(props: AppProps): JSX.Element {
      * Redirect to the login required view when we need to sign in
      */
     function onLoginRequired(): void {
-        loginNavigator.navigateToLoginRequired();
+        navigate('/loggedout');
     }
 
     /*
@@ -76,10 +73,19 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onHome(): Promise<void> {
 
-        if (CurrentLocation.path === '/loggedout') {
+        const isLoggedIn = await model.authenticatorClient.isLoggedIn();
+        if (!isLoggedIn) {
 
-            // Trigger a login when the Home button is clicked in the Login Required view
-            await login();
+            // Update state to indicate a login is in progress
+            model.eventBus.emit(UIEventNames.LoginStarted, null, new LoginStartedEvent());
+
+            // Do the work of the login
+            await model.login();
+
+            // Move back to the location that took us to login required
+            if (!model.error) {
+                navigate(CurrentLocation.path);
+            }
 
         } else {
 
@@ -105,23 +111,6 @@ export function App(props: AppProps): JSX.Element {
      */
     function onDeepLink(event: DeepLinkEvent): void {
         navigate(event.path);
-    }
-
-    /*
-     * Initiate the login operation
-     */
-    async function login(): Promise<void> {
-
-        // Update state to indicate a sign in is in progress
-        model.eventBus.emit(UIEventNames.LoginStarted, null, new LoginStartedEvent());
-
-        // Do the work of the login
-        await model.login();
-
-        // Move back to the location that took us to login required
-        if (!model.error) {
-            loginNavigator.restorePreLoginLocation();
-        }
     }
 
     /*

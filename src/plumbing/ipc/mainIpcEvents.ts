@@ -54,6 +54,7 @@ export class MainIpcEvents {
         ipcMain.on(IpcEventNames.ON_GET_TRANSACTIONS, this._onGetCompanyTransactions);
         ipcMain.on(IpcEventNames.ON_GET_OAUTH_USER_INFO, this._onGetOAuthUserInfo);
         ipcMain.on(IpcEventNames.ON_GET_API_USER_INFO, this._onGetApiUserInfo);
+        ipcMain.on(IpcEventNames.ON_IS_LOGGED_IN, this._onIsLoggedIn);
         ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
         ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
         ipcMain.on(IpcEventNames.ON_TOKEN_REFRESH, this._onTokenRefresh);
@@ -101,6 +102,16 @@ export class MainIpcEvents {
         await this._processAsyncRequestResponseIpcMessage(
             IpcEventNames.ON_GET_API_USER_INFO,
             () => this._fetchService.getApiUserInfo(args.options));
+    }
+
+    /*
+     * See if there are any tokens
+     */
+    private async _onIsLoggedIn(): Promise<void> {
+
+        await this._processAsyncRequestResponseIpcMessage(
+            IpcEventNames.ON_IS_LOGGED_IN,
+            () => this._authenticatorService.isLoggedIn());
     }
 
     /*
@@ -241,6 +252,7 @@ export class MainIpcEvents {
         this._onGetCompanyTransactions = this._onGetCompanyTransactions.bind(this);
         this._onGetOAuthUserInfo = this._onGetOAuthUserInfo.bind(this);
         this._onGetApiUserInfo = this._onGetApiUserInfo.bind(this);
+        this._onIsLoggedIn = this._onIsLoggedIn.bind(this);
         this._onLogin = this._onLogin.bind(this);
         this._onLogout = this._onLogout.bind(this);
         this._onTokenRefresh = this._onTokenRefresh.bind(this);

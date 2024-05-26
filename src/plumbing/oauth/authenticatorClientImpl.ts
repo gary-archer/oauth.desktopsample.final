@@ -18,6 +18,13 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
     }
 
     /*
+     * See if currently logged in
+     */
+    public async isLoggedIn(): Promise<boolean> {
+        return await this._ipcEvents.isLoggedIn();
+    }
+
+    /*
      * Forward to the main side of the app to perform the login work
      */
     public async login(): Promise<void> {

@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {NavigatedEvent} from '../../plumbing/events/navigatedEvent';
 import {UIEventNames} from '../../plumbing/events/uiEventNames';
 import {ViewModelFetchEvent} from '../../plumbing/events/viewModelFetchEvent';
 import {HeaderButtonsViewProps} from './headerButtonsViewProps';
@@ -9,6 +10,7 @@ import {HeaderButtonsViewProps} from './headerButtonsViewProps';
 export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
 
     const [hasData, setHasData] = useState(false);
+    const [homeTitle, setHomeTitle] = useState('');
 
     useEffect(() => {
         startup();
@@ -17,10 +19,12 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
 
     function startup() {
         props.eventBus.on(UIEventNames.ViewModelFetch, onViewModelFetch);
+        props.eventBus.on(UIEventNames.Navigated, onNavigated);
     }
 
     function cleanup() {
         props.eventBus.detach(UIEventNames.ViewModelFetch, onViewModelFetch);
+        props.eventBus.on(UIEventNames.Navigated, onNavigated);
     }
 
     // Settings related to button long clicks
@@ -32,6 +36,22 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      */
     function onViewModelFetch(event: ViewModelFetchEvent) {
         setHasData(event.loaded);
+    }
+
+    /*
+     * Update different text and buttons depending on whether in an authenticated view
+     */
+    function onNavigated(event: NavigatedEvent) {
+
+        if (event.isAuthenticatedView) {
+
+            setHomeTitle('Home');
+
+        } else {
+
+            setHomeTitle('Sign in');
+            setHasData(false);
+        }
     }
 
     /*
@@ -103,7 +123,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
                     className='btn btn-primary w-100 p-1'
                     type='button'
                 >
-                    <small>Home</small>
+                    <small>{homeTitle}</small>
                 </button>
             </div>
             <div
@@ -148,7 +168,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
                     disabled={disabled}
                     type='button'
                 >
-                    <small>Logout</small>
+                    <small>Sign out</small>
                 </button>
             </div>
         </div>

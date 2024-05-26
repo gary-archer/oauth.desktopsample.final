@@ -15,6 +15,9 @@ export interface AuthenticatorService {
     // Try to refresh tokens
     tokenRefresh(): Promise<void>;
 
+    // Query if logged in
+    isLoggedIn(): Promise<boolean>;
+
     // Run the login on the system browser
     login(): Promise<void>;
 
