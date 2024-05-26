@@ -118,7 +118,8 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onLogout(): Promise<void> {
 
-        // Move the desktop app to the logged out view
+        // Move the desktop app to the logged out view and reset its path
+        CurrentLocation.path = '/';
         navigate('/loggedout');
 
         // Do the logout redirect to remove the SSO cookie

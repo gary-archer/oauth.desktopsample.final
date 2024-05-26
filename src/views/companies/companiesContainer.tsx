@@ -19,13 +19,12 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
 
     const model = props.viewModel;
     model.useState();
+    CurrentLocation.path = useLocation().pathname;
 
     useEffect(() => {
         startup();
         return () => cleanup();
     }, []);
-
-    CurrentLocation.path = useLocation().pathname;
 
     /*
      * Subscribe for reload events and then do the initial load of data

@@ -19,6 +19,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
 
     const model = props.viewModel;
     model.useState();
+    CurrentLocation.path = useLocation().pathname;
 
     const params = useParams();
     const companyId = params.id!;
@@ -27,8 +28,6 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
         startup();
         return () => cleanup();
     }, [companyId]);
-
-    CurrentLocation.path = useLocation().pathname;
 
     /*
      * Subscribe for reload events and then do the initial load of data
