@@ -94,7 +94,7 @@ class Main {
         // Register for event based communication with the renderer process
         this._ipcEvents.register();
 
-        // Register for private URI scheme notifications, which can run slow, so do it asynchronously
+        // Register for private URI scheme notifications, which runs a little slow on Linux, so do it asynchronously
         setTimeout(() => this._registerPrivateUriScheme(), 250);
     }
 
@@ -258,9 +258,7 @@ class Main {
         } else {
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
-            console.log('*** start');
             app.setAsDefaultProtocolClient(this._configuration!.oauth.privateSchemeName);
-            console.log('*** end');
         }
     }
 
