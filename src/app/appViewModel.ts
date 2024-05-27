@@ -135,7 +135,6 @@ export class AppViewModel {
      */
     public async login(): Promise<void> {
 
-        this._fetchCache.clearAll();
         this._viewModelCoordinator!.resetState();
         this._updateError(null);
 
@@ -152,7 +151,6 @@ export class AppViewModel {
      */
     public async logout(): Promise<void> {
 
-        this._fetchCache.clearAll();
         this._viewModelCoordinator!.resetState();
         this._updateError(null);
 
