@@ -49,7 +49,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
 
         } else {
 
-            setHomeTitle('Sign in');
+            setHomeTitle('Sign In');
             setHasData(false);
         }
     }
@@ -168,7 +168,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
                     disabled={disabled}
                     type='button'
                 >
-                    <small>Sign out</small>
+                    <small>Sign Out</small>
                 </button>
             </div>
         </div>
