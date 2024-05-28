@@ -38,17 +38,12 @@ export class MainIpcEvents {
     }
 
     /*
-     * Initialise once the window is ready, at which point we can use safe storage
+     * Store the window, load tokens and register to receive IPC messages from the renderer process
      */
-    public initialise(window: BrowserWindow): void {
+    public register(window: BrowserWindow): void {
+
         this._window = window;
         this._authenticatorService.initialise();
-    }
-
-    /*
-     * Register to receive IPC messages from the renderer process
-     */
-    public register(): void {
 
         ipcMain.on(IpcEventNames.ON_GET_COMPANIES, this._onGetCompanyList);
         ipcMain.on(IpcEventNames.ON_GET_TRANSACTIONS, this._onGetCompanyTransactions);

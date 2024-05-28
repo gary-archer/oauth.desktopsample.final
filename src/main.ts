@@ -79,8 +79,11 @@ class Main {
             },
         });
 
-        // Store the window to send events to
-        this._ipcEvents.initialise(this._window);
+        // Register for event based communication with the renderer process
+        this._ipcEvents.register(this._window);
+
+        // Register for private URI scheme notifications
+        this._registerPrivateUriScheme();
 
         // Load the index.html of the app from the file system
         this._window.loadFile('./index.html');
@@ -90,12 +93,6 @@ class Main {
 
         // Emitted when the window is closed
         this._window.on('closed', this._onClosed);
-
-        // Register for event based communication with the renderer process
-        this._ipcEvents.register();
-
-        // Register for private URI scheme notifications, which runs a little slow on Linux, so do it asynchronously
-        setTimeout(() => this._registerPrivateUriScheme(), 250);
     }
 
     /*
@@ -242,7 +239,8 @@ class Main {
     }
 
     /*
-     * Handle private URI scheme registration
+     * Handle private URI scheme registration on Windows or macOS
+     * On Linux the registration is done by the run.sh script instead
      */
     private _registerPrivateUriScheme(): void {
 
@@ -255,7 +253,7 @@ class Main {
                 process.execPath,
                 [app.getAppPath()]);
 
-        } else {
+        } else if (process.platform === 'darwin') {
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
             app.setAsDefaultProtocolClient(this._configuration!.oauth.privateSchemeName);
