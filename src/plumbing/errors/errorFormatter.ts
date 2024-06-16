@@ -56,7 +56,7 @@ export class ErrorFormatter {
 
         // Link to API logs if applicable
         if (error.instanceId > 0) {
-            lines.push(this._createErrorLine('Instance Id', error.instanceId.toString()));
+            lines.push(this._createErrorLine('Instance Id', error.instanceId.toString(), 'errorcolor'));
         }
 
         // Show the HTTP status if applicable
