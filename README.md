@@ -39,7 +39,7 @@ A private URI scheme callback URL of `x-mycompany-desktopapp:/callback` is used 
 You can login to the desktop app using my AWS Cognito test account:
 
 ```text
-- User: guestuser@mycompany.com
+- User: guestuser@example.com
 - Password: GuestPassword1
 ```
 
