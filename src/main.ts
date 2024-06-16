@@ -166,7 +166,7 @@ class Main {
     }
 
     /*
-     * On MacOS this is where we receive login responses or other deep links
+     * On macOS this is where we receive login responses or other deep links
      */
     private _onOpenUrl(event: any, schemeData: string): void {
 

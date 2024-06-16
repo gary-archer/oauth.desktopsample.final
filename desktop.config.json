@@ -1,16 +1,21 @@
 {
     "app": {
-        "apiBaseUrl": "https://api.authsamples-k8s-dev.com/investments",
+        "apiBaseUrl": "https://api.authsamples.com/investments",
+        "trustedHosts": [
+            "https://api.authsamples.com",
+            "https://login.authsamples.com",
+            "https://cognito-idp.eu-west-2.amazonaws.com"
+        ],
         "useProxy": false,
         "proxyUrl": "http://127.0.0.1:8888"
     },
     "oauth": {
-        "authority":             "https://login.authsamples-k8s-dev.com/oauth/v2/oauth-anonymous",
-        "clientId":              "desktop_client",
+        "authority":             "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_CuhLeqiE9",
+        "clientId":              "5r463je7qeddssfqttaa8cpv91",
         "redirectUri":           "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
         "privateSchemeName":     "x-authsamples-desktopapp",
-        "scope":                 "openid profile investments",
-        "customLogoutEndpoint":  "",
+        "scope":                 "openid profile https://api.authsamples.com/investments",
+        "customLogoutEndpoint":  "https://login.authsamples.com/logout",
         "postLogoutRedirectUri": "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
         "logoutCallbackPath":    "/logoutcallback"
     }

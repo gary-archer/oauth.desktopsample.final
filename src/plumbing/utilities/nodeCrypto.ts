@@ -8,7 +8,8 @@ import {createHash, randomBytes} from 'crypto';
 export class NodeCrypto implements Crypto {
 
     public generateRandom(size: number): string {
-        return base64url.encode(randomBytes(size));
+        const sizeToUse = size > 64 ? 64 : size;
+        return base64url.encode(randomBytes(sizeToUse));
     }
 
     public async deriveChallenge(code: string): Promise<string> {
