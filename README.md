@@ -32,7 +32,7 @@ Next run the app, to test the OpenID Connect desktop flow:
 ```
 
 A login is triggered in the system browser, so that the app cannot access the user's credentials.\
-A private URI scheme callback URL of `x-mycompany-desktopapp:/callback` is used to receive the login response:
+A private URI scheme callback URL of `x-authsamples-desktopapp:/callback` is used to receive the login response:
 
 ![Desktop App Login](./doc/login.png)
 

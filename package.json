@@ -14,7 +14,7 @@
     "protocols": {
       "name": "finaldesktopapp",
       "schemes": [
-        "x-mycompany-desktopapp"
+        "x-authsamples-desktopapp"
       ]
     }
   },

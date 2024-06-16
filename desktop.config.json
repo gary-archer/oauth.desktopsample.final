@@ -13,7 +13,7 @@
         "authority":             "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_CuhLeqiE9",
         "clientId":              "5r463je7qeddssfqttaa8cpv91",
         "redirectUri":           "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
-        "privateSchemeName":     "x-mycompany-desktopapp",
+        "privateSchemeName":     "x-authsamples-desktopapp",
         "scope":                 "openid profile https://api.authsamples.com/investments",
         "customLogoutEndpoint":  "https://login.authsamples.com/logout",
         "postLogoutRedirectUri": "https://authsamples.com/apps/finaldesktopapp/postlogout.html",

@@ -107,7 +107,7 @@ export function App(props: AppProps): JSX.Element {
     }
 
     /*
-     * Navigate to deep links such as x-mycompany-desktopapp:/companies/2
+     * Navigate to deep links such as x-authsamples-desktopapp:/companies/2
      */
     function onDeepLink(event: DeepLinkEvent): void {
         navigate(event.path);

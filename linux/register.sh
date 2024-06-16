@@ -21,7 +21,7 @@ envsubst < finaldesktopapp.desktop.template > finaldesktopapp.desktop
 # Then deploy the Gnome .desktop file needed for private URI schemes to work
 #
 cp finaldesktopapp.desktop $APP_REGISTRATION_PATH
-xdg-mime default finaldesktopapp.desktop x-scheme-handler/x-mycompany-desktopapp
+xdg-mime default finaldesktopapp.desktop x-scheme-handler/x-authsamples-desktopapp
 
 #
 # You may also need to run these commands on Linux
