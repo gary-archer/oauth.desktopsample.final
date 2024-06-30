@@ -23,6 +23,7 @@ import {TokenStorage} from './tokenStorage';
 /*
  * The entry point class for OAuth related requests in the main process
  */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 export class AuthenticatorServiceImpl implements AuthenticatorService {
 
     private readonly _configuration: OAuthConfiguration;

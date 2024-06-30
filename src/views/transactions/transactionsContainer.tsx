@@ -22,7 +22,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
     CurrentLocation.path = useLocation().pathname;
 
     const params = useParams();
-    const companyId = params.id!;
+    const companyId = params.id || '';
 
     useEffect(() => {
         startup();
@@ -78,6 +78,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
 
     function getErrorProps(): ErrorSummaryViewProps {
 
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         return {
             error: model.error!,
             errorsToIgnore: [ErrorCodes.loginRequired],

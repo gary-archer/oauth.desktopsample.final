@@ -163,6 +163,7 @@ export function App(props: AppProps): JSX.Element {
 
     function getErrorProps(): ErrorSummaryViewProps {
 
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         return {
             error: model.error!,
             errorsToIgnore: [],

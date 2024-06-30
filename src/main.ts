@@ -211,7 +211,7 @@ class Main {
 
         for (const arg of argv) {
             const value = arg as string;
-            if (value.indexOf(this._configuration!.oauth.privateSchemeName) !== -1) {
+            if (value.indexOf(this._configuration.oauth.privateSchemeName) !== -1) {
                 return value;
             }
         }
@@ -248,14 +248,14 @@ class Main {
             // Register the private URI scheme differently for Windows
             // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
             app.setAsDefaultProtocolClient(
-                this._configuration!.oauth.privateSchemeName,
+                this._configuration.oauth.privateSchemeName,
                 process.execPath,
                 [app.getAppPath()]);
 
         } else if (process.platform === 'darwin') {
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
-            app.setAsDefaultProtocolClient(this._configuration!.oauth.privateSchemeName);
+            app.setAsDefaultProtocolClient(this._configuration.oauth.privateSchemeName);
         }
     }
 

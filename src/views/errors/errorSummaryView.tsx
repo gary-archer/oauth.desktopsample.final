@@ -50,6 +50,7 @@ export function ErrorSummaryView(props: ErrorSummaryViewProps): JSX.Element {
      */
     function renderModalDialog(): JSX.Element {
 
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         const errorDetailsProps = {
             title: props.dialogTitle,
             error: props.error!,

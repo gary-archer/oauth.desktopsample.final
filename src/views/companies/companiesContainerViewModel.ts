@@ -98,15 +98,21 @@ export class CompaniesContainerViewModel {
      * Update state and the binding system
      */
     private _updateCompanies(companies: Company[]): void {
+
         this._companies = companies;
-        this._setCompanies!(companies);
+        if (this._setCompanies) {
+            this._setCompanies(companies);
+        }
     }
 
     /*
      * Update state and the binding system
      */
     private _updateError(error: UIError | null): void {
+
         this._error = error;
-        this._setError!(error);
+        if (this._setError) {
+            this._setError(error);
+        }
     }
 }

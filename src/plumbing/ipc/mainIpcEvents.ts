@@ -183,7 +183,7 @@ export class MainIpcEvents {
         const url = UrlParser.tryParse(deepLinkUrl);
         if (url && url.pathname) {
             const path = url.pathname.replace(this._configuration.oauth.privateSchemeName + ':', '');
-            this._window!.webContents.send(IpcEventNames.ON_DEEP_LINK, path);
+            this._window?.webContents.send(IpcEventNames.ON_DEEP_LINK, path);
         }
 
         return false;
@@ -235,7 +235,7 @@ export class MainIpcEvents {
      * Send the response to the renderer side of the application
      */
     private _sendResponse(eventName: string, data: any, error: any) {
-        this._window!.webContents.send(eventName, {data, error});
+        this._window?.webContents.send(eventName, {data, error});
     }
 
     /*

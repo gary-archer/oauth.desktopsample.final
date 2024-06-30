@@ -135,11 +135,11 @@ export class AppViewModel {
      */
     public async login(): Promise<void> {
 
-        this._viewModelCoordinator!.resetState();
+        this._viewModelCoordinator.resetState();
         this._updateError(null);
 
         try {
-            await this._authenticatorClient!.login();
+            await this._authenticatorClient.login();
 
         } catch (e: any) {
             this._updateError(ErrorFactory.fromException(e));
@@ -151,12 +151,12 @@ export class AppViewModel {
      */
     public async logout(): Promise<void> {
 
-        this._viewModelCoordinator!.resetState();
+        this._viewModelCoordinator.resetState();
         this._updateError(null);
 
         try {
 
-            await this._authenticatorClient!.logout();
+            await this._authenticatorClient.logout();
 
         } catch (e: any) {
 
@@ -170,9 +170,9 @@ export class AppViewModel {
         if (!this._companiesViewModel) {
 
             this._companiesViewModel = new CompaniesContainerViewModel(
-                this._fetchClient!,
+                this._fetchClient,
                 this._eventBus,
-                this._viewModelCoordinator!,
+                this._viewModelCoordinator,
             );
         }
 
@@ -185,9 +185,9 @@ export class AppViewModel {
 
             this._transactionsViewModel = new TransactionsContainerViewModel
             (
-                this._fetchClient!,
+                this._fetchClient,
                 this._eventBus,
-                this._viewModelCoordinator!,
+                this._viewModelCoordinator,
             );
         }
 
@@ -199,9 +199,9 @@ export class AppViewModel {
         if (!this._userInfoViewModel) {
 
             this._userInfoViewModel = new UserInfoViewModel(
-                this.fetchClient!,
+                this.fetchClient,
                 this._eventBus,
-                this._viewModelCoordinator!,
+                this._viewModelCoordinator,
             );
         }
 
@@ -216,7 +216,7 @@ export class AppViewModel {
         try {
 
             this._updateError(null);
-            await this._authenticatorClient?.expireAccessToken();
+            await this._authenticatorClient.expireAccessToken();
 
         } catch (e: any) {
             this._updateError(ErrorFactory.fromException(e));
@@ -231,7 +231,7 @@ export class AppViewModel {
         try {
 
             this._updateError(null);
-            await this._authenticatorClient?.expireRefreshToken();
+            await this._authenticatorClient.expireRefreshToken();
 
         } catch (e: any) {
             this._updateError(ErrorFactory.fromException(e));
@@ -244,7 +244,7 @@ export class AppViewModel {
     public reloadData(causeError: boolean): void {
 
         this._updateError(null);
-        this._viewModelCoordinator!.resetState();
+        this._viewModelCoordinator.resetState();
         this._eventBus.emit(UIEventNames.ReloadData, null, new ReloadDataEvent(causeError));
     }
 
@@ -252,15 +252,18 @@ export class AppViewModel {
      * See if there are any errors
      */
     public hasError(): boolean {
-        return !!this._error || this._viewModelCoordinator!.hasErrors();
+        return !!this._error || this._viewModelCoordinator.hasErrors();
     }
 
     /*
      * Update error state and the binding system
      */
     private _updateError(error: UIError | null): void {
+
         this._error = error;
-        this._setError!(error);
+        if (this._setError) {
+            this._setError(error);
+        }
     }
 
     /*
