@@ -12,8 +12,8 @@ export interface OAuthConfiguration {
     // The URL on which we receive the response
     redirectUri: string;
 
-    // The Private URI Scheme used to receive OAuth redirect responses and deep links
-    privateSchemeName: string;
+    // The URL to which we return after a logout
+    postLogoutRedirectUri: string;
 
     // The scopes requested
     scope: string;
@@ -21,9 +21,9 @@ export interface OAuthConfiguration {
     // Support custom logout behaviour
     customLogoutEndpoint: string;
 
-    // The URL to which we return after a logout
-    postLogoutRedirectUri: string;
-
     // The post logout location within the app
     logoutCallbackPath: string;
+
+    // The Private URI Scheme used to receive OAuth redirect responses and deep links
+    privateSchemeName: string;
 }

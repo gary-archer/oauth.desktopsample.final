@@ -8,10 +8,10 @@
         "authority":             "https://login.authsamples-k8s.com/oauth/v2/oauth-anonymous",
         "clientId":              "desktop_client",
         "redirectUri":           "https://authsamples.com/apps/finaldesktopapp/postlogin.html",
-        "privateSchemeName":     "x-authsamples-desktopapp",
+        "postLogoutRedirectUri": "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
         "scope":                 "openid profile investments",
         "customLogoutEndpoint":  "",
-        "postLogoutRedirectUri": "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
-        "logoutCallbackPath":    "/logoutcallback"
+        "logoutCallbackPath":    "/logoutcallback",
+        "privateSchemeName":     "x-authsamples-desktopapp"
     }
 }
