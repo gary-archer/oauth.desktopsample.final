@@ -55,7 +55,6 @@ export class LoginAsyncAdapter {
         // Set up PKCE for the redirect, which avoids native app vulnerabilities
         await authorizationRequest.setupCodeVerifier();
 
-        /* eslint-disable no-async-promise-executor */
         return new Promise(async (resolve, reject) => {
 
             // Use the AppAuth mechanism of a notifier to receive the login result

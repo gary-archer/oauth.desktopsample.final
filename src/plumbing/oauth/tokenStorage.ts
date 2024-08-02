@@ -39,7 +39,7 @@ export class TokenStorage {
             const json = safeStorage.decryptString(Buffer.from(encryptedBytesBase64, 'base64'));
             return JSON.parse(json);
 
-        } catch (e: any) {
+        } catch {
 
             // Fail gracefully, eg if the encryption key has been deleted
             return null;
