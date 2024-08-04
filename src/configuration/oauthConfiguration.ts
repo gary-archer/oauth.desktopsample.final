@@ -21,9 +21,6 @@ export interface OAuthConfiguration {
     // Support custom logout behaviour
     customLogoutEndpoint: string;
 
-    // The post logout location within the app
-    logoutCallbackPath: string;
-
     // The Private URI Scheme used to receive OAuth redirect responses and deep links
     privateSchemeName: string;
 }

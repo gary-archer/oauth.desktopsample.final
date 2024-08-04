@@ -11,7 +11,6 @@
         "postLogoutRedirectUri": "https://authsamples.com/apps/finaldesktopapp/postlogout.html",
         "scope":                 "openid profile https://api.authsamples.com/investments",
         "customLogoutEndpoint":  "https://login.authsamples.com/logout",
-        "logoutCallbackPath":    "/logoutcallback",
         "privateSchemeName":     "x-authsamples-desktopapp"
     }
 }

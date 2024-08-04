@@ -152,17 +152,15 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         if (url) {
 
             const args = new URLSearchParams(url.search);
-            const state = args.get('state');
-            if (url.pathname.toLowerCase() === this._configuration.logoutCallbackPath?.toLowerCase()) {
+            const path = url.pathname.toLowerCase();
+            if (path === '/callback') {
 
-                // Handle logout responses
-                this._logoutState!.handleLogoutResponse(args);
+                this._loginState!.handleLoginResponse(args);
                 return true;
 
-            } else if (state) {
+            } else if (path === '/logoutcallback') {
 
-                // Otherwise, if there is a state parameter we will classify this as a login response
-                this._loginState!.handleLoginResponse(args);
+                this._logoutState!.handleLogoutResponse(args);
                 return true;
             }
         }
