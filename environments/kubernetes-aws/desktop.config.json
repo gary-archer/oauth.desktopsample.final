@@ -1,0 +1,16 @@
+{
+    "app": {
+        "apiBaseUrl": "https://api.authsamples-k8s.com/investments",
+        "useProxy": false,
+        "proxyUrl": "http://127.0.0.1:8888"
+    },
+    "oauth": {
+        "authority":             "https://login.authsamples-k8s.com/oauth/v2/oauth-anonymous",
+        "clientId":              "desktop_client",
+        "redirectUri":           "https://www.authsamples.com/apps/finaldesktopapp/postlogin.html",
+        "postLogoutRedirectUri": "https://www.authsamples.com/apps/finaldesktopapp/postlogout.html",
+        "scope":                 "openid profile investments",
+        "customLogoutEndpoint":  "",
+        "privateSchemeName":     "x-authsamples-desktopapp"
+    }
+}

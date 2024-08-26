@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "outDir": "dist",
+    "sourceMap": true
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
