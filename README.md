@@ -6,7 +6,7 @@
 
 ## Overview
 
-A cross-platform demo desktop app using AppAuth and OpenID Connect, which aims for the best usability and reliability.
+A cross-platform demo desktop app using OpenID Connect, which aims for the best usability and reliability.
 
 ## Views
 
