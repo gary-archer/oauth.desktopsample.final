@@ -44,7 +44,7 @@ You can login to the desktop app using my AWS Cognito test account:
 ```
 
 The app receives the login response using a private URI scheme redirect URI.\
-Interstitial web pages ensure a user gesture after login and logout, so that login responses return to the app reliably.
+Interstitial web pages ensure a user gesture after login and logout, so that responses return to the app reliably.\
 After login you can test all lifecycle operations, including token refresh, expiry events and logout.\
 You can then package a platform-specific executable and test the release build behavior:
 
