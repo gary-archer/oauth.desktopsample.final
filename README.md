@@ -66,4 +66,4 @@ You can then package a platform-specific executable and test the release build b
 * The [AppAuth-JS](https://github.com/openid/AppAuth-JS/blob/master/README.md) library implements the code flow with PKCE.
 * [AWS Serverless](https://github.com/gary-archer/oauth.apisample.serverless) or Kubernetes is used to host remote API endpoints that the app calls.
 * AWS Cognito is the default authorization server for the desktop app and API.
-* Electron SafeStorage enables tokens to be stored securely, whose encryption is isolated from other apps and users.
+* Electron SafeStorage stores tokens securely, with encryption isolated from other apps and users.
