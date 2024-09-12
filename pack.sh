@@ -51,20 +51,12 @@ if [ $? -ne 0 ]; then
   exit
 fi
 
+#
+# On Linux, register the app to use the packed command
+#
 if [ "$PLATFORM" == 'LINUX' ]; then
-  
-  #
-  # Register the app to use the packed command
-  #
   export APP_COMMAND="$(pwd)/package/finaldesktopapp-linux-x64/finaldesktopapp"
   ./linux/register.sh
-
-  #
-  # On my Ubuntu 24 system I also need to run these commands
-  # https://github.com/electron/electron/issues/17972
-  #
-  sudo chown root package/finaldesktopapp-linux-x64/chrome-sandbox
-  sudo chmod 4755 package/finaldesktopapp-linux-x64/chrome-sandbox
 fi
 
 #
