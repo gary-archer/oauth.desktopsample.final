@@ -108,7 +108,7 @@ export class FetchService {
 
             // A special header can be sent to ask the API to throw a simulated exception
             if (options.causeError) {
-                headers['x-authsamples-test-exception'] = 'SampleApi';
+                headers['x-authsamples-test-exception'] = 'FinalApi';
             }
 
             const requestOptions = {
