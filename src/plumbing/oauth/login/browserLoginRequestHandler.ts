@@ -7,7 +7,7 @@ import {
     AuthorizationServiceConfiguration,
     BasicQueryStringUtils,
     DefaultCrypto} from '@openid/appauth';
-import Opener from 'opener';
+import open from 'open';
 import {LoginState} from './loginState';
 
 /*
@@ -55,7 +55,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         const loginUrl = this.buildRequestUrl(metadata, request);
 
         // Ask the main side of the app to open the system browser
-        Opener(loginUrl);
+        open(loginUrl);
     }
 
     /*
