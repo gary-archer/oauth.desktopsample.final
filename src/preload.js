@@ -1,30 +1,22 @@
 const {contextBridge, ipcRenderer} = require('electron');
 
 /*
- * The preload script provides entry points to privileged operations called by the renderer process
- * CommonJS is used for the preload script so that that process sandboxing can also be enabled
- * 
+ * Entry points to privileged operations called by the renderer process
+ * The preload script must use CommonJS syntax since I also use process sandboxing
  */
 contextBridge.exposeInMainWorld('api', {
 
     /*
-     * Push a command from the renderer to the main process and wait for a response
+     * Send a request from the renderer to the main process and return the response
      */
-    sendIpcMessage: async function(name, requestData) {
-
-        return new Promise((resolve) => {
-
-            ipcRenderer.send(name, requestData);
-            ipcRenderer.on(name, (event, responseData) => {
-                resolve(responseData);
-            });
-        });
+    sendMessage: async function(name, requestData) {
+        return await ipcRenderer.invoke(name, requestData);
     },
 
     /*
-     * Pull data from the main process
+     * Receive a notification from the main process
      */
-    receiveIpcMessage: function(name, callback) {
+    receiveMessage: function(name, callback) {
 
         ipcRenderer.on(name, (event, responseData) => {
             callback(responseData);

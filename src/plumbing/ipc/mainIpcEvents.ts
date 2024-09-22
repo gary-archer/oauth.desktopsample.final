@@ -1,4 +1,4 @@
-import {BrowserWindow, IpcMainEvent, ipcMain} from 'electron';
+import {BrowserWindow, ipcMain, IpcMainInvokeEvent} from 'electron';
 import {FetchService} from '../../api/client/fetchService';
 import {Configuration} from '../../configuration/configuration';
 import {HttpProxy} from '../utilities/httpProxy';
@@ -45,132 +45,22 @@ export class MainIpcEvents {
         this._window = window;
         this._authenticatorService.initialise();
 
-        ipcMain.on(IpcEventNames.ON_GET_COMPANIES, this._onGetCompanyList);
-        ipcMain.on(IpcEventNames.ON_GET_TRANSACTIONS, this._onGetCompanyTransactions);
-        ipcMain.on(IpcEventNames.ON_GET_OAUTH_USER_INFO, this._onGetOAuthUserInfo);
-        ipcMain.on(IpcEventNames.ON_GET_API_USER_INFO, this._onGetApiUserInfo);
-        ipcMain.on(IpcEventNames.ON_IS_LOGGED_IN, this._onIsLoggedIn);
-        ipcMain.on(IpcEventNames.ON_LOGIN, this._onLogin);
-        ipcMain.on(IpcEventNames.ON_LOGOUT, this._onLogout);
-        ipcMain.on(IpcEventNames.ON_TOKEN_REFRESH, this._onTokenRefresh);
-        ipcMain.on(IpcEventNames.ON_CLEAR_LOGIN_STATE, this._onClearLoginState);
-        ipcMain.on(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, this._onExpireAccessToken);
-        ipcMain.on(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, this._onExpireRefreshToken);
-        ipcMain.on(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, this._getDeepLinkStartupPath);
+        ipcMain.handle(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, this._getDeepLinkStartupPath);
+        ipcMain.handle(IpcEventNames.ON_GET_COMPANIES, this._onGetCompanyList);
+        ipcMain.handle(IpcEventNames.ON_GET_TRANSACTIONS, this._onGetCompanyTransactions);
+        ipcMain.handle(IpcEventNames.ON_GET_OAUTH_USER_INFO, this._onGetOAuthUserInfo);
+        ipcMain.handle(IpcEventNames.ON_GET_API_USER_INFO, this._onGetApiUserInfo);
+        ipcMain.handle(IpcEventNames.ON_IS_LOGGED_IN, this._onIsLoggedIn);
+        ipcMain.handle(IpcEventNames.ON_LOGIN, this._onLogin);
+        ipcMain.handle(IpcEventNames.ON_LOGOUT, this._onLogout);
+        ipcMain.handle(IpcEventNames.ON_TOKEN_REFRESH, this._onTokenRefresh);
+        ipcMain.handle(IpcEventNames.ON_CLEAR_LOGIN_STATE, this._onClearLoginState);
+        ipcMain.handle(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, this._onExpireAccessToken);
+        ipcMain.handle(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, this._onExpireRefreshToken);
     }
 
     /*
-     * Make an API request to get companies
-     */
-    private async _onGetCompanyList(event: IpcMainEvent, args: any): Promise<void> {
-
-        await this._processAsyncRequestResponseIpcMessage(
-            IpcEventNames.ON_GET_COMPANIES,
-            () => this._fetchService.getCompanyList(args.options));
-    }
-
-    /*
-     * Make an API request to get transactions
-     */
-    private async _onGetCompanyTransactions(event: IpcMainEvent, args: any): Promise<void> {
-
-        await this._processAsyncRequestResponseIpcMessage(
-            IpcEventNames.ON_GET_TRANSACTIONS,
-            () => this._fetchService.getCompanyTransactions(args.id, args.options));
-    }
-
-    /*
-     * Make an API request to get OAuth user info
-     */
-    private async _onGetOAuthUserInfo(event: IpcMainEvent, args: any): Promise<void> {
-
-        await this._processAsyncRequestResponseIpcMessage(
-            IpcEventNames.ON_GET_OAUTH_USER_INFO,
-            () => this._fetchService.getOAuthUserInfo(args.options));
-    }
-
-    /*
-     * Make an API request to get API user info
-     */
-    private async _onGetApiUserInfo(event: IpcMainEvent, args: any): Promise<void> {
-
-        await this._processAsyncRequestResponseIpcMessage(
-            IpcEventNames.ON_GET_API_USER_INFO,
-            () => this._fetchService.getApiUserInfo(args.options));
-    }
-
-    /*
-     * See if there are any tokens
-     */
-    private async _onIsLoggedIn(): Promise<void> {
-
-        await this._processAsyncRequestResponseIpcMessage(
-            IpcEventNames.ON_IS_LOGGED_IN,
-            () => this._authenticatorService.isLoggedIn());
-    }
-
-    /*
-     * Run a login redirect on the system browser
-     */
-    private async _onLogin(): Promise<void> {
-
-        await this._processAsyncRequestResponseIpcMessage(
-            IpcEventNames.ON_LOGIN,
-            () => this._authenticatorService.login());
-    }
-
-    /*
-     * Run a logout redirect on the system browser
-     */
-    private async _onLogout(): Promise<void> {
-
-        await this._processAsyncRequestResponseIpcMessage(
-            IpcEventNames.ON_LOGOUT,
-            () => this._authenticatorService.logout());
-    }
-
-    /*
-     * Perform token refresh
-     */
-    private async _onTokenRefresh(): Promise<void> {
-
-        await this._processAsyncRequestResponseIpcMessage(
-            IpcEventNames.ON_TOKEN_REFRESH,
-            () => this._authenticatorService.tokenRefresh());
-    }
-
-    /*
-     * Clear login state after certain errors
-     */
-    private async _onClearLoginState(): Promise<void> {
-
-        this._processRequestResponseIpcMessage(
-            IpcEventNames.ON_CLEAR_LOGIN_STATE,
-            () => this._authenticatorService.clearLoginState());
-    }
-
-    /*
-     * For testing, make the access token act expired
-     */
-    private _onExpireAccessToken(): void {
-
-        this._processRequestResponseIpcMessage(
-            IpcEventNames.ON_EXPIRE_ACCESS_TOKEN,
-            () => this._authenticatorService.expireAccessToken());
-    }
-
-    /*
-     * For testing, make the refresh token act expired
-     */
-    private _onExpireRefreshToken(): void {
-
-        this._processRequestResponseIpcMessage(
-            IpcEventNames.ON_EXPIRE_REFRESH_TOKEN,
-            () => this._authenticatorService.expireRefreshToken());
-    }
-
-    /*
-     * Receive deep links on the main side of the Electron app
+     * When the main side of the Electron app receives a deep link it may notify the renderer
      */
     public handleDeepLink(deepLinkUrl: string): boolean {
 
@@ -179,63 +69,181 @@ export class MainIpcEvents {
             return true;
         }
 
-        // If not handled, forward to the React app, which will update its hash location based on the path
+        // If not handled, notify the React app, which will update its hash location based on the path
         const url = UrlParser.tryParse(deepLinkUrl);
         if (url && url.pathname) {
             const path = url.pathname.replace(this._configuration.oauth.privateSchemeName + ':', '');
-            this._window?.webContents.send(IpcEventNames.ON_DEEP_LINK, path);
+            this._window?.webContents.send(IpcEventNames.ON_DEEP_LINK, {data: path});
         }
 
         return false;
     }
 
     /*
-     * Encapsulate processing an IPC call and returning response data
+     * The renderer calls main to ask it the app was started via a deep link
      */
-    private async _processAsyncRequestResponseIpcMessage(
-        eventName: string,
-        action: () => Promise<any>): Promise<void> {
+    private _getDeepLinkStartupPath(event: IpcMainInvokeEvent): Promise<[any, string]> {
+
+        const data = {
+            path: this._deepLinkStartupPath,
+        };
+
+        return this._handleNonAsyncOperation(
+            event,
+            () => data);
+    }
+
+    /*
+     * Make an API request to get companies
+     */
+    private async _onGetCompanyList(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
+
+        return this._handleAsyncOperation(
+            event,
+            () => this._fetchService.getCompanyList(args.options));
+    }
+
+    /*
+     * Make an API request to get transactions
+     */
+    private async _onGetCompanyTransactions(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
+
+        return this._handleAsyncOperation(
+            event,
+            () => this._fetchService.getCompanyTransactions(args.id, args.options));
+    }
+
+    /*
+     * Make an API request to get OAuth user info
+     */
+    private async _onGetOAuthUserInfo(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
+
+        return this._handleAsyncOperation(
+            event,
+            () => this._fetchService.getOAuthUserInfo(args.options));
+    }
+
+    /*
+     * Make an API request to get API user info
+     */
+    private async _onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
+
+        return this._handleAsyncOperation(
+            event,
+            () => this._fetchService.getApiUserInfo(args.options));
+    }
+
+    /*
+     * See if there are any tokens
+     */
+    private async _onIsLoggedIn(event: IpcMainInvokeEvent): Promise<[any, string]> {
+
+        return this._handleAsyncOperation(
+            event,
+            () => this._authenticatorService.isLoggedIn());
+    }
+
+    /*
+     * Run a login redirect on the system browser
+     */
+    private async _onLogin(event: IpcMainInvokeEvent): Promise<[any, string]> {
+
+        return this._handleAsyncOperation(
+            event,
+            () => this._authenticatorService.login());
+    }
+
+    /*
+     * Run a logout redirect on the system browser
+     */
+    private async _onLogout(event: IpcMainInvokeEvent): Promise<[any, string]> {
+
+        return this._handleAsyncOperation(
+            event,
+            () => this._authenticatorService.logout());
+    }
+
+    /*
+     * Perform token refresh
+     */
+    private async _onTokenRefresh(event: IpcMainInvokeEvent): Promise<[any, string]> {
+
+        return this._handleAsyncOperation(
+            event,
+            () => this._authenticatorService.tokenRefresh());
+    }
+
+    /*
+     * Clear login state after certain errors
+     */
+    private async _onClearLoginState(event: IpcMainInvokeEvent): Promise<[any, string]> {
+
+        return this._handleNonAsyncOperation(
+            event,
+            () => this._authenticatorService.clearLoginState());
+    }
+
+    /*
+     * For testing, make the access token act expired
+     */
+    private async _onExpireAccessToken(event: IpcMainInvokeEvent): Promise<[any, string]> {
+
+        return this._handleNonAsyncOperation(
+            event,
+            () => this._authenticatorService.expireAccessToken());
+    }
+
+    /*
+     * For testing, make the refresh token act expired
+     */
+    private async _onExpireRefreshToken(event: IpcMainInvokeEvent): Promise<[any, string]> {
+
+        return this._handleNonAsyncOperation(
+            event,
+            () => this._authenticatorService.expireRefreshToken());
+    }
+
+    /*
+     * Run an async operation and return data and error values so that the frontend gets error objects
+     * Also make common security checks to ensure that the sender is the application
+     */
+    private async _handleAsyncOperation(event: IpcMainInvokeEvent, action: () => Promise<any>): Promise<[any, string]> {
 
         try {
-            const response = await action();
-            this._sendResponse(eventName, response, null);
+
+            if (!event.senderFrame.url.startsWith('file:/')) {
+                throw ErrorFactory.fromIpcForbiddenError();
+            }
+
+            const data = await action();
+            return [data, ''];
 
         } catch (e: any) {
 
             const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(eventName, null, errorJson);
+            return [null, errorJson];
         }
     }
 
     /*
-     * Encapsulate processing an IPC call and returning response data
+     * Run a non-async operation and return data and error values so that the frontend gets error objects
+     * Also make common security checks to ensure that the sender is the application
      */
-    private _processRequestResponseIpcMessage(eventName: string, action: () => any): void {
+    private async _handleNonAsyncOperation(event: IpcMainInvokeEvent, action: () => any): Promise<[any, string]> {
 
         try {
-            const response = action();
-            this._sendResponse(eventName, response, null);
+            if (!event.senderFrame.url.startsWith('file:/')) {
+                throw ErrorFactory.fromIpcForbiddenError();
+            }
+
+            const data = action();
+            return [data, ''];
 
         } catch (e: any) {
 
             const errorJson = ErrorFactory.fromException(e).toJson();
-            this._sendResponse(eventName, null, errorJson);
+            return [null, errorJson];
         }
-    }
-
-    /*
-     * The app could have been started via deep linking
-     * In this case the renderer side of the app can send us a message to get the startup URL
-     */
-    private _getDeepLinkStartupPath(): void {
-        this._sendResponse(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, this._deepLinkStartupPath, null);
-    }
-
-    /*
-     * Send the response to the renderer side of the application
-     */
-    private _sendResponse(eventName: string, data: any, error: any) {
-        this._window?.webContents.send(eventName, {data, error});
     }
 
     /*

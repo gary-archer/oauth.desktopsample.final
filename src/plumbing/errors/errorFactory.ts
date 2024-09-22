@@ -29,6 +29,17 @@ export class ErrorFactory {
     }
 
     /*
+     * Return this error if them main side ever receives untrusted IPC requests
+     */
+    public static fromIpcForbiddenError(): UIError {
+
+        return new UIError(
+            'Forbidden',
+            ErrorCodes.ipcForbidden,
+            'An IPC request was forbidden because the sender is not trusted');
+    }
+
+    /*
      * A login required error is thrown to short circuit execution when the UI cannot get an access token
      */
     public static fromLoginRequired(): UIError {
