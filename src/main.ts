@@ -1,9 +1,9 @@
 import {app, BrowserWindow, session} from 'electron';
 import path from 'path';
-import {Configuration} from './configuration/configuration';
-import {ConfigurationLoader} from './configuration/configurationLoader';
-import {ErrorFactory} from './plumbing/errors/errorFactory';
-import {MainIpcEvents} from './plumbing/ipc/mainIpcEvents';
+import {Configuration} from './main/configuration/configuration';
+import {ConfigurationLoader} from './main/configuration/configurationLoader';
+import {IpcMainEvents} from './main/ipcMainEvents';
+import {ErrorFactory} from './shared/errors/errorFactory';
 
 /*
  * The Electron main process entry point
@@ -11,14 +11,14 @@ import {MainIpcEvents} from './plumbing/ipc/mainIpcEvents';
 class Main {
 
     private _configuration: Configuration;
-    private _ipcEvents: MainIpcEvents;
+    private _ipcEvents: IpcMainEvents;
     private _window: BrowserWindow | null;
     private _useBasicContentSecurityPolicy: boolean;
 
     public constructor() {
 
         this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
-        this._ipcEvents = new MainIpcEvents(this._configuration);
+        this._ipcEvents = new IpcMainEvents(this._configuration);
         this._window = null;
         this._useBasicContentSecurityPolicy = false;
         this._setupCallbacks();

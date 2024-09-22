@@ -1,9 +1,9 @@
 import React, {StrictMode} from 'react';
 import ReactDOM from 'react-dom/client';
 import {HashRouter} from 'react-router-dom';
-import {App} from './app/app';
-import {AppViewModel} from './app/appViewModel';
-import {ErrorBoundary} from './views/errors/errorBoundary';
+import {App} from './renderer/app/app';
+import {AppViewModel} from './renderer/app/appViewModel';
+import {ErrorBoundary} from './renderer/views/errors/errorBoundary';
 
 /*
  * The Electron renderer process entry point
