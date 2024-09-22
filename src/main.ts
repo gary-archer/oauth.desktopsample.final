@@ -13,14 +13,12 @@ class Main {
     private _configuration: Configuration;
     private _ipcEvents: IpcMainEvents;
     private _window: BrowserWindow | null;
-    private _useBasicContentSecurityPolicy: boolean;
 
     public constructor() {
 
         this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
         this._ipcEvents = new IpcMainEvents(this._configuration);
         this._window = null;
-        this._useBasicContentSecurityPolicy = false;
         this._setupCallbacks();
     }
 
@@ -136,25 +134,16 @@ class Main {
         session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 
             let policy = '';
-            if (this._useBasicContentSecurityPolicy) {
-
-                // In some development use cases, disable the secure CSP
-                policy += "script-src 'self' 'unsafe-eval'";
-
-            } else {
-
-                // The secure CSP is used otherwise
-                policy += "default-src 'none';";
-                policy += " script-src 'self';";
-                policy += " connect-src 'self'";
-                policy += " child-src 'self';";
-                policy += " img-src 'self';";
-                policy += " style-src 'self';";
-                policy += " object-src 'none';";
-                policy += " frame-ancestors 'none';";
-                policy += " base-uri 'self';";
-                policy += " form-action 'self'";
-            }
+            policy += "default-src 'none';";
+            policy += " script-src 'self';";
+            policy += " connect-src 'self'";
+            policy += " child-src 'self';";
+            policy += " img-src 'self';";
+            policy += " style-src 'self';";
+            policy += " object-src 'none';";
+            policy += " frame-ancestors 'none';";
+            policy += " base-uri 'self';";
+            policy += " form-action 'self'";
 
             callback({
                 responseHeaders: {

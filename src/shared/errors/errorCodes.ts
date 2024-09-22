@@ -41,7 +41,7 @@ export class ErrorCodes {
     public static readonly generalUIError = 'general_ui_error';
 
     // Indicates an untrusted sender of IPC events
-    public static readonly ipcForbidden = 'ipcForbidden_error';
+    public static readonly ipcForbidden = 'ipc_forbidden_error';
 
     // An error making an Ajax call to get API data
     public static readonly apiNetworkError = 'api_network_error';

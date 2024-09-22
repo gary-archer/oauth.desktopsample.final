@@ -158,7 +158,7 @@ export class ErrorFactory {
             statusCode = exception.response.status;
         }
 
-        let error = null;
+        let error: UIError | null = null;
         if (statusCode === 0) {
 
             // This status is generally an availability problem
