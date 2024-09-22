@@ -23,9 +23,9 @@ const prodConfig: webpack.Configuration = {
             }
         },
 
-        // Pass a variable through to the renderer to tell it to not display stack traces
+        // Let the code know it runs in release mode
         new webpack.DefinePlugin({
-            SHOW_STACK_TRACE: 'false',
+            IS_DEBUG: 'false',
         })
     ]
 };

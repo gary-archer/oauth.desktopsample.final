@@ -55,6 +55,13 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     }
 
     /*
+     * Return true if there are existing tokens
+     */
+    public async isLoggedIn(): Promise<boolean> {
+        return !!this._tokens;
+    }
+
+    /*
      * Provide the user info endpoint to the fetch client
      */
     public async getUserInfoEndpoint(): Promise<string | null> {
@@ -89,13 +96,6 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         if (!this._tokens || !this._tokens.accessToken) {
             throw ErrorFactory.fromLoginRequired();
         }
-    }
-
-    /*
-     * Return true if there are existing tokens
-     */
-    public async isLoggedIn(): Promise<boolean> {
-        return !!this._tokens;
     }
 
     /*
@@ -191,7 +191,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
     /*
      * This method is for testing only, to make the refresh token fail and act like it has expired
-     * The corrupted refresh token will be sent to the Authorization Server but rejected
+     * The corrupted refresh token will be sent to the authorization server but rejected
      */
     public expireRefreshToken(): void {
 
@@ -275,10 +275,10 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const tokenRequest = new TokenRequest(requestJson);
 
             // Execute the request to swap the code for tokens
-            const tokenHandler = new BaseTokenRequestHandler(this._customRequestor);
+            const tokenRequestHandler = new BaseTokenRequestHandler(this._customRequestor);
 
             // Perform the authorization code grant exchange
-            const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
+            const tokenResponse = await tokenRequestHandler.performTokenRequest(this._metadata!, tokenRequest);
 
             // Set values from the response
             const newTokenData = {
@@ -324,8 +324,8 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const tokenRequest = new TokenRequest(requestJson);
 
             // Execute the request to send the refresh token and get new tokens
-            const tokenHandler = new BaseTokenRequestHandler(this._customRequestor);
-            const tokenResponse = await tokenHandler.performTokenRequest(this._metadata!, tokenRequest);
+            const tokenRequestHandler = new BaseTokenRequestHandler(this._customRequestor);
+            const tokenResponse = await tokenRequestHandler.performTokenRequest(this._metadata!, tokenRequest);
 
             // Set values from the response, which may include a new rolling refresh token
             const newTokenData = {

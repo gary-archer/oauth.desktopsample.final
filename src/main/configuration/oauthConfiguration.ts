@@ -3,7 +3,7 @@
  */
 export interface OAuthConfiguration {
 
-    // The Authorization Server base URL
+    // The authorization server base URL
     authority: string;
 
     // The OAuth client trust entry

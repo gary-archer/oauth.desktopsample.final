@@ -16,12 +16,17 @@ const prodConfig: webpack.Configuration =
     plugins:[
         {
             // In release builds, remove source map references
-            apply: (compiler) => {
+            apply: (compiler: any) => {
                 compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
                     removeSourceMapReferences(['main.bundle.js']);
                 });
             }
-        }
+        },
+
+        // Let the code know it runs in release mode
+        new webpack.DefinePlugin({
+            IS_DEBUG: 'false',
+        })
     ]
 };
 

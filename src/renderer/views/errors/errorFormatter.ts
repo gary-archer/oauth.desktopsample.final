@@ -86,7 +86,7 @@ export class ErrorFormatter {
 
         // In debug builds render the stack trace as a long string
         // We can then look up results at https://sourcemaps.info
-        if (SHOW_STACK_TRACE) {
+        if (IS_DEBUG) {
             if (error.stack) {
                 return this._createErrorLine('Stack', error.stack);
             }

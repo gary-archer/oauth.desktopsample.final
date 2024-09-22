@@ -62,7 +62,7 @@ export class AuthenticatorClientImpl implements AuthenticatorClient {
 
     /*
      * This method is for testing only, to make the refresh token fail and act like it has expired
-     * The corrupted refresh token will be sent to the Authorization Server but rejected
+     * The corrupted refresh token will be sent to the authorization server but rejected
      */
     public async expireRefreshToken(): Promise<void> {
         await this._ipcEvents.expireRefreshToken();

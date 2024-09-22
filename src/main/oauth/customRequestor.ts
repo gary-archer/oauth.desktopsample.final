@@ -43,7 +43,7 @@ export class CustomRequestor extends Requestor {
 
         } catch (e: any) {
 
-            // If the response is an OAuth error object from the Authorization Server then throw that
+            // If the response is an OAuth error object from the authorization server then throw that
             if (e.response && e.response.data) {
                 throw e.response.data;
             }
