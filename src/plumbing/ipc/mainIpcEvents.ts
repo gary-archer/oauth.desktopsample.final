@@ -82,13 +82,15 @@ export class MainIpcEvents {
     /*
      * The renderer calls main to ask it the app was started via a deep link
      */
-    private _getDeepLinkStartupPath(): Promise<[any, string]> {
+    private _getDeepLinkStartupPath(event: IpcMainInvokeEvent): Promise<[any, string]> {
 
         const data = {
             path: this._deepLinkStartupPath,
         };
 
-        return this._handleNonAsyncOperation(() => data);
+        return this._handleNonAsyncOperation(
+            event,
+            () => data);
     }
 
     /*
@@ -97,6 +99,7 @@ export class MainIpcEvents {
     private async _onGetCompanyList(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
+            event,
             () => this._fetchService.getCompanyList(args.options));
     }
 
@@ -106,6 +109,7 @@ export class MainIpcEvents {
     private async _onGetCompanyTransactions(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
+            event,
             () => this._fetchService.getCompanyTransactions(args.id, args.options));
     }
 
@@ -115,6 +119,7 @@ export class MainIpcEvents {
     private async _onGetOAuthUserInfo(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
+            event,
             () => this._fetchService.getOAuthUserInfo(args.options));
     }
 
@@ -124,78 +129,92 @@ export class MainIpcEvents {
     private async _onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
+            event,
             () => this._fetchService.getApiUserInfo(args.options));
     }
 
     /*
      * See if there are any tokens
      */
-    private async _onIsLoggedIn(): Promise<[any, string]> {
+    private async _onIsLoggedIn(event: IpcMainInvokeEvent): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
+            event,
             () => this._authenticatorService.isLoggedIn());
     }
 
     /*
      * Run a login redirect on the system browser
      */
-    private async _onLogin(): Promise<[any, string]> {
+    private async _onLogin(event: IpcMainInvokeEvent): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
+            event,
             () => this._authenticatorService.login());
     }
 
     /*
      * Run a logout redirect on the system browser
      */
-    private async _onLogout(): Promise<[any, string]> {
+    private async _onLogout(event: IpcMainInvokeEvent): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
+            event,
             () => this._authenticatorService.logout());
     }
 
     /*
      * Perform token refresh
      */
-    private async _onTokenRefresh(): Promise<[any, string]> {
+    private async _onTokenRefresh(event: IpcMainInvokeEvent): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
+            event,
             () => this._authenticatorService.tokenRefresh());
     }
 
     /*
      * Clear login state after certain errors
      */
-    private async _onClearLoginState(): Promise<[any, string]> {
+    private async _onClearLoginState(event: IpcMainInvokeEvent): Promise<[any, string]> {
 
         return this._handleNonAsyncOperation(
+            event,
             () => this._authenticatorService.clearLoginState());
     }
 
     /*
      * For testing, make the access token act expired
      */
-    private async _onExpireAccessToken(): Promise<[any, string]> {
+    private async _onExpireAccessToken(event: IpcMainInvokeEvent): Promise<[any, string]> {
 
         return this._handleNonAsyncOperation(
+            event,
             () => this._authenticatorService.expireAccessToken());
     }
 
     /*
      * For testing, make the refresh token act expired
      */
-    private async _onExpireRefreshToken(): Promise<[any, string]> {
+    private async _onExpireRefreshToken(event: IpcMainInvokeEvent): Promise<[any, string]> {
 
         return this._handleNonAsyncOperation(
+            event,
             () => this._authenticatorService.expireRefreshToken());
     }
 
     /*
-     * Run an async operation and return data and error values
+     * Run an async operation and return data and error values so that the frontend gets error objects
+     * Also make common security checks to ensure that the sender is the application
      */
-    private async _handleAsyncOperation(action: () => Promise<any>): Promise<[any, string]> {
+    private async _handleAsyncOperation(event: IpcMainInvokeEvent, action: () => Promise<any>): Promise<[any, string]> {
 
         try {
+
+            if (!event.senderFrame.url.startsWith('file:/')) {
+                throw ErrorFactory.fromIpcForbiddenError();
+            }
+
             const data = await action();
             return [data, ''];
 
@@ -207,11 +226,16 @@ export class MainIpcEvents {
     }
 
     /*
-     * Run a non-async operation and return data and error values
+     * Run a non-async operation and return data and error values so that the frontend gets error objects
+     * Also make common security checks to ensure that the sender is the application
      */
-    private async _handleNonAsyncOperation(action: () => any): Promise<[any, string]> {
+    private async _handleNonAsyncOperation(event: IpcMainInvokeEvent, action: () => any): Promise<[any, string]> {
 
         try {
+            if (!event.senderFrame.url.startsWith('file:/')) {
+                throw ErrorFactory.fromIpcForbiddenError();
+            }
+
             const data = action();
             return [data, ''];
 
