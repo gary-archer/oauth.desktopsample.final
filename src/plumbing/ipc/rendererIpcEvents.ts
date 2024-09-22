@@ -32,11 +32,10 @@ export class RendererIpcEvents {
      */
     public async setDeepLinkStartupUrlIfRequired(): Promise<void> {
 
-        // TODO
-        /*const path = await this._sendMessage(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, {});
-        if (path) {
-            this._eventBus.emit(UIEventNames.DeepLink, null, new DeepLinkEvent(path));
-        }*/
+        const data = await this._sendMessage(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, {});
+        if (data.path) {
+            this._eventBus.emit(UIEventNames.DeepLink, null, new DeepLinkEvent(data.path));
+        }
     }
 
     /*
@@ -126,8 +125,6 @@ export class RendererIpcEvents {
             throw UIError.fromJson(error);
         }
 
-        console.log('*** Received in renderer - should be an object or null');
-        console.log(data);
         return data;
     }
 

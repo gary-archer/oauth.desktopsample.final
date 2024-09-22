@@ -1,4 +1,4 @@
-import {BrowserWindow, ipcMain} from 'electron';
+import {BrowserWindow, ipcMain, IpcMainInvokeEvent} from 'electron';
 import {FetchService} from '../../api/client/fetchService';
 import {Configuration} from '../../configuration/configuration';
 import {HttpProxy} from '../utilities/httpProxy';
@@ -84,14 +84,17 @@ export class MainIpcEvents {
      */
     private _getDeepLinkStartupPath(): Promise<[any, string]> {
 
-        return this._handleNonAsyncOperation(
-            () => this._deepLinkStartupPath);
+        const data = {
+            path: this._deepLinkStartupPath,
+        };
+
+        return this._handleNonAsyncOperation(() => data);
     }
 
     /*
      * Make an API request to get companies
      */
-    private async _onGetCompanyList(args: any): Promise<[any, string]> {
+    private async _onGetCompanyList(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
             () => this._fetchService.getCompanyList(args.options));
@@ -100,7 +103,7 @@ export class MainIpcEvents {
     /*
      * Make an API request to get transactions
      */
-    private async _onGetCompanyTransactions(args: any): Promise<[any, string]> {
+    private async _onGetCompanyTransactions(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
             () => this._fetchService.getCompanyTransactions(args.id, args.options));
@@ -109,7 +112,7 @@ export class MainIpcEvents {
     /*
      * Make an API request to get OAuth user info
      */
-    private async _onGetOAuthUserInfo(args: any): Promise<[any, string]> {
+    private async _onGetOAuthUserInfo(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
             () => this._fetchService.getOAuthUserInfo(args.options));
@@ -118,7 +121,7 @@ export class MainIpcEvents {
     /*
      * Make an API request to get API user info
      */
-    private async _onGetApiUserInfo(args: any): Promise<[any, string]> {
+    private async _onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<[any, string]> {
 
         return this._handleAsyncOperation(
             () => this._fetchService.getApiUserInfo(args.options));
@@ -194,8 +197,6 @@ export class MainIpcEvents {
 
         try {
             const data = await action();
-            console.log('*** Returning async data from main - should be an object or null');
-            console.log(data);
             return [data, ''];
 
         } catch (e: any) {
@@ -212,8 +213,6 @@ export class MainIpcEvents {
 
         try {
             const data = action();
-            console.log('*** Returning non-async data from main - should be an object or null');
-            console.log(data);
             return [data, ''];
 
         } catch (e: any) {
