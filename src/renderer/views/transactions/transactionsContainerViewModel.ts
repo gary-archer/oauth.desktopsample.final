@@ -4,8 +4,8 @@ import {CompanyTransactions} from '../../../shared/api/companyTransactions';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../../shared/errors/errorFactory';
 import {UIError} from '../../../shared/errors/uiError';
-import {FetchCacheKeys} from '../../api/client/fetchCacheKeys';
-import {FetchClient} from '../../api/client/fetchClient';
+import {FetchCacheKeys} from '../../api/fetchCacheKeys';
+import {FetchClient} from '../../api/fetchClient';
 import {ViewLoadOptions} from '../utilities/viewLoadOptions';
 import {ViewModelCoordinator} from '../utilities/viewModelCoordinator';
 
