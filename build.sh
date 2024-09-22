@@ -94,7 +94,7 @@ else
   fi
 
   #
-  # Build the renderer side of the Electron app in watch mode
+  # Changwe this to 'npm run webpackRendererDebugWatch' when you want to develop in watch mode
   #
   npm run webpackRendererDebug
   if [ $? -ne 0 ]; then

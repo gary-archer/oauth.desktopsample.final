@@ -26,6 +26,7 @@
     "webpackMainDebug": "NODE_OPTIONS='--import tsx' webpack --config webpack/main/webpack.config.dev.ts",
     "webpackMainRelease": "NODE_OPTIONS='--import tsx' webpack --config webpack/main/webpack.config.prod.ts",
     "webpackRendererDebug": "NODE_OPTIONS='--import tsx' webpack --config webpack/renderer/webpack.config.dev.ts",
+    "webpackRendererDebugWatch": "NODE_OPTIONS='--import tsx' webpack --config webpack/renderer/webpack.config.dev.ts --watch",
     "webpackRendererRelease": "NODE_OPTIONS='--import tsx' webpack --config webpack/renderer/webpack.config.prod.ts"
   },
   "dependencies": {
