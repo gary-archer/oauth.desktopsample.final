@@ -130,7 +130,7 @@ class Main {
             callback({cancel: false, requestHeaders: details.requestHeaders});
         });
 
-        // Set a content security policy as a security best practice unless temporarily disabled
+        // Set a content security policy as a security best practice
         session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 
             let policy = '';
