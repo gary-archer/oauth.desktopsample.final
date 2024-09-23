@@ -120,12 +120,12 @@ export class IpcRendererEvents {
      */
     private async _sendMessage(eventName: string, requestData: any): Promise<any> {
 
-        const [data, error] = await this._api.sendMessage(eventName, requestData);
-        if (error) {
-            throw UIError.fromJson(error);
+        const result = await this._api.sendMessage(eventName, requestData);
+        if (result.error) {
+            throw UIError.fromJson(result.error);
         }
 
-        return data;
+        return result.data;
     }
 
     /*
