@@ -287,12 +287,18 @@ export class IpcMainEvents {
         if (IS_DEBUG) {
 
             let info = `Main ${name} error`;
+
             if (error.statusCode) {
                 info += `, status: ${error.statusCode}`;
             }
 
             info += `, code: ${error.errorCode}`;
-            info += `, message: ${error.message}`;
+            if (error.details) {
+                info += `, message: ${error.details}`;
+            } else if (error.message) {
+                info += `, message: ${error.message}`;
+            }
+
             console.log(info);
         }
     }

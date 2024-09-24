@@ -212,7 +212,7 @@ export class ErrorFactory {
             if (payload.code && payload.message) {
 
                 error.errorCode = payload.code;
-                error.message = payload.message;
+                error.message = payload.details;
 
                 if (payload.area && payload.id && payload.utcTime) {
                     error.setApiErrorDetails(payload.area, payload.id, payload.utcTime);
