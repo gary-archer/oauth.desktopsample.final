@@ -110,5 +110,5 @@ fi
 # - https://github.com/electron/electron/issues/42510
 #  
 if [ "$PLATFORM" == 'LINUX' ]; then
-    sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+  sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 fi
