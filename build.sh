@@ -32,11 +32,12 @@ case "$(uname -s)" in
 	;;
 esac
 
+#
+# Download dependencies
+#
+ 
 if [ ! -d 'node_modules' ]; then
   
-  #
-  # Download dependencies
-  #
   npm install
   if [ $? -ne 0 ]; then
     echo 'Problem encountered downloading dependencies'
@@ -102,4 +103,12 @@ else
     exit 1
   fi
 
+fi
+
+#
+# On Linux, work around this Electron issue:
+# - https://github.com/electron/electron/issues/42510
+#  
+if [ "$PLATFORM" == 'LINUX' ]; then
+    sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 fi
