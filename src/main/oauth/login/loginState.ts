@@ -48,7 +48,7 @@ export class LoginState {
     }
 
     /*
-     * Once complete, clear state and its callback from the collection
+     * After a successful login, clear login state
      */
     private _clearState(state: string) {
         this._callbackMap = this._callbackMap.filter((pair) => pair[0] !== state);

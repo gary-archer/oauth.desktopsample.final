@@ -52,38 +52,28 @@ export class LoginAsyncAdapter {
         const authorizationRequest = new AuthorizationRequest(requestJson, new NodeCrypto(), true);
         authorizationRequest.extras = extras;
 
-        // Set up PKCE for the redirect, which avoids native app vulnerabilities
+        // Set up PKCE for the redirect
         await authorizationRequest.setupCodeVerifier();
 
-        return new Promise(async (resolve, reject) => {
+        // Wrap the AppAuth notifier in a promise
+        const notifier = new AuthorizationNotifier();
+        const promise = new Promise<LoginRedirectResult>((resolve) => {
 
-            // Use the AppAuth mechanism of a notifier to receive the login result
-            const notifier = new AuthorizationNotifier();
             notifier.setAuthorizationListener(async (
                 request: AuthorizationRequest,
                 response: AuthorizationResponse | null,
                 error: AuthorizationError | null) => {
 
-                try {
-                    resolve({request, response, error});
-
-                } catch (e: any) {
-                    reject(e);
-                }
+                resolve({request, response, error});
             });
-
-            try {
-
-                // Create a custom browser handler and try to start a login
-                const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
-                browserLoginRequestHandler.setAuthorizationNotifier(notifier);
-                await browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
-
-            } catch (e: any) {
-
-                // Report errors correctly from the above async call
-                reject(e);
-            }
         });
+
+        // Spin up the browser and begin the login
+        const browserLoginRequestHandler = new BrowserLoginRequestHandler(this._state);
+        browserLoginRequestHandler.setAuthorizationNotifier(notifier);
+        await browserLoginRequestHandler.performAuthorizationRequest(this._metadata, authorizationRequest);
+
+        // Wait for the result
+        return await promise;
     }
 }
