@@ -45,7 +45,7 @@ export class BrowserLoginRequestHandler extends AuthorizationRequestHandler {
         this._state.storeLoginCallback(request.state, callback);
 
         // Form the authorization request using the AppAuth base class and open the system browser there
-        open(this.buildRequestUrl(metadata, request));
+        await open(this.buildRequestUrl(metadata, request));
     }
 
     /*
