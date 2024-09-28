@@ -9,7 +9,7 @@ import {StandardLogoutUrlBuilder} from './standardLogoutUrlBuilder';
 /*
  * A class to handle the plumbing of logout redirects via the system browser
  */
-export class LogoutManager {
+export class LogoutRequestHandler {
 
     private readonly _configuration: OAuthConfiguration;
     private readonly _metadata: AuthorizationServiceConfiguration;
@@ -31,7 +31,7 @@ export class LogoutManager {
     /*
      * Invoke the system browser to log the user out
      */
-    public async start(): Promise<void> {
+    public async execute(): Promise<void> {
 
         return new Promise(async (resolve, reject) => {
 

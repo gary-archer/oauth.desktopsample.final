@@ -3,7 +3,6 @@ import {
     BaseTokenRequestHandler,
     GRANT_TYPE_AUTHORIZATION_CODE,
     GRANT_TYPE_REFRESH_TOKEN,
-    StringMap,
     TokenRequest} from '@openid/appauth';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
@@ -12,10 +11,10 @@ import {HttpProxy} from '../utilities/httpProxy';
 import {UrlParser} from '../utilities/urlParser';
 import {AuthenticatorService} from './authenticatorService';
 import {CustomRequestor} from './customRequestor';
-import {LoginAsyncAdapter} from './login/loginAsyncAdapter';
 import {LoginRedirectResult} from './login/loginRedirectResult';
+import {LoginRequestHandler} from './login/loginRequestHandler';
 import {LoginState} from './login/loginState';
-import {LogoutManager} from './logout/logoutManager';
+import {LogoutRequestHandler} from './logout/logoutRequestHandler';
 import {LogoutState} from './logout/logoutState';
 import {TokenData} from './tokenData';
 import {TokenStorage} from './tokenStorage';
@@ -128,12 +127,12 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
                 this.clearLoginState();
 
                 // Start the logout redirect to remove the authorization server's session cookie
-                const logout = new LogoutManager(
+                const handler = new LogoutRequestHandler(
                     this._configuration,
                     this._metadata!,
                     this._logoutState,
                     idToken);
-                await logout.start();
+                await handler.execute();
             }
 
         } catch (e: any) {
@@ -235,12 +234,11 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             await this._loadMetadata();
 
             // Run a login on the system browser and get the result
-            const adapter = new LoginAsyncAdapter(
+            const handler = new LoginRequestHandler(
                 this._configuration,
                 this._metadata!,
                 this._loginState);
-
-            return await adapter.login();
+            return await handler.execute();
 
         } catch (e: any) {
 
@@ -256,21 +254,15 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
         try {
 
-            // Get the PKCE verifier
-            const codeVerifier = result.request.internal!['code_verifier'];
-
-            // Supply PKCE parameters for the code exchange
-            const extras: StringMap = {
-                code_verifier: codeVerifier,
-            };
-
-            // Create the token request
+            // Create the token request including the PKCE code verifier
             const requestJson = {
                 grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
                 code: result.response!.code,
                 redirect_uri: this._configuration.redirectUri,
                 client_id: this._configuration.clientId,
-                extras,
+                extras: {
+                    code_verifier: result.request.internal!['code_verifier'],
+                },
             };
             const tokenRequest = new TokenRequest(requestJson);
 
@@ -308,18 +300,12 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             // Initialise if required
             await this._loadMetadata();
 
-            // Supply the scope for access tokens
-            const extras: StringMap = {
-                scope: this._configuration.scope,
-            };
-
             // Create the token request
             const requestJson = {
                 grant_type: GRANT_TYPE_REFRESH_TOKEN,
                 client_id: this._configuration.clientId,
                 refresh_token: this._tokens!.refreshToken!,
                 redirect_uri: '',
-                extras,
             };
             const tokenRequest = new TokenRequest(requestJson);
 
