@@ -1,5 +1,6 @@
 import EventBus from 'js-event-bus';
 import {Dispatch, SetStateAction, useState} from 'react';
+import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {UIError} from '../../shared/errors/uiError';
 import {FetchCache} from '../api/fetchCache';
@@ -142,7 +143,11 @@ export class AppViewModel {
             await this._authenticatorClient.login();
 
         } catch (e: any) {
-            this._updateError(ErrorFactory.fromException(e));
+
+            const error =  ErrorFactory.fromException(e);
+            if (error.errorCode !== ErrorCodes.loginCancelled) {
+                this._updateError(error);
+            }
         }
     }
 
