@@ -1,4 +1,8 @@
 import {BrowserWindow, ipcMain, IpcMainInvokeEvent} from 'electron';
+import {ApiUserInfo} from '../shared/api/apiUserInfo';
+import {Company} from '../shared/api/company';
+import {CompanyTransactions} from '../shared/api/companyTransactions';
+import {OAuthUserInfo} from '../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../shared/errors/errorFactory';
 import {UIError} from '../shared/errors/uiError';
 import {IpcEventNames} from '../shared/ipcEventNames';
@@ -83,22 +87,18 @@ export class IpcMainEvents {
     /*
      * The renderer calls main to ask it the app was started via a deep link
      */
-    private _getDeepLinkStartupPath(event: IpcMainInvokeEvent): Promise<any> {
-
-        const data = {
-            path: this._deepLinkStartupPath,
-        };
+    private _getDeepLinkStartupPath(event: IpcMainInvokeEvent): Promise<string> {
 
         return this._handleNonAsyncOperation(
             event,
             IpcEventNames.ON_DEEP_LINK_STARTUP_PATH,
-            () => data);
+            () => this._deepLinkStartupPath);
     }
 
     /*
      * Make an API request to get companies
      */
-    private async _onGetCompanyList(event: IpcMainInvokeEvent, args: any): Promise<any> {
+    private async _onGetCompanyList(event: IpcMainInvokeEvent, args: any): Promise<Company[]> {
 
         return this._handleAsyncOperation(
             event,
@@ -109,7 +109,7 @@ export class IpcMainEvents {
     /*
      * Make an API request to get transactions
      */
-    private async _onGetCompanyTransactions(event: IpcMainInvokeEvent, args: any): Promise<any> {
+    private async _onGetCompanyTransactions(event: IpcMainInvokeEvent, args: any): Promise<CompanyTransactions> {
 
         return this._handleAsyncOperation(
             event,
@@ -131,7 +131,7 @@ export class IpcMainEvents {
     /*
      * Make an API request to get API user info
      */
-    private async _onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<any> {
+    private async _onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<OAuthUserInfo> {
 
         return this._handleAsyncOperation(
             event,
@@ -142,7 +142,7 @@ export class IpcMainEvents {
     /*
      * See if there are any tokens
      */
-    private async _onIsLoggedIn(event: IpcMainInvokeEvent): Promise<any> {
+    private async _onIsLoggedIn(event: IpcMainInvokeEvent): Promise<ApiUserInfo> {
 
         return this._handleAsyncOperation(
             event,
@@ -153,7 +153,7 @@ export class IpcMainEvents {
     /*
      * Run a login redirect on the system browser
      */
-    private async _onLogin(event: IpcMainInvokeEvent): Promise<any> {
+    private async _onLogin(event: IpcMainInvokeEvent): Promise<void> {
 
         return this._handleAsyncOperation(
             event,
@@ -164,7 +164,7 @@ export class IpcMainEvents {
     /*
      * Run a logout redirect on the system browser
      */
-    private async _onLogout(event: IpcMainInvokeEvent): Promise<any> {
+    private async _onLogout(event: IpcMainInvokeEvent): Promise<void> {
 
         return this._handleAsyncOperation(
             event,
@@ -175,7 +175,7 @@ export class IpcMainEvents {
     /*
      * Perform token refresh
      */
-    private async _onTokenRefresh(event: IpcMainInvokeEvent): Promise<any> {
+    private async _onTokenRefresh(event: IpcMainInvokeEvent): Promise<void> {
 
         return this._handleAsyncOperation(
             event,
@@ -186,7 +186,7 @@ export class IpcMainEvents {
     /*
      * Clear login state after certain errors
      */
-    private async _onClearLoginState(event: IpcMainInvokeEvent): Promise<any> {
+    private async _onClearLoginState(event: IpcMainInvokeEvent): Promise<void> {
 
         return this._handleNonAsyncOperation(
             event,
@@ -197,7 +197,7 @@ export class IpcMainEvents {
     /*
      * For testing, make the access token act expired
      */
-    private async _onExpireAccessToken(event: IpcMainInvokeEvent): Promise<any> {
+    private async _onExpireAccessToken(event: IpcMainInvokeEvent): Promise<void> {
 
         return this._handleNonAsyncOperation(
             event,
@@ -208,7 +208,7 @@ export class IpcMainEvents {
     /*
      * For testing, make the refresh token act expired
      */
-    private async _onExpireRefreshToken(event: IpcMainInvokeEvent): Promise<any> {
+    private async _onExpireRefreshToken(event: IpcMainInvokeEvent): Promise<void> {
 
         return this._handleNonAsyncOperation(
             event,
