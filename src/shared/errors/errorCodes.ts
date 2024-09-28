@@ -13,6 +13,9 @@ export class ErrorCodes {
     // A technical error processing the login response containing the authorization code
     public static readonly loginResponseFailed = 'login_response_failed';
 
+    // Used to indicate that a login was cancelled
+    public static readonly loginCancelled = 'login_cancelled';
+
     // A technical error processing the login response containing the authorization code
     public static readonly authorizationCodeGrantFailed = 'authorization_code_grant_failed';
 

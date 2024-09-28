@@ -51,6 +51,17 @@ export class ErrorFactory {
     }
 
     /*
+     * A login cancelled error occurs if the login has already completed
+     */
+    public static fromLoginCancelled(): UIError {
+
+        return new UIError(
+            'Login',
+            ErrorCodes.loginCancelled,
+            'The login was cancelled');
+    }
+
+    /*
      * Handle sign in errors
      */
     public static fromLoginOperation(exception: any, errorCode: string): UIError {

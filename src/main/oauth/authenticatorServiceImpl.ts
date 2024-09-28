@@ -1,9 +1,11 @@
 import {
+    AuthorizationRequestResponse,
     AuthorizationServiceConfiguration,
     BaseTokenRequestHandler,
     GRANT_TYPE_AUTHORIZATION_CODE,
     GRANT_TYPE_REFRESH_TOKEN,
     TokenRequest} from '@openid/appauth';
+import EventEmitter from 'node:events';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {OAuthConfiguration} from '../configuration/oauthConfiguration';
@@ -11,11 +13,9 @@ import {HttpProxy} from '../utilities/httpProxy';
 import {UrlParser} from '../utilities/urlParser';
 import {AuthenticatorService} from './authenticatorService';
 import {CustomRequestor} from './customRequestor';
-import {LoginRedirectResult} from './login/loginRedirectResult';
-import {LoginRequestHandler} from './login/loginRequestHandler';
-import {LoginState} from './login/loginState';
-import {LogoutRequestHandler} from './logout/logoutRequestHandler';
-import {LogoutState} from './logout/logoutState';
+import {LoginRequestHandler} from './loginRequestHandler';
+import {LoginState} from './loginState';
+import {LogoutRequestHandler} from './logoutRequestHandler';
 import {TokenData} from './tokenData';
 import {TokenStorage} from './tokenStorage';
 
@@ -28,7 +28,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     private readonly _configuration: OAuthConfiguration;
     private readonly _customRequestor: CustomRequestor;
     private readonly _loginState: LoginState;
-    private readonly _logoutState: LogoutState;
+    private readonly _eventEmitter: EventEmitter;
     private _tokenStorage: TokenStorage | null;
     private _tokens: TokenData | null;
     private _metadata: AuthorizationServiceConfiguration | null;
@@ -38,7 +38,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
         this._configuration = configuration;
         this._customRequestor = new CustomRequestor(httpProxy);
         this._loginState = new LoginState();
-        this._logoutState = new LogoutState();
+        this._eventEmitter = new EventEmitter();
         this._tokenStorage = null;
         this._tokens = null;
         this._metadata = null;
@@ -115,25 +115,27 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public async logout(): Promise<void> {
 
+        if (!this._tokens || !this._tokens.idToken) {
+            return;
+        }
+
         try {
 
-            if (this._tokens && this._tokens.idToken) {
+            // Initialise if required
+            await this._loadMetadata();
 
-                // Initialise if required
-                await this._loadMetadata();
+            // Reset state
+            const idToken = this._tokens.idToken;
+            this.clearLoginState();
 
-                // Reset state
-                const idToken = this._tokens.idToken;
-                this.clearLoginState();
+            // Start the logout redirect to remove the authorization server's session cookie
+            const handler = new LogoutRequestHandler(
+                this._configuration,
+                this._metadata!,
+                idToken,
+                this._eventEmitter);
 
-                // Start the logout redirect to remove the authorization server's session cookie
-                const handler = new LogoutRequestHandler(
-                    this._configuration,
-                    this._metadata!,
-                    this._logoutState,
-                    idToken);
-                await handler.execute();
-            }
+            await handler.execute();
 
         } catch (e: any) {
 
@@ -154,12 +156,12 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const path = url.pathname.toLowerCase();
             if (path === '/callback') {
 
-                this._loginState!.handleLoginResponse(args);
+                this._eventEmitter.emit('LOGIN_COMPLETE', args);
                 return true;
 
             } else if (path === '/logoutcallback') {
 
-                this._logoutState!.handleLogoutResponse(args);
+                this._eventEmitter.emit('LOGOUT_COMPLETE', args);
                 return true;
             }
         }
@@ -226,7 +228,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     /*
      * Start the login on the system browser
      */
-    private async _startLogin(): Promise<LoginRedirectResult> {
+    private async _startLogin(): Promise<AuthorizationRequestResponse> {
 
         try {
 
@@ -237,7 +239,8 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const handler = new LoginRequestHandler(
                 this._configuration,
                 this._metadata!,
-                this._loginState);
+                this._loginState,
+                this._eventEmitter);
             return await handler.execute();
 
         } catch (e: any) {
@@ -250,7 +253,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     /*
      * Swap the authorization code for tokens
      */
-    private async _endLogin(result: LoginRedirectResult): Promise<void> {
+    private async _endLogin(result: AuthorizationRequestResponse): Promise<void> {
 
         try {
 

@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import Modal from 'react-modal';
 import {Route, Routes, useNavigate} from 'react-router-dom';
+import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {CompaniesContainer} from '../views/companies/companiesContainer';
 import {CompaniesContainerProps} from '../views/companies/companiesContainerProps';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
@@ -166,7 +167,7 @@ export function App(props: AppProps): JSX.Element {
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         return {
             error: model.error!,
-            errorsToIgnore: [],
+            errorsToIgnore: [ErrorCodes.loginCancelled],
             containingViewName: 'main',
             hyperlinkMessage: 'Problem Encountered',
             dialogTitle: 'Application Error',
