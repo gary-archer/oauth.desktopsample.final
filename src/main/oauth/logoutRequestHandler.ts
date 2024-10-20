@@ -30,6 +30,7 @@ export class LogoutRequestHandler {
      */
     public async execute(): Promise<void> {
 
+        /* eslint-disable no-async-promise-executor */
         return new Promise(async (resolve) => {
 
             // Create a callback to wait for completion
