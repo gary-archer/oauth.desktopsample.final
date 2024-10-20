@@ -54,8 +54,8 @@ You can then package a platform-specific executable and test the release build b
 
 ## Further Information
 
-* See the [API Journey - Client Side](https://apisandclients.com/posts/api-journey-client-side) for further information on the app's behaviour.
-* See blog posts for further details specific to the app, starting in the [Final Desktop Sample Overview](https://apisandclients.com/posts/final-desktop-sample-overview).
+* See the [API Journey - Client Side](https://github.com/gary-archer/oauth.blog/tree/master/public/posts/api-journey-client-side.mdx) for further information on the app's behaviour.
+* See blog posts for further details specific to the app, starting in the [Final Desktop Sample Overview](https://github.com/gary-archer/oauth.blog/tree/master/public/posts/final-desktop-sample-overview.mdx).
 
 ## Programming Languages
 
