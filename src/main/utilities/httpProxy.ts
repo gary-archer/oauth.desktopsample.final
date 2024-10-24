@@ -5,7 +5,7 @@ import {HttpsProxyAgent} from 'https-proxy-agent';
  */
 export class HttpProxy {
 
-    private readonly _agent: any;
+    private readonly agent: any;
 
     /*
      * Create an HTTP agent to route requests to
@@ -13,14 +13,14 @@ export class HttpProxy {
     public constructor(useProxy: boolean, proxyUrl: string) {
 
         if (useProxy) {
-            this._agent = new HttpsProxyAgent(proxyUrl);
+            this.agent = new HttpsProxyAgent(proxyUrl);
         }
     }
 
     /*
      * Return the agent to other parts of the app
      */
-    public get agent(): HttpsProxyAgent<string> {
-        return this._agent;
+    public getAgent(): HttpsProxyAgent<string> {
+        return this.agent;
     }
 }

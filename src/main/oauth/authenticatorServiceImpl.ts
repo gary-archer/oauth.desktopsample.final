@@ -25,39 +25,39 @@ import {TokenStorage} from './tokenStorage';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 export class AuthenticatorServiceImpl implements AuthenticatorService {
 
-    private readonly _configuration: OAuthConfiguration;
-    private readonly _customRequestor: CustomRequestor;
-    private readonly _loginState: LoginState;
-    private readonly _eventEmitter: EventEmitter;
-    private _tokenStorage: TokenStorage | null;
-    private _tokens: TokenData | null;
-    private _metadata: AuthorizationServiceConfiguration | null;
+    private readonly configuration: OAuthConfiguration;
+    private readonly customRequestor: CustomRequestor;
+    private readonly loginState: LoginState;
+    private readonly eventEmitter: EventEmitter;
+    private tokenStorage: TokenStorage | null;
+    private tokens: TokenData | null;
+    private metadata: AuthorizationServiceConfiguration | null;
 
     public constructor(configuration: OAuthConfiguration, httpProxy: HttpProxy) {
 
-        this._configuration = configuration;
-        this._customRequestor = new CustomRequestor(httpProxy);
-        this._loginState = new LoginState();
-        this._eventEmitter = new EventEmitter();
-        this._tokenStorage = null;
-        this._tokens = null;
-        this._metadata = null;
-        this._setupCallbacks();
+        this.configuration = configuration;
+        this.customRequestor = new CustomRequestor(httpProxy);
+        this.loginState = new LoginState();
+        this.eventEmitter = new EventEmitter();
+        this.tokenStorage = null;
+        this.tokens = null;
+        this.metadata = null;
+        this.setupCallbacks();
     }
 
     /*
      * Use safe storage to load tokens once the window has initialised
      */
     public initialise(): void {
-        this._tokenStorage = new TokenStorage();
-        this._tokens = this._tokenStorage.load();
+        this.tokenStorage = new TokenStorage();
+        this.tokens = this.tokenStorage.load();
     }
 
     /*
      * Return true if there are existing tokens
      */
     public async isLoggedIn(): Promise<boolean> {
-        return !!this._tokens;
+        return !!this.tokens;
     }
 
     /*
@@ -65,8 +65,8 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public async getUserInfoEndpoint(): Promise<string | null> {
 
-        await this._loadMetadata();
-        return this._metadata?.userInfoEndpoint || null;
+        await this.loadMetadata();
+        return this.metadata?.userInfoEndpoint || null;
     }
 
     /*
@@ -75,8 +75,8 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     public getAccessToken(): string | null {
 
         // Return the existing token if present
-        if (this._tokens && this._tokens.accessToken) {
-            return this._tokens.accessToken;
+        if (this.tokens && this.tokens.accessToken) {
+            return this.tokens.accessToken;
         }
 
         // Indicate no access token
@@ -88,11 +88,11 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public async tokenRefresh(): Promise<void> {
 
-        if (this._tokens && this._tokens.refreshToken) {
-            await this._performTokenRefresh();
+        if (this.tokens && this.tokens.refreshToken) {
+            await this.performTokenRefresh();
         }
 
-        if (!this._tokens || !this._tokens.accessToken) {
+        if (!this.tokens || !this.tokens.accessToken) {
             throw ErrorFactory.fromLoginRequired();
         }
     }
@@ -102,12 +102,12 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public async login(): Promise<void> {
 
-        const result = await this._startLogin();
+        const result = await this.startLogin();
         if (result.error) {
             throw ErrorFactory.fromLoginOperation(result.error, ErrorCodes.loginResponseFailed);
         }
 
-        await this._endLogin(result);
+        await this.endLogin(result);
     }
 
     /*
@@ -115,25 +115,25 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public async logout(): Promise<void> {
 
-        if (!this._tokens || !this._tokens.idToken) {
+        if (!this.tokens || !this.tokens.idToken) {
             return;
         }
 
         try {
 
             // Initialise if required
-            await this._loadMetadata();
+            await this.loadMetadata();
 
             // Reset state
-            const idToken = this._tokens.idToken;
+            const idToken = this.tokens.idToken;
             this.clearLoginState();
 
             // Start the logout redirect to remove the authorization server's session cookie
             const handler = new LogoutRequestHandler(
-                this._configuration,
-                this._metadata!,
+                this.configuration,
+                this.metadata!,
                 idToken,
-                this._eventEmitter);
+                this.eventEmitter);
 
             await handler.execute();
 
@@ -156,12 +156,12 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const path = url.pathname.toLowerCase();
             if (path === '/callback') {
 
-                this._eventEmitter.emit('LOGIN_COMPLETE', args);
+                this.eventEmitter.emit('LOGIN_COMPLETE', args);
                 return true;
 
             } else if (path === '/logoutcallback') {
 
-                this._eventEmitter.emit('LOGOUT_COMPLETE', args);
+                this.eventEmitter.emit('LOGOUT_COMPLETE', args);
                 return true;
             }
         }
@@ -173,8 +173,8 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      * Allow the login state to be cleared when required
      */
     public clearLoginState(): void {
-        this._tokens = null;
-        this._tokenStorage?.delete();
+        this.tokens = null;
+        this.tokenStorage?.delete();
     }
 
     /*
@@ -183,10 +183,10 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public expireAccessToken(): void {
 
-        if (this._tokens && this._tokens.accessToken) {
+        if (this.tokens && this.tokens.accessToken) {
 
-            this._tokens.accessToken = `${this._tokens.accessToken}x`;
-            this._tokenStorage?.save(this._tokens);
+            this.tokens.accessToken = `${this.tokens.accessToken}x`;
+            this.tokenStorage?.save(this.tokens);
         }
     }
 
@@ -196,31 +196,31 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
      */
     public expireRefreshToken(): void {
 
-        if (this._tokens && this._tokens.refreshToken) {
+        if (this.tokens && this.tokens.refreshToken) {
 
-            this._tokens.accessToken = `${this._tokens.accessToken}x`;
-            this._tokens.refreshToken = `${this._tokens.refreshToken}x`;
-            this._tokenStorage?.save(this._tokens);
+            this.tokens.accessToken = `${this.tokens.accessToken}x`;
+            this.tokens.refreshToken = `${this.tokens.refreshToken}x`;
+            this.tokenStorage?.save(this.tokens);
         }
     }
 
     /*
      * Load metadata if not already loaded
      */
-    private async _loadMetadata() {
+    private async loadMetadata() {
 
-        if (!this._metadata) {
+        if (!this.metadata) {
 
             try {
 
-                this._metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                    this._configuration.authority,
-                    this._customRequestor);
+                this.metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
+                    this.configuration.authority,
+                    this.customRequestor);
 
             } catch (e: any) {
 
                 // Do error translation if required
-                throw ErrorFactory.fromHttpError(e, this._configuration.authority, 'authorization server');
+                throw ErrorFactory.fromHttpError(e, this.configuration.authority, 'authorization server');
             }
         }
     }
@@ -228,19 +228,19 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     /*
      * Start the login on the system browser
      */
-    private async _startLogin(): Promise<AuthorizationRequestResponse> {
+    private async startLogin(): Promise<AuthorizationRequestResponse> {
 
         try {
 
             // Initialise if required
-            await this._loadMetadata();
+            await this.loadMetadata();
 
             // Run a login on the system browser and get the result
             const handler = new LoginRequestHandler(
-                this._configuration,
-                this._metadata!,
-                this._loginState,
-                this._eventEmitter);
+                this.configuration,
+                this.metadata!,
+                this.loginState,
+                this.eventEmitter);
             return await handler.execute();
 
         } catch (e: any) {
@@ -253,7 +253,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     /*
      * Swap the authorization code for tokens
      */
-    private async _endLogin(result: AuthorizationRequestResponse): Promise<void> {
+    private async endLogin(result: AuthorizationRequestResponse): Promise<void> {
 
         try {
 
@@ -261,8 +261,8 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const requestJson = {
                 grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
                 code: result.response!.code,
-                redirect_uri: this._configuration.redirectUri,
-                client_id: this._configuration.clientId,
+                redirect_uri: this.configuration.redirectUri,
+                client_id: this.configuration.clientId,
                 extras: {
                     code_verifier: result.request.internal!['code_verifier'],
                 },
@@ -270,10 +270,10 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             const tokenRequest = new TokenRequest(requestJson);
 
             // Execute the request to swap the code for tokens
-            const tokenRequestHandler = new BaseTokenRequestHandler(this._customRequestor);
+            const tokenRequestHandler = new BaseTokenRequestHandler(this.customRequestor);
 
             // Perform the authorization code grant exchange
-            const tokenResponse = await tokenRequestHandler.performTokenRequest(this._metadata!, tokenRequest);
+            const tokenResponse = await tokenRequestHandler.performTokenRequest(this.metadata!, tokenRequest);
 
             // Set values from the response
             const newTokenData = {
@@ -283,8 +283,8 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
             };
 
             // Update tokens in memory and secure storage
-            this._tokens = newTokenData;
-            this._tokenStorage?.save(this._tokens);
+            this.tokens = newTokenData;
+            this.tokenStorage?.save(this.tokens);
 
         } catch (e: any) {
 
@@ -296,25 +296,25 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     /*
      * Try to use the refresh token to get a new access token
      */
-    private async _performTokenRefresh(): Promise<void> {
+    private async performTokenRefresh(): Promise<void> {
 
         try {
 
             // Initialise if required
-            await this._loadMetadata();
+            await this.loadMetadata();
 
             // Create the token request
             const requestJson = {
                 grant_type: GRANT_TYPE_REFRESH_TOKEN,
-                client_id: this._configuration.clientId,
-                refresh_token: this._tokens!.refreshToken!,
+                client_id: this.configuration.clientId,
+                refresh_token: this.tokens!.refreshToken!,
                 redirect_uri: '',
             };
             const tokenRequest = new TokenRequest(requestJson);
 
             // Execute the request to send the refresh token and get new tokens
-            const tokenRequestHandler = new BaseTokenRequestHandler(this._customRequestor);
-            const tokenResponse = await tokenRequestHandler.performTokenRequest(this._metadata!, tokenRequest);
+            const tokenRequestHandler = new BaseTokenRequestHandler(this.customRequestor);
+            const tokenResponse = await tokenRequestHandler.performTokenRequest(this.metadata!, tokenRequest);
 
             // Set values from the response, which may include a new rolling refresh token
             const newTokenData = {
@@ -325,17 +325,17 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
 
             // Maintain the existing refresh token if a new one is not issued
             if (!newTokenData.refreshToken) {
-                newTokenData.refreshToken = this._tokens!.refreshToken;
+                newTokenData.refreshToken = this.tokens!.refreshToken;
             }
 
             // Maintain the existing ID token if a new one is not issued
             if (!newTokenData.idToken) {
-                newTokenData.idToken = this._tokens!.idToken;
+                newTokenData.idToken = this.tokens!.idToken;
             }
 
             // Update tokens in memory and secure storage
-            this._tokens = newTokenData;
-            this._tokenStorage?.save(this._tokens);
+            this.tokens = newTokenData;
+            this.tokenStorage?.save(this.tokens);
 
         } catch (e: any) {
 
@@ -355,7 +355,7 @@ export class AuthenticatorServiceImpl implements AuthenticatorService {
     /*
      * Ensure that the this parameter is available in async callbacks
      */
-    private _setupCallbacks() {
-        this._endLogin = this._endLogin.bind(this);
+    private setupCallbacks() {
+        this.endLogin = this.endLogin.bind(this);
     }
 }

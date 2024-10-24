@@ -9,11 +9,11 @@ import {HttpProxy} from '../utilities/httpProxy';
  */
 export class CustomRequestor extends Requestor {
 
-    private readonly _httpProxy: HttpProxy;
+    private readonly httpProxy: HttpProxy;
 
     public constructor(httpProxy: HttpProxy) {
         super();
-        this._httpProxy = httpProxy;
+        this.httpProxy = httpProxy;
     }
 
     /*
@@ -31,8 +31,8 @@ export class CustomRequestor extends Requestor {
                 headers: settings.headers as any,
             };
 
-            if (this._httpProxy.agent) {
-                options.httpsAgent = this._httpProxy.agent;
+            if (this.httpProxy.getAgent()) {
+                options.httpsAgent = this.httpProxy.getAgent();
             }
 
             const response = await axios.request(options);

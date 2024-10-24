@@ -35,10 +35,10 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
     async function startup(): Promise<void> {
 
         // Inform other parts of the app that the main view is active
-        model.eventBus.emit(UIEventNames.Navigated, null, new NavigatedEvent(true));
+        model.getEventBus().emit(UIEventNames.Navigated, null, new NavigatedEvent(true));
 
         // Subscribe for reload events
-        model.eventBus.on(UIEventNames.ReloadData, onReload);
+        model.getEventBus().on(UIEventNames.ReloadData, onReload);
 
         // Do the initial load of data
         await loadData();
@@ -48,7 +48,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
      * Unsubscribe when we unload
      */
     function cleanup(): void {
-        model.eventBus.detach(UIEventNames.ReloadData, onReload);
+        model.getEventBus().detach(UIEventNames.ReloadData, onReload);
     }
 
     /*
@@ -58,7 +58,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
 
         const options = {
             forceReload: true,
-            causeError: event.causeError
+            causeError: event.getCauseError()
         };
         loadData(options);
     }
@@ -80,7 +80,7 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
 
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         return {
-            error: model.error!,
+            error: model.getError()!,
             errorsToIgnore: [ErrorCodes.loginRequired],
             containingViewName: 'transactions',
             hyperlinkMessage: 'Problem Encountered in Transactions View',
@@ -92,14 +92,14 @@ export function TransactionsContainer(props: TransactionsContainerProps): JSX.El
     function getChildProps(): TransactionsViewProps {
 
         return {
-            data: model.transactions!,
+            data: model.getTransactions()!,
         };
     }
 
     return  (
         <>
-            {model.error && <ErrorSummaryView {...getErrorProps()}/>}
-            {model.transactions && <TransactionsView {...getChildProps()}/>}
+            {model.getError() && <ErrorSummaryView {...getErrorProps()}/>}
+            {model.getTransactions() && <TransactionsView {...getChildProps()}/>}
         </>
     );
 }

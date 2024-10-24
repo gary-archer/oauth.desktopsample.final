@@ -7,8 +7,8 @@ import {TokenData} from './tokenData';
  */
 export class TokenStorage {
 
-    private readonly _key = 'EncryptedData';
-    private _store = new Store<Record<string, string>>({
+    private readonly key = 'EncryptedData';
+    private store = new Store<Record<string, string>>({
         name: 'tokens'
     });
 
@@ -30,7 +30,7 @@ export class TokenStorage {
         try {
 
             // Try to read the file
-            const encryptedBytesBase64 = this._store.get(this._key);
+            const encryptedBytesBase64 = this.store.get(this.key);
             if (!encryptedBytesBase64) {
                 return null;
             }
@@ -54,13 +54,13 @@ export class TokenStorage {
         const json = JSON.stringify(data);
         const buffer = safeStorage.encryptString(json);
         const encryptedBytesBase64 = buffer.toString('base64');
-        this._store.set(this._key, encryptedBytesBase64);
+        this.store.set(this.key, encryptedBytesBase64);
     }
 
     /*
      * Delete token data after logout
      */
     public delete(): void {
-        this._store.delete(this._key);
+        this.store.delete(this.key);
     }
 }

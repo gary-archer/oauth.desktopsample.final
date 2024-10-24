@@ -18,10 +18,10 @@ import {NodeCrypto} from './nodeCrypto';
  */
 export class LoginRequestHandler extends AuthorizationRequestHandler {
 
-    private readonly _configuration: OAuthConfiguration;
-    private readonly _metadata: AuthorizationServiceConfiguration;
-    private readonly _state: LoginState;
-    private readonly _eventEmitter: EventEmitter;
+    private readonly configuration: OAuthConfiguration;
+    private readonly metadata: AuthorizationServiceConfiguration;
+    private readonly state: LoginState;
+    private readonly eventEmitter: EventEmitter;
 
     public constructor(
         configuration: OAuthConfiguration,
@@ -30,10 +30,10 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
         eventEmitter: EventEmitter) {
 
         super(new BasicQueryStringUtils(), new NodeCrypto());
-        this._configuration = configuration;
-        this._metadata = metadata;
-        this._state = state;
-        this._eventEmitter = eventEmitter;
+        this.configuration = configuration;
+        this.metadata = metadata;
+        this.state = state;
+        this.eventEmitter = eventEmitter;
     }
 
     /*
@@ -44,9 +44,9 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
         // Create the authorization request message
         const requestJson = {
             response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
-            client_id: this._configuration.clientId,
-            redirect_uri: this._configuration.redirectUri,
-            scope: this._configuration.scope,
+            client_id: this.configuration.clientId,
+            redirect_uri: this.configuration.redirectUri,
+            scope: this.configuration.scope,
         };
 
         const authorizationRequest = new AuthorizationRequest(requestJson, new NodeCrypto(), true);
@@ -56,25 +56,25 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
         const promise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
 
             // Store the request data and use it later to handle re-entrancy
-            this._state.storeRequest(authorizationRequest);
+            this.state.storeRequest(authorizationRequest);
 
             // When we get a response, make sure we use the matching request to complete the flow
-            this._eventEmitter.once('LOGIN_COMPLETE', (args: URLSearchParams) => {
+            this.eventEmitter.once('LOGIN_COMPLETE', (args: URLSearchParams) => {
 
                 const state = args.get('state') || '';
-                const foundRequest = this._state.getRequestForState(state);
+                const foundRequest = this.state.getRequestForState(state);
                 if (!foundRequest) {
                     reject(ErrorFactory.fromLoginCancelled());
                     return;
                 }
 
-                this._state.clear();
-                resolve(this._handleBrowserLoginResponse(args, foundRequest));
+                this.state.clear();
+                resolve(this.handleBrowserLoginResponse(args, foundRequest));
             });
         });
 
         // Send an authorization request on the browser, which gets redirected to the loopback web server
-        await this.performAuthorizationRequest(this._metadata, authorizationRequest);
+        await this.performAuthorizationRequest(this.metadata, authorizationRequest);
         return await promise;
     }
 
@@ -98,7 +98,7 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
     /*
      * Collect response data using AppAuth objects
      */
-    private _handleBrowserLoginResponse(
+    private handleBrowserLoginResponse(
         args: URLSearchParams,
         request: AuthorizationRequest): AuthorizationRequestResponse {
 

@@ -32,10 +32,10 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
     async function startup(): Promise<void> {
 
         // Inform other parts of the app that the main view is active
-        model.eventBus.emit(UIEventNames.Navigated, null, new NavigatedEvent(true));
+        model.getEventBus().emit(UIEventNames.Navigated, null, new NavigatedEvent(true));
 
         // Subscribe for reload events
-        model.eventBus.on(UIEventNames.ReloadData, onReload);
+        model.getEventBus().on(UIEventNames.ReloadData, onReload);
 
         // Do the initial load of data
         await loadData();
@@ -45,7 +45,7 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
      * Unsubscribe when we unload
      */
     function cleanup(): void {
-        model.eventBus.detach(UIEventNames.ReloadData, onReload);
+        model.getEventBus().detach(UIEventNames.ReloadData, onReload);
     }
 
     /*
@@ -55,7 +55,7 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
 
         const options = {
             forceReload: true,
-            causeError: event.causeError
+            causeError: event.getCauseError()
         };
         loadData(options);
     }
@@ -71,7 +71,7 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
 
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         return {
-            error: model.error!,
+            error: model.getError()!,
             errorsToIgnore: [ErrorCodes.loginRequired],
             containingViewName: 'companies',
             hyperlinkMessage: 'Problem Encountered in Companies View',
@@ -83,14 +83,14 @@ export function CompaniesContainer(props: CompaniesContainerProps): JSX.Element 
     function getChildProps(): CompaniesViewProps {
 
         return {
-            companies: model.companies,
+            companies: model.getCompanies(),
         };
     }
 
     return  (
         <>
-            {model.error && <ErrorSummaryView {...getErrorProps()}/>}
-            {model.companies.length > 0 && <CompaniesView {...getChildProps()}/>}
+            {model.getError() && <ErrorSummaryView {...getErrorProps()}/>}
+            {model.getCompanies().length > 0 && <CompaniesView {...getChildProps()}/>}
         </>
     );
 }
