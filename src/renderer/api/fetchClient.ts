@@ -14,78 +14,78 @@ import {FetchCache} from './fetchCache';
  */
 export class FetchClient {
 
-    private readonly _fetchCache: FetchCache;
-    private readonly _ipcEvents: IpcRendererEvents;
-    private readonly _authenticatorClient: AuthenticatorClient;
-    private readonly _sessionId: string;
+    private readonly fetchCache: FetchCache;
+    private readonly ipcEvents: IpcRendererEvents;
+    private readonly authenticatorClient: AuthenticatorClient;
+    private readonly sessionId: string;
 
     public constructor(fetchCache: FetchCache, ipcEvents: IpcRendererEvents, authenticatorClient: AuthenticatorClient) {
 
-        this._fetchCache = fetchCache;
-        this._ipcEvents = ipcEvents;
-        this._authenticatorClient = authenticatorClient;
-        this._sessionId = Guid.create().toString();
+        this.fetchCache = fetchCache;
+        this.ipcEvents = ipcEvents;
+        this.authenticatorClient = authenticatorClient;
+        this.sessionId = Guid.create().toString();
     }
 
     /*
      * Return the session ID for display
      */
-    public get sessionId(): string {
-        return this._sessionId;
+    public getSessionId(): string {
+        return this.sessionId;
     }
 
     /*
      * Get a list of companies
      */
     public async getCompanyList(options: FetchOptions) : Promise<Company[] | null> {
-        return await this._getDataFromApi(options, () => this._ipcEvents.getCompanyList(options));
+        return await this.getDataFromApi(options, () => this.ipcEvents.getCompanyList(options));
     }
 
     /*
      * Get a list of transactions for a single company
      */
     public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<CompanyTransactions | null> {
-        return await this._getDataFromApi(options, () => this._ipcEvents.getCompanyTransactions(id, options));
+        return await this.getDataFromApi(options, () => this.ipcEvents.getCompanyTransactions(id, options));
     }
 
     /*
      * Get user information from the authorization server
      */
     public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo | null> {
-        return await this._getDataFromApi(options, () => this._ipcEvents.getOAuthUserInfo(options));
+        return await this.getDataFromApi(options, () => this.ipcEvents.getOAuthUserInfo(options));
     }
 
     /*
      * Download user attributes the UI needs that are not stored in the authorization server
      */
     public async getApiUserInfo(options: FetchOptions) : Promise<ApiUserInfo | null> {
-        return await this._getDataFromApi(options, () => this._ipcEvents.getApiUserInfo(options));
+        return await this.getDataFromApi(options, () => this.ipcEvents.getApiUserInfo(options));
     }
 
     /*
      * A parameterized method containing application specific logic for managing API calls
      */
-    private async _getDataFromApi(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
+    private async getDataFromApi(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
 
         // Remove the item from the cache when a reload is requested
         if (options.forceReload) {
-            this._fetchCache.removeItem(options.cacheKey);
+            this.fetchCache.removeItem(options.cacheKey);
         }
 
         // Return existing data from the memory cache when available
         // If a view is created whiles its API requests are in flight, this returns null to the view model
-        let cacheItem = this._fetchCache.getItem(options.cacheKey);
+        let cacheItem = this.fetchCache.getItem(options.cacheKey);
         if (cacheItem && !cacheItem.error) {
             return cacheItem.data;
         }
 
         // Ensure that the cache item exists, to avoid further redundant API requests
-        cacheItem = this._fetchCache.createItem(options.cacheKey);
+        cacheItem = this.fetchCache.createItem(options.cacheKey);
 
         try {
 
             // Call the API and return data on success
-            options.sessionId = this._sessionId;
+            options.sessionId = this.sessionId;
             const data1 = await callback();
             cacheItem.data = data1;
             return data1;
@@ -103,7 +103,7 @@ export class FetchClient {
             try {
 
                 // Try to refresh the access token
-                await this._authenticatorClient.synchronizedRefresh();
+                await this.authenticatorClient.synchronizedRefresh();
 
             } catch (e2: any) {
 

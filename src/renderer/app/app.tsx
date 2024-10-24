@@ -178,7 +178,7 @@ export function App(props: AppProps): JSX.Element {
     function getSessionProps(): SessionViewProps {
 
         return {
-            sessionId: model.fetchClient.sessionId,
+            sessionId: model.fetchClient.getSessionId(),
             eventBus: model.eventBus,
         };
     }

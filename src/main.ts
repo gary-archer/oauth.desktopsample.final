@@ -10,15 +10,15 @@ import {ErrorFactory} from './shared/errors/errorFactory';
  */
 class Main {
 
-    private _configuration: Configuration;
-    private _ipcEvents: IpcMainEvents;
-    private _window: BrowserWindow | null;
+    private configuration: Configuration;
+    private ipcEvents: IpcMainEvents;
+    private window: BrowserWindow | null;
 
     public constructor() {
 
-        this._configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
-        this._ipcEvents = new IpcMainEvents(this._configuration);
-        this._window = null;
+        this.configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
+        this.ipcEvents = new IpcMainEvents(this.configuration);
+        this.window = null;
         this._setupCallbacks();
     }
 
@@ -35,36 +35,36 @@ class Main {
         }
 
         // Attempting to start a second instance will fire the following event to the running instance
-        app.on('second-instance', this._onSecondInstance);
+        app.on('second-instance', this.onSecondInstance);
 
         // This method will be called when Electron has finished initialization and is ready to create browser windows
         // Some APIs can only be used after this event occurs
-        app.on('ready', this._onReady);
+        app.on('ready', this.onReady);
 
         // Quit when all windows are closed
-        app.on('window-all-closed', this._onAllWindowsClosed);
+        app.on('window-all-closed', this.onAllWindowsClosed);
 
         // Handle reactivation
-        app.on('activate', this._onActivate);
+        app.on('activate', this.onActivate);
 
         // Handle login responses or deep linking requests against the running app on Mac OS
-        app.on('open-url', this._onOpenUrl);
+        app.on('open-url', this.onOpenUrl);
 
         // For Windows or Linux we receive a startup deep link URL as a command line parameter
-        const startupUrl = this._getDeepLinkUrl(process.argv);
+        const startupUrl = this.getDeepLinkUrl(process.argv);
         if (startupUrl) {
-            this._ipcEvents.deepLinkStartupUrl = startupUrl;
+            this.ipcEvents.deepLinkStartupUrl = startupUrl;
         }
     }
 
     /*
      * Do initialisation after the ready event
      */
-    private async _onReady(): Promise<void> {
+    private async onReady(): Promise<void> {
 
         // Create the window and use Electron recommended security options
         // https://www.electronjs.org/docs/tutorial/security
-        this._window = new BrowserWindow({
+        this.window = new BrowserWindow({
             width: 1280,
             height: 720,
             minWidth: 800,
@@ -78,46 +78,46 @@ class Main {
         });
 
         // Register for event based communication with the renderer process
-        this._ipcEvents.register(this._window);
+        this.ipcEvents.register(this.window);
 
         // Register for private URI scheme notifications
-        this._registerPrivateUriScheme();
+        this.registerPrivateUriScheme();
 
         // Load the index.html of the app from the file system
-        this._window.loadFile('./index.html');
+        this.window.loadFile('./index.html');
 
         // Configure HTTP headers
-        this._initialiseHttpHeaders();
+        this.initialiseHttpHeaders();
 
         // Emitted when the window is closed
-        this._window.on('closed', this._onClosed);
+        this.window.on('closed', this.onClosed);
     }
 
     /*
      * On macOS the window is recreated when the dock icon is clicked and there are no other windows open
      */
-    private _onActivate(): void {
+    private onActivate(): void {
 
-        if (this._window === null) {
-            this._onReady();
+        if (this.window === null) {
+            this.onReady();
         }
     }
 
     /*
      * On Windows and Linux, this is called when we receive login responses or other deep links
      */
-    private _onSecondInstance(event: any, argv: any): void {
+    private onSecondInstance(event: any, argv: any): void {
 
-        const url = this._getDeepLinkUrl(argv);
+        const url = this.getDeepLinkUrl(argv);
         if (url) {
-            this._handleDeepLink(url);
+            this.handleDeepLink(url);
         }
     }
 
     /*
      * Set required or recommended headers
      */
-    private _initialiseHttpHeaders() {
+    private initialiseHttpHeaders() {
 
         // Remove the 'Origin: file://' default header which may be rejected for security reasons with this message
         // 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
@@ -157,50 +157,50 @@ class Main {
     /*
      * On macOS this is where we receive login responses or other deep links
      */
-    private _onOpenUrl(event: any, schemeData: string): void {
+    private onOpenUrl(event: any, schemeData: string): void {
 
         event.preventDefault();
 
-        if (this._window) {
+        if (this.window) {
 
             // If we have a running window we can just forward the notification to it
-            this._handleDeepLink(schemeData);
+            this.handleDeepLink(schemeData);
 
         } else {
 
             // If this is a startup deep linking message we need to store it until after startup
-            this._ipcEvents.deepLinkStartupUrl = schemeData;
+            this.ipcEvents.deepLinkStartupUrl = schemeData;
         }
     }
 
     /*
      * When the OS sends a deep link notification, the existing instance of the app receives it
      */
-    private _handleDeepLink(deepLinkUrl: string): void {
+    private handleDeepLink(deepLinkUrl: string): void {
 
         // The existing instance of the app brings itself to the foreground
-        if (this._window) {
+        if (this.window) {
 
-            if (this._window.isMinimized()) {
-                this._window.restore();
+            if (this.window.isMinimized()) {
+                this.window.restore();
             }
 
-            this._window.focus();
+            this.window.focus();
         }
 
         // Send the event to the renderer side of the app
-        this._ipcEvents.handleDeepLink(deepLinkUrl);
+        this.ipcEvents.handleDeepLink(deepLinkUrl);
     }
 
     /*
      * Look for a deep link URL as a command line parameter
      * Note also that Chromium may add its own parameters
      */
-    private _getDeepLinkUrl(argv: any): string | null {
+    private getDeepLinkUrl(argv: any): string | null {
 
         for (const arg of argv) {
             const value = arg as string;
-            if (value.indexOf(this._configuration.oauth.privateSchemeName) !== -1) {
+            if (value.indexOf(this.configuration.oauth.privateSchemeName) !== -1) {
                 return value;
             }
         }
@@ -211,15 +211,15 @@ class Main {
     /*
      * Dereference any window objects here
      */
-    private _onClosed(): void {
-        this._window = null;
+    private onClosed(): void {
+        this.window = null;
     }
 
     /*
      * Quit when all windows are closed
      * On macOS, applications and their menu bar stay active until the user quits explicitly with Cmd + Q
      */
-    private _onAllWindowsClosed(): void {
+    private onAllWindowsClosed(): void {
 
         if (process.platform !== 'darwin') {
             app.quit();
@@ -230,21 +230,21 @@ class Main {
      * Handle private URI scheme registration on Windows or macOS
      * On Linux the registration is done by the run.sh script instead
      */
-    private _registerPrivateUriScheme(): void {
+    private registerPrivateUriScheme(): void {
 
         if (process.platform === 'win32') {
 
             // Register the private URI scheme differently for Windows
             // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
             app.setAsDefaultProtocolClient(
-                this._configuration.oauth.privateSchemeName,
+                this.configuration.oauth.privateSchemeName,
                 process.execPath,
                 [app.getAppPath()]);
 
         } else if (process.platform === 'darwin') {
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
-            app.setAsDefaultProtocolClient(this._configuration.oauth.privateSchemeName);
+            app.setAsDefaultProtocolClient(this.configuration.oauth.privateSchemeName);
         }
     }
 
@@ -252,13 +252,13 @@ class Main {
      * Ensure that the this parameter is available in async callbacks
      */
     private _setupCallbacks() {
-        this._onReady = this._onReady.bind(this);
-        this._onActivate = this._onActivate.bind(this);
-        this._onSecondInstance = this._onSecondInstance.bind(this);
-        this._onOpenUrl = this._onOpenUrl.bind(this);
-        this._handleDeepLink = this._handleDeepLink.bind(this);
-        this._onClosed = this._onClosed.bind(this);
-        this._onAllWindowsClosed = this._onAllWindowsClosed.bind(this);
+        this.onReady = this.onReady.bind(this);
+        this.onActivate = this.onActivate.bind(this);
+        this.onSecondInstance = this.onSecondInstance.bind(this);
+        this.onOpenUrl = this.onOpenUrl.bind(this);
+        this.handleDeepLink = this.handleDeepLink.bind(this);
+        this.onClosed = this.onClosed.bind(this);
+        this.onAllWindowsClosed = this.onAllWindowsClosed.bind(this);
     }
 }
 

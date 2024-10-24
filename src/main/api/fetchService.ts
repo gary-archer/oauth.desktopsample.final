@@ -16,18 +16,18 @@ import {HttpProxy} from '../utilities/httpProxy';
  */
 export class FetchService {
 
-    private readonly _configuration: Configuration;
-    private readonly _authenticatorService: AuthenticatorService;
-    private readonly _httpProxy: HttpProxy;
+    private readonly configuration: Configuration;
+    private readonly authenticatorService: AuthenticatorService;
+    private readonly httpProxy: HttpProxy;
 
     public constructor(
         configuration: Configuration,
         authenticatorService: AuthenticatorService,
         httpProxy: HttpProxy) {
 
-        this._configuration = configuration;
-        this._authenticatorService = authenticatorService;
-        this._httpProxy = httpProxy;
+        this.configuration = configuration;
+        this.authenticatorService = authenticatorService;
+        this.httpProxy = httpProxy;
     }
 
     /*
@@ -35,8 +35,8 @@ export class FetchService {
      */
     public async getCompanyList(options: FetchOptions) : Promise<Company[] | null> {
 
-        const url = `${this._configuration.app.apiBaseUrl}/companies`;
-        return await this._callApi('GET', url, options);
+        const url = `${this.configuration.app.apiBaseUrl}/companies`;
+        return await this.callApi('GET', url, options);
     }
 
     /*
@@ -44,8 +44,8 @@ export class FetchService {
      */
     public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<CompanyTransactions | null> {
 
-        const url = `${this._configuration.app.apiBaseUrl}/companies/${id}/transactions`;
-        return await this._callApi('GET', url, options);
+        const url = `${this.configuration.app.apiBaseUrl}/companies/${id}/transactions`;
+        return await this.callApi('GET', url, options);
     }
 
     /*
@@ -53,12 +53,12 @@ export class FetchService {
      */
     public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo | null> {
 
-        const url = await this._authenticatorService.getUserInfoEndpoint();
+        const url = await this.authenticatorService.getUserInfoEndpoint();
         if (!url) {
             return null;
         }
 
-        const data = await this._callApi('GET', url, options);
+        const data = await this.callApi('GET', url, options);
         if (!data) {
             return null;
         }
@@ -74,14 +74,14 @@ export class FetchService {
      */
     public async getApiUserInfo(options: FetchOptions) : Promise<ApiUserInfo | null> {
 
-        const url = `${this._configuration.app.apiBaseUrl}/userinfo`;
-        return await this._callApi('GET', url, options);
+        const url = `${this.configuration.app.apiBaseUrl}/userinfo`;
+        return await this.callApi('GET', url, options);
     }
 
     /*
      * A parameterized method containing application specific logic for managing API calls
      */
-    private async _callApi(
+    private async callApi(
         method: Method,
         url: string,
         options: FetchOptions,
@@ -90,7 +90,7 @@ export class FetchService {
         try {
 
             // A logic is required if we don't have an access token
-            const accessToken = await this._authenticatorService.getAccessToken();
+            const accessToken = await this.authenticatorService.getAccessToken();
             if (!accessToken) {
                 throw ErrorFactory.fromLoginRequired();
             }
@@ -118,8 +118,8 @@ export class FetchService {
                 headers,
             } as AxiosRequestConfig;
 
-            if (this._httpProxy.agent) {
-                requestOptions.httpsAgent = this._httpProxy.agent;
+            if (this.httpProxy.agent) {
+                requestOptions.httpsAgent = this.httpProxy.agent;
             }
 
             const response = await axios.request(requestOptions);
