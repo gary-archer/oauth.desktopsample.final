@@ -3,13 +3,13 @@
  */
 export class DeepLinkEvent {
 
-    private readonly _path: string;
+    private readonly path: string;
 
     public constructor(path: string) {
-        this._path = path;
+        this.path = path;
     }
 
-    public get path(): string {
-        return this._path;
+    public getPath(): string {
+        return this.path;
     }
 }

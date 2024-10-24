@@ -118,8 +118,8 @@ export class FetchService {
                 headers,
             } as AxiosRequestConfig;
 
-            if (this.httpProxy.agent) {
-                requestOptions.httpsAgent = this.httpProxy.agent;
+            if (this.httpProxy.getAgent()) {
+                requestOptions.httpsAgent = this.httpProxy.getAgent();
             }
 
             const response = await axios.request(requestOptions);

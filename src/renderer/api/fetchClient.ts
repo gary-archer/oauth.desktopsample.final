@@ -75,8 +75,8 @@ export class FetchClient {
         // Return existing data from the memory cache when available
         // If a view is created whiles its API requests are in flight, this returns null to the view model
         let cacheItem = this.fetchCache.getItem(options.cacheKey);
-        if (cacheItem && !cacheItem.error) {
-            return cacheItem.data;
+        if (cacheItem && !cacheItem.getError()) {
+            return cacheItem.getData();
         }
 
         // Ensure that the cache item exists, to avoid further redundant API requests
@@ -87,16 +87,16 @@ export class FetchClient {
             // Call the API and return data on success
             options.sessionId = this.sessionId;
             const data1 = await callback();
-            cacheItem.data = data1;
+            cacheItem.setData(data1);
             return data1;
 
         } catch (e1: any) {
 
             const error1 = ErrorFactory.fromException(e1);
-            if (error1.statusCode !== 401) {
+            if (error1.getStatusCode() !== 401) {
 
                 // Report errors if this is not a 401
-                cacheItem.error = error1;
+                cacheItem.setError(error1);
                 throw error1;
             }
 
@@ -109,7 +109,7 @@ export class FetchClient {
 
                 // Report refresh errors
                 const error2 = ErrorFactory.fromException(e2);
-                cacheItem.error = error2;
+                cacheItem.setError(error2);
                 throw error2;
             }
 
@@ -117,14 +117,14 @@ export class FetchClient {
 
                 // Call the API again with the rewritten access token
                 const data2 = await callback();
-                cacheItem.data = data2;
+                cacheItem.setData(data2);
                 return data2;
 
             }  catch (e3: any) {
 
                 // Report retry errors
                 const error3 = ErrorFactory.fromException(e3);
-                cacheItem.error = error3;
+                cacheItem.setError(error3);
                 throw error3;
             }
         }

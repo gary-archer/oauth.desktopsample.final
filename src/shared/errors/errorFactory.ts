@@ -24,7 +24,7 @@ export class ErrorFactory {
             exception.stack);
 
         // Set technical details from the received exception
-        error.details = ErrorFactory.getExceptionMessage(exception);
+        error.setDetails(ErrorFactory.getExceptionMessage(exception));
         return error;
     }
 
@@ -79,7 +79,7 @@ export class ErrorFactory {
             exception.stack);
 
         // Set technical details from the received exception
-        error.details = ErrorFactory.getOAuthExceptionMessage(exception);
+        error.setDetails(ErrorFactory.getOAuthExceptionMessage(exception));
         return error;
     }
 
@@ -101,7 +101,7 @@ export class ErrorFactory {
             exception.stack);
 
         // Set technical details from the received exception
-        error.details = ErrorFactory.getOAuthExceptionMessage(exception);
+        error.setDetails(ErrorFactory.getOAuthExceptionMessage(exception));
         return error;
     }
 
@@ -123,7 +123,7 @@ export class ErrorFactory {
             exception.stack);
 
         // Set technical details from the received exception
-        error.details = ErrorFactory.getOAuthExceptionMessage(exception);
+        error.setDetails(ErrorFactory.getOAuthExceptionMessage(exception));
         return error;
     }
 
@@ -145,9 +145,9 @@ export class ErrorFactory {
             exception.stack);
 
         // Set technical details from the received exception
-        error.details = ErrorFactory.getExceptionMessage(exception);
+        error.setDetails(ErrorFactory.getExceptionMessage(exception));
         if (componentStack) {
-            error.details += ` : ${componentStack}`;
+            error.setDetails(`${error.getDetails()} : ${componentStack}`);
         }
 
         return error;
@@ -178,7 +178,7 @@ export class ErrorFactory {
                 ErrorCodes.apiNetworkError,
                 `A network problem occurred when the UI called the ${source}`,
                 exception.stack);
-            error.details = this.getExceptionMessage(exception);
+            error.setDetails(this.getExceptionMessage(exception));
 
         } else if (statusCode >= 200 && statusCode <= 299) {
 
@@ -188,7 +188,7 @@ export class ErrorFactory {
                 ErrorCodes.apiDataError,
                 `A technical problem occurred parsing received data from the ${source}`,
                 exception.stack);
-            error.details = this.getExceptionMessage(exception);
+            error.setDetails(this.getExceptionMessage(exception));
 
         } else {
 
@@ -198,7 +198,7 @@ export class ErrorFactory {
                 ErrorCodes.apiResponseError,
                 `A technical problem occurred when the UI called the ${source}`,
                 exception.stack);
-            error.details = this.getExceptionMessage(exception);
+            error.setDetails(this.getExceptionMessage(exception));
 
             // Read response error payloads
             if (exception.response && exception.response.data && typeof exception.response.data === 'object') {
@@ -206,8 +206,8 @@ export class ErrorFactory {
             }
         }
 
-        error.statusCode = statusCode;
-        error.url = url;
+        error.setStatusCode(statusCode);
+        error.setUrl(url);
         return error;
     }
 
@@ -222,7 +222,7 @@ export class ErrorFactory {
             // Handle API errors, which include extra details for 5xx errors
             if (payload.code && payload.message) {
 
-                error.errorCode = payload.code;
+                error.setErrorCode(payload.code);
                 error.message = payload.details;
 
                 if (payload.area && payload.id && payload.utcTime) {
@@ -233,7 +233,7 @@ export class ErrorFactory {
             // Handle OAuth errors in HTTP reponses
             if (payload.error && payload.error_description) {
 
-                error.errorCode = payload.error;
+                error.setErrorCode(payload.error);
                 error.message = payload.error_description;
             }
         }

@@ -4,16 +4,16 @@
 export class UIError extends Error {
 
     // Technical fields to display
-    private _area: string;
-    private _errorCode: string;
-    private _userAction: string;
-    private _utcTime: string;
-    private _statusCode: number;
-    private _instanceId: number;
-    private _details: string;
+    private area: string;
+    private errorCode: string;
+    private userAction: string;
+    private utcTime: string;
+    private statusCode: number;
+    private instanceId: number;
+    private details: string;
 
     // Additional details that can be shown during development
-    private _url: string;
+    private url: string;
 
     /*
      * All types of error supply at least these fields
@@ -22,14 +22,14 @@ export class UIError extends Error {
 
         super(userMessage);
 
-        this._area = area;
-        this._errorCode = errorCode;
-        this._userAction = 'Please retry the operation';
-        this._utcTime = new Date().toISOString();
-        this._statusCode = 0;
-        this._instanceId = 0;
-        this._details = '';
-        this._url = '';
+        this.area = area;
+        this.errorCode = errorCode;
+        this.userAction = 'Please retry the operation';
+        this.utcTime = new Date().toISOString();
+        this.statusCode = 0;
+        this.instanceId = 0;
+        this.details = '';
+        this.url = '';
 
         // Ensure that instanceof works
         Object.setPrototypeOf(this, new.target.prototype);
@@ -40,65 +40,65 @@ export class UIError extends Error {
         }
     }
 
-    public get area(): string {
-        return this._area;
+    public getArea(): string {
+        return this.area;
     }
 
-    public get errorCode(): string {
-        return this._errorCode;
+    public getErrorCode(): string {
+        return this.errorCode;
     }
 
-    public set errorCode(value: string) {
-        this._errorCode = value;
+    public setErrorCode(value: string): void {
+        this.errorCode = value;
     }
 
-    public get userAction(): string {
-        return this._userAction;
+    public getUserAction(): string {
+        return this.userAction;
     }
 
-    public set userAction(value: string) {
-        this._userAction = value;
+    public setUserAction(value: string): void {
+        this.userAction = value;
     }
 
-    public get utcTime(): string {
-        return this._utcTime;
+    public getUtcTime(): string {
+        return this.utcTime;
     }
 
-    public get statusCode(): number {
-        return this._statusCode;
+    public getStatusCode(): number {
+        return this.statusCode;
     }
 
-    public set statusCode(value: number) {
-        this._statusCode = value;
+    public setStatusCode(value: number): void {
+        this.statusCode = value;
     }
 
-    public get instanceId(): number {
-        return this._instanceId;
+    public getInstanceId(): number {
+        return this.instanceId;
     }
 
-    public get details(): string {
-        return this._details;
+    public getDetails(): string {
+        return this.details;
     }
 
-    public set details(value: string)  {
-        this._details = value;
+    public setDetails(value: string): void {
+        this.details = value;
     }
 
-    public get url(): string {
-        return this._url;
+    public getUrl(): string {
+        return this.url;
     }
 
-    public set url(value: string) {
-        this._url = value;
+    public setUrl(value: string): void {
+        this.url = value;
     }
 
     /*
      * Override details when an API 500 error is handled
      */
     public setApiErrorDetails(area: string, id: number, utcTime: string): void {
-        this._area = area;
-        this._instanceId = id;
-        this._utcTime = utcTime;
+        this.area = area;
+        this.instanceId = id;
+        this.utcTime = utcTime;
     }
 
     /*
@@ -107,24 +107,24 @@ export class UIError extends Error {
     public toJson(pretty = false): string {
 
         const error: any = {
-            area: this._area,
-            code: this._errorCode,
+            area: this.area,
+            code: this.errorCode,
             message: this.message,
-            userAction: this._userAction,
-            utcTime: this._utcTime,
+            userAction: this.userAction,
+            utcTime: this.utcTime,
         };
 
-        if (this._statusCode) {
-            error.statusCode = this._statusCode;
+        if (this.statusCode) {
+            error.statusCode = this.statusCode;
         }
-        if (this._instanceId) {
-            error.instanceId = this._instanceId;
+        if (this.instanceId) {
+            error.instanceId = this.instanceId;
         }
-        if (this._url) {
-            error.url = this._url;
+        if (this.url) {
+            error.url = this.url;
         }
-        if (this._details) {
-            error.details = this._details;
+        if (this.details) {
+            error.details = this.details;
         }
 
         if (this.stack) {
@@ -157,11 +157,11 @@ export class UIError extends Error {
             data.message || '',
             data.userAction || '');
 
-        error._utcTime = data.utcTime || '';
-        error._statusCode = data.statusCode || 0;
-        error._instanceId = data.instanceId || 0;
-        error._details = data.details || '';
-        error._url = data.url || '';
+        error.utcTime = data.utcTime || '';
+        error.statusCode = data.statusCode || 0;
+        error.instanceId = data.instanceId || 0;
+        error.details = data.details || '';
+        error.url = data.url || '';
         error.stack = (data.stack || []).join('\n');
         return error;
     }

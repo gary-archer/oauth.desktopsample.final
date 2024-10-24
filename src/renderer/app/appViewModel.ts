@@ -22,26 +22,26 @@ import {ViewModelCoordinator} from '../views/utilities/viewModelCoordinator';
 export class AppViewModel {
 
     // Infrastructure
-    private readonly _eventBus: EventBus;
-    private readonly _ipcEvents: IpcRendererEvents;
-    private readonly _fetchCache: FetchCache;
+    private readonly eventBus: EventBus;
+    private readonly ipcEvents: IpcRendererEvents;
+    private readonly fetchCache: FetchCache;
 
     // OAuth and API requests
-    private readonly _authenticatorClient: AuthenticatorClient;
-    private readonly _fetchClient: FetchClient;
-    private readonly _viewModelCoordinator: ViewModelCoordinator;
+    private readonly authenticatorClient: AuthenticatorClient;
+    private readonly fetchClient: FetchClient;
+    private readonly viewModelCoordinator: ViewModelCoordinator;
 
     // State
-    private _error: UIError | null;
-    private _isLoading: boolean;
+    private error: UIError | null;
+    private isLoading: boolean;
 
     // Child view models
-    private _companiesViewModel: CompaniesContainerViewModel | null;
-    private _transactionsViewModel: TransactionsContainerViewModel | null;
-    private _userInfoViewModel: UserInfoViewModel | null;
+    private companiesViewModel: CompaniesContainerViewModel | null;
+    private transactionsViewModel: TransactionsContainerViewModel | null;
+    private userInfoViewModel: UserInfoViewModel | null;
 
     // Callbacks to set model properties that affect view rendering
-    private _setError: Dispatch<SetStateAction<UIError | null>> | null;
+    private setError: Dispatch<SetStateAction<UIError | null>> | null;
 
     /*
      * Set the initial state when the app starts
@@ -49,31 +49,31 @@ export class AppViewModel {
     public constructor() {
 
         // Create objects used for coordination
-        this._eventBus = new EventBus();
-        this._fetchCache = new FetchCache();
+        this.eventBus = new EventBus();
+        this.fetchCache = new FetchCache();
 
         // Register to receive Electron events from the main side of the app
-        this._ipcEvents = new IpcRendererEvents(this._eventBus);
-        this._ipcEvents.register();
+        this.ipcEvents = new IpcRendererEvents(this.eventBus);
+        this.ipcEvents.register();
 
         // Create objects to manage OAuth and API requests
-        this._authenticatorClient = new AuthenticatorClientImpl(this._ipcEvents);
-        this._fetchClient = new FetchClient(this._fetchCache, this._ipcEvents, this.authenticatorClient);
-        this._viewModelCoordinator = new ViewModelCoordinator(
-            this._eventBus,
-            this._fetchCache,
-            this._authenticatorClient);
+        this.authenticatorClient = new AuthenticatorClientImpl(this.ipcEvents);
+        this.fetchClient = new FetchClient(this.fetchCache, this.ipcEvents, this.authenticatorClient);
+        this.viewModelCoordinator = new ViewModelCoordinator(
+            this.eventBus,
+            this.fetchCache,
+            this.authenticatorClient);
 
         // Initialise state
-        this._error = null;
-        this._isLoading = false;
-        this._setError = null;
+        this.error = null;
+        this.isLoading = false;
+        this.setError = null;
 
         // Initialise child view models
-        this._companiesViewModel = null;
-        this._transactionsViewModel = null;
-        this._userInfoViewModel = null;
-        this._setupCallbacks();
+        this.companiesViewModel = null;
+        this.transactionsViewModel = null;
+        this.userInfoViewModel = null;
+        this.setupCallbacks();
     }
 
     /*
@@ -81,24 +81,24 @@ export class AppViewModel {
      */
     public useState(): void {
 
-        const [, setError] = useState(this._error);
-        this._setError = setError;
+        const [, setError] = useState(this.error);
+        this.setError = setError;
     }
 
-    public get error(): UIError | null {
-        return this._error;
+    public getError(): UIError | null {
+        return this.error;
     }
 
-    public get authenticatorClient(): AuthenticatorClient {
-        return this._authenticatorClient;
+    public getAuthenticatorClient(): AuthenticatorClient {
+        return this.authenticatorClient;
     }
 
-    public get fetchClient(): FetchClient {
-        return this._fetchClient;
+    public getFetchClient(): FetchClient {
+        return this.fetchClient;
     }
 
-    public get eventBus(): EventBus {
-        return this._eventBus;
+    public getEventBus(): EventBus {
+        return this.eventBus;
     }
 
     /*
@@ -106,28 +106,28 @@ export class AppViewModel {
      */
     public async initialise(): Promise<void> {
 
-        if (this._isLoading) {
+        if (this.isLoading) {
             return;
         }
 
         try {
 
             // Prevent re-entrancy due to React strict mode
-            this._isLoading = true;
-            this._updateError(null);
+            this.isLoading = true;
+            this.updateError(null);
 
             // If we were started via a deep link, navigate to that location
-            await this._ipcEvents.setDeepLinkStartupUrlIfRequired();
+            await this.ipcEvents.setDeepLinkStartupUrlIfRequired();
 
         } catch (e: any) {
 
             // Store startup errors
-            this._updateError(ErrorFactory.fromException(e));
+            this.updateError(ErrorFactory.fromException(e));
 
         } finally {
 
             // Reset to allow retries
-            this._isLoading = false;
+            this.isLoading = false;
         }
     }
 
@@ -136,17 +136,17 @@ export class AppViewModel {
      */
     public async login(): Promise<void> {
 
-        this._viewModelCoordinator.resetState();
-        this._updateError(null);
+        this.viewModelCoordinator.resetState();
+        this.updateError(null);
 
         try {
-            await this._authenticatorClient.login();
+            await this.authenticatorClient.login();
 
         } catch (e: any) {
 
             const error =  ErrorFactory.fromException(e);
-            if (error.errorCode !== ErrorCodes.loginCancelled) {
-                this._updateError(error);
+            if (error.getErrorCode() !== ErrorCodes.loginCancelled) {
+                this.updateError(error);
             }
         }
     }
@@ -156,12 +156,12 @@ export class AppViewModel {
      */
     public async logout(): Promise<void> {
 
-        this._viewModelCoordinator.resetState();
-        this._updateError(null);
+        this.viewModelCoordinator.resetState();
+        this.updateError(null);
 
         try {
 
-            await this._authenticatorClient.logout();
+            await this.authenticatorClient.logout();
 
         } catch (e: any) {
 
@@ -172,45 +172,45 @@ export class AppViewModel {
 
     public getCompaniesViewModel(): CompaniesContainerViewModel {
 
-        if (!this._companiesViewModel) {
+        if (!this.companiesViewModel) {
 
-            this._companiesViewModel = new CompaniesContainerViewModel(
-                this._fetchClient,
-                this._eventBus,
-                this._viewModelCoordinator,
+            this.companiesViewModel = new CompaniesContainerViewModel(
+                this.fetchClient,
+                this.eventBus,
+                this.viewModelCoordinator,
             );
         }
 
-        return this._companiesViewModel;
+        return this.companiesViewModel;
     }
 
     public getTransactionsViewModel(): TransactionsContainerViewModel {
 
-        if (!this._transactionsViewModel) {
+        if (!this.transactionsViewModel) {
 
-            this._transactionsViewModel = new TransactionsContainerViewModel
+            this.transactionsViewModel = new TransactionsContainerViewModel
             (
-                this._fetchClient,
-                this._eventBus,
-                this._viewModelCoordinator,
+                this.fetchClient,
+                this.eventBus,
+                this.viewModelCoordinator,
             );
         }
 
-        return this._transactionsViewModel;
+        return this.transactionsViewModel;
     }
 
     public getUserInfoViewModel(): UserInfoViewModel {
 
-        if (!this._userInfoViewModel) {
+        if (!this.userInfoViewModel) {
 
-            this._userInfoViewModel = new UserInfoViewModel(
+            this.userInfoViewModel = new UserInfoViewModel(
                 this.fetchClient,
-                this._eventBus,
-                this._viewModelCoordinator,
+                this.eventBus,
+                this.viewModelCoordinator,
             );
         }
 
-        return this._userInfoViewModel;
+        return this.userInfoViewModel;
     }
 
     /*
@@ -220,11 +220,11 @@ export class AppViewModel {
 
         try {
 
-            this._updateError(null);
-            await this._authenticatorClient.expireAccessToken();
+            this.updateError(null);
+            await this.authenticatorClient.expireAccessToken();
 
         } catch (e: any) {
-            this._updateError(ErrorFactory.fromException(e));
+            this.updateError(ErrorFactory.fromException(e));
         }
     }
 
@@ -235,11 +235,11 @@ export class AppViewModel {
 
         try {
 
-            this._updateError(null);
-            await this._authenticatorClient.expireRefreshToken();
+            this.updateError(null);
+            await this.authenticatorClient.expireRefreshToken();
 
         } catch (e: any) {
-            this._updateError(ErrorFactory.fromException(e));
+            this.updateError(ErrorFactory.fromException(e));
         }
     }
 
@@ -248,33 +248,33 @@ export class AppViewModel {
      */
     public reloadData(causeError: boolean): void {
 
-        this._updateError(null);
-        this._viewModelCoordinator.resetState();
-        this._eventBus.emit(UIEventNames.ReloadData, null, new ReloadDataEvent(causeError));
+        this.updateError(null);
+        this.viewModelCoordinator.resetState();
+        this.eventBus.emit(UIEventNames.ReloadData, null, new ReloadDataEvent(causeError));
     }
 
     /*
      * See if there are any errors
      */
     public hasError(): boolean {
-        return !!this._error || this._viewModelCoordinator.hasErrors();
+        return !!this.error || this.viewModelCoordinator.hasErrors();
     }
 
     /*
      * Update error state and the binding system
      */
-    private _updateError(error: UIError | null): void {
+    private updateError(error: UIError | null): void {
 
-        this._error = error;
-        if (this._setError) {
-            this._setError(error);
+        this.error = error;
+        if (this.setError) {
+            this.setError(error);
         }
     }
 
     /*
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
-    private _setupCallbacks() {
+    private setupCallbacks() {
         this.reloadData = this.reloadData.bind(this);
     }
 }

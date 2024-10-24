@@ -45,8 +45,8 @@ export function App(props: AppProps): JSX.Element {
         Modal.setAppElement('#root');
 
         // Subscribe to application events
-        model.eventBus.on(UIEventNames.LoginRequired, onLoginRequired);
-        model.eventBus.on(UIEventNames.DeepLink, onDeepLink);
+        model.getEventBus().on(UIEventNames.LoginRequired, onLoginRequired);
+        model.getEventBus().on(UIEventNames.DeepLink, onDeepLink);
 
         // Initialise the model
         await model.initialise();
@@ -58,8 +58,8 @@ export function App(props: AppProps): JSX.Element {
     function cleanup() {
 
         // Unsubscribe from application events
-        model.eventBus.detach(UIEventNames.LoginRequired, onLoginRequired);
-        model.eventBus.detach(UIEventNames.DeepLink, onDeepLink);
+        model.getEventBus().detach(UIEventNames.LoginRequired, onLoginRequired);
+        model.getEventBus().detach(UIEventNames.DeepLink, onDeepLink);
     }
 
     /*
@@ -74,17 +74,17 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onHome(): Promise<void> {
 
-        const isLoggedIn = await model.authenticatorClient.isLoggedIn();
+        const isLoggedIn = await model.getAuthenticatorClient().isLoggedIn();
         if (!isLoggedIn) {
 
             // Update state to indicate a login is in progress
-            model.eventBus.emit(UIEventNames.LoginStarted, null, new LoginStartedEvent());
+            model.getEventBus().emit(UIEventNames.LoginStarted, null, new LoginStartedEvent());
 
             // Do the work of the login
             await model.login();
 
             // Move back to the location that took us to login required
-            if (!model.error) {
+            if (!model.getError()) {
                 navigate(CurrentLocation.path);
             }
 
@@ -111,7 +111,7 @@ export function App(props: AppProps): JSX.Element {
      * Navigate to deep links such as x-authsamples-desktopapp:/companies/2
      */
     function onDeepLink(event: DeepLinkEvent): void {
-        navigate(event.path);
+        navigate(event.getPath());
     }
 
     /*
@@ -153,7 +153,7 @@ export function App(props: AppProps): JSX.Element {
     function getHeaderButtonProps(): HeaderButtonsViewProps {
 
         return {
-            eventBus: model.eventBus,
+            eventBus: model.getEventBus(),
             handleHomeClick: onHome,
             handleExpireAccessTokenClick: onExpireAccessToken,
             handleExpireRefreshTokenClick: onExpireRefreshToken,
@@ -166,7 +166,7 @@ export function App(props: AppProps): JSX.Element {
 
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         return {
-            error: model.error!,
+            error: model.getError()!,
             errorsToIgnore: [ErrorCodes.loginCancelled],
             containingViewName: 'main',
             hyperlinkMessage: 'Problem Encountered',
@@ -178,8 +178,8 @@ export function App(props: AppProps): JSX.Element {
     function getSessionProps(): SessionViewProps {
 
         return {
-            sessionId: model.fetchClient.getSessionId(),
-            eventBus: model.eventBus,
+            sessionId: model.getFetchClient().getSessionId(),
+            eventBus: model.getEventBus(),
         };
     }
 
@@ -201,7 +201,7 @@ export function App(props: AppProps): JSX.Element {
     function getLoginRequiredProps(): LoginRequiredViewProps {
 
         return {
-            eventBus: model.eventBus,
+            eventBus: model.getEventBus(),
         };
     }
 
@@ -209,7 +209,7 @@ export function App(props: AppProps): JSX.Element {
         <>
             <TitleView {...getTitleProps()} />
             <HeaderButtonsView {...getHeaderButtonProps()} />
-            {model.error && <ErrorSummaryView {...getErrorProps()} />}
+            {model.getError() && <ErrorSummaryView {...getErrorProps()} />}
             <>
                 <SessionView {...getSessionProps()} />
                 <Routes>

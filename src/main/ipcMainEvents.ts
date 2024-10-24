@@ -289,13 +289,15 @@ export class IpcMainEvents {
 
             let info = `Main ${name} error`;
 
-            if (error.statusCode) {
-                info += `, status: ${error.statusCode}`;
+            const statusCode = error.getStatusCode();
+            if (statusCode) {
+                info += `, status: ${statusCode}`;
             }
 
-            info += `, code: ${error.errorCode}`;
-            if (error.details) {
-                info += `, message: ${error.details}`;
+            info += `, code: ${error.getErrorCode()}`;
+            const details = error.getDetails();
+            if (details) {
+                info += `, message: ${details}`;
             } else if (error.message) {
                 info += `, message: ${error.message}`;
             }

@@ -58,7 +58,7 @@ export class ViewModelCoordinator {
 
         // On success, send an event so that a subscriber can show a UI effect such as enabling header buttons
         const found = this.fetchCache.getItem(cacheKey);
-        if (found?.data) {
+        if (found?.getData()) {
             this.eventBus.emit(UIEventNames.ViewModelFetch, null, new ViewModelFetchEvent(true));
         }
 
@@ -109,7 +109,7 @@ export class ViewModelCoordinator {
 
             // Login required errors occur when there are no tokens yet or when token refresh fails
             // The sample's user behavior is to automatically redirect the user to login
-            const loginRequired = errors.find((e) => e.errorCode === ErrorCodes.loginRequired);
+            const loginRequired = errors.find((e) => e.getErrorCode() === ErrorCodes.loginRequired);
             if (loginRequired) {
                 this.resetState();
                 this.eventBus.emit(UIEventNames.LoginRequired, new LoginRequiredEvent());
@@ -118,8 +118,8 @@ export class ViewModelCoordinator {
 
             // In normal conditions the following errors are likely to be OAuth configuration errors
             const oauthConfigurationError = errors.find((e) =>
-                (e.statusCode === 401 && e.errorCode === ErrorCodes.invalidToken) ||
-                (e.statusCode === 403 && e.errorCode === ErrorCodes.insufficientScope));
+                (e.getStatusCode() === 401 && e.getErrorCode() === ErrorCodes.invalidToken) ||
+                (e.getStatusCode() === 403 && e.getErrorCode() === ErrorCodes.insufficientScope));
 
             // The sample's user behavior is to present an error, after which clicking Home runs a new login redirect
             // This allows the frontend application to get new tokens, which may fix the problem in some cases
@@ -146,8 +146,9 @@ export class ViewModelCoordinator {
         keys.forEach((k) => {
 
             const found = this.fetchCache.getItem(k);
-            if (found?.error) {
-                errors.push(found.error);
+            const error = found?.getError();
+            if (error) {
+                errors.push(error);
             }
         });
 

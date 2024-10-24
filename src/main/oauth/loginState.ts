@@ -5,18 +5,18 @@ import {AuthorizationRequest} from '@openid/appauth';
  */
 export class LoginState {
 
-    private _requests: AuthorizationRequest[];
+    private requests: AuthorizationRequest[];
 
     public constructor() {
-        this._requests = [];
-        this._setupCallbacks();
+        this.requests = [];
+        this.setupCallbacks();
     }
 
     /*
      * Store the request so that we can validate the response state
      */
     public storeRequest(request: AuthorizationRequest): void {
-        this._requests.push(request);
+        this.requests.push(request);
     }
 
     /*
@@ -24,7 +24,7 @@ export class LoginState {
      */
     public getRequestForState(state: string): AuthorizationRequest | null {
 
-        const found = this._requests.find((r) => r.state === state);
+        const found = this.requests.find((r) => r.state === state);
         if (found) {
             return found;
         }
@@ -36,13 +36,13 @@ export class LoginState {
      * Clear all data once a login completes
      */
     public clear(): void {
-        this._requests = [];
+        this.requests = [];
     }
 
     /*
      * Ensure that the this parameter is available in async callbacks
      */
-    private _setupCallbacks() {
+    private setupCallbacks() {
         this.getRequestForState = this.getRequestForState.bind(this);
     }
 }

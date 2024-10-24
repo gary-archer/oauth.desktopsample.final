@@ -19,7 +19,7 @@ class Main {
         this.configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
         this.ipcEvents = new IpcMainEvents(this.configuration);
         this.window = null;
-        this._setupCallbacks();
+        this.setupCallbacks();
     }
 
     /*
@@ -251,7 +251,7 @@ class Main {
     /*
      * Ensure that the this parameter is available in async callbacks
      */
-    private _setupCallbacks() {
+    private setupCallbacks() {
         this.onReady = this.onReady.bind(this);
         this.onActivate = this.onActivate.bind(this);
         this.onSecondInstance = this.onSecondInstance.bind(this);

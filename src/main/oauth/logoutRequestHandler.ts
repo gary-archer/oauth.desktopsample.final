@@ -8,10 +8,10 @@ import {OAuthConfiguration} from '../configuration/oauthConfiguration';
  */
 export class LogoutRequestHandler {
 
-    private readonly _configuration: OAuthConfiguration;
-    private readonly _metadata: AuthorizationServiceConfiguration;
-    private readonly _idToken: string;
-    private readonly _eventEmitter: EventEmitter;
+    private readonly configuration: OAuthConfiguration;
+    private readonly metadata: AuthorizationServiceConfiguration;
+    private readonly idToken: string;
+    private readonly eventEmitter: EventEmitter;
 
     public constructor(
         configuration: OAuthConfiguration,
@@ -19,10 +19,10 @@ export class LogoutRequestHandler {
         idToken: string,
         eventEmitter: EventEmitter) {
 
-        this._configuration = configuration;
-        this._metadata = metadata;
-        this._idToken = idToken;
-        this._eventEmitter = eventEmitter;
+        this.configuration = configuration;
+        this.metadata = metadata;
+        this.idToken = idToken;
+        this.eventEmitter = eventEmitter;
     }
 
     /*
@@ -35,12 +35,12 @@ export class LogoutRequestHandler {
 
             // Create a callback to wait for completion
             /* eslint-disable @typescript-eslint/no-unused-vars */
-            this._eventEmitter.once('LOGOUT_COMPLETE', (args: URLSearchParams) => {
+            this.eventEmitter.once('LOGOUT_COMPLETE', (args: URLSearchParams) => {
                 resolve();
             });
 
             // First build the logout URL
-            const logoutUrl = this._buildLogoutUrl();
+            const logoutUrl = this.buildLogoutUrl();
             await open(logoutUrl);
         });
     }
@@ -48,19 +48,19 @@ export class LogoutRequestHandler {
     /*
      * Cognito requires a custom URL, otherwise we use the standards based value
      */
-    private _buildLogoutUrl(): string {
+    private buildLogoutUrl(): string {
 
-        if (this._configuration.authority.toLowerCase().indexOf('cognito') !== -1) {
+        if (this.configuration.authority.toLowerCase().indexOf('cognito') !== -1) {
 
-            const logoutReturnUri = encodeURIComponent(this._configuration.postLogoutRedirectUri);
-            const clientId = encodeURIComponent(this._configuration.clientId);
-            return `${this._configuration.customLogoutEndpoint}?client_id=${clientId}&logout_uri=${logoutReturnUri}`;
+            const logoutReturnUri = encodeURIComponent(this.configuration.postLogoutRedirectUri);
+            const clientId = encodeURIComponent(this.configuration.clientId);
+            return `${this.configuration.customLogoutEndpoint}?client_id=${clientId}&logout_uri=${logoutReturnUri}`;
 
         } else {
 
-            const endSessionUrl = this._metadata.endSessionEndpoint;
-            const postLogoutRedirectUri = encodeURIComponent(this._configuration.postLogoutRedirectUri);
-            const idTokenParam = encodeURIComponent(this._idToken);
+            const endSessionUrl = this.metadata.endSessionEndpoint;
+            const postLogoutRedirectUri = encodeURIComponent(this.configuration.postLogoutRedirectUri);
+            const idTokenParam = encodeURIComponent(this.idToken);
             return `${endSessionUrl}?post_logout_redirect_uri=${postLogoutRedirectUri}&id_token_hint=${idTokenParam}`;
         }
     }
