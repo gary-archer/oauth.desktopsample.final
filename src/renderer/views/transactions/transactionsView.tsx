@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {JSX} from 'react';
 import {Transaction} from '../../../shared/api/transaction';
 import {TransactionsViewProps} from './transactionsViewProps';
 
