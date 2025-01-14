@@ -35,7 +35,6 @@
     "base64url": "^3.0.1",
     "electron-store": "^8.2.0",
     "fs-extra": "^11.2.0",
-    "guid-typescript": "^1.0.9",
     "https-proxy-agent": "^7.0.5",
     "js-event-bus": "^1.1.1",
     "open": "^10.1.0",

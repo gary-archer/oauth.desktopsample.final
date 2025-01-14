@@ -1,5 +1,4 @@
 import axios, {AxiosRequestConfig, Method} from 'axios';
-import {Guid} from 'guid-typescript';
 import {ApiUserInfo} from '../../shared/api/apiUserInfo';
 import {Company} from '../../shared/api/company';
 import {CompanyTransactions} from '../../shared/api/companyTransactions';
@@ -103,7 +102,7 @@ export class FetchService {
                 // Context headers included in API logs
                 'x-authsamples-api-client':     'FinalDesktopApp',
                 'x-authsamples-session-id':     options.sessionId,
-                'x-authsamples-correlation-id': Guid.create().toString(),
+                'x-authsamples-correlation-id': crypto.randomUUID(),
             };
 
             // A special header can be sent to ask the API to throw a simulated exception

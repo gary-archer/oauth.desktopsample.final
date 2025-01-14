@@ -1,4 +1,3 @@
-import {Guid} from 'guid-typescript';
 import {ApiUserInfo} from '../../shared/api/apiUserInfo';
 import {Company} from '../../shared/api/company';
 import {CompanyTransactions} from '../../shared/api/companyTransactions';
@@ -24,7 +23,7 @@ export class FetchClient {
         this.fetchCache = fetchCache;
         this.ipcEvents = ipcEvents;
         this.authenticatorClient = authenticatorClient;
-        this.sessionId = Guid.create().toString();
+        this.sessionId = crypto.randomUUID();
     }
 
     /*

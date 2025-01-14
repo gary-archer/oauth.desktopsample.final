@@ -95,9 +95,9 @@ else
   fi
 
   #
-  # Changwe this to 'npm run webpackRendererDebugWatch' when you want to develop in watch mode
+  # Change this to 'npm run webpackRendererDebugWatch' when you want to develop in watch mode
   #
-  npm run webpackRendererDebug
+  npm run webpackRendererDebugWatch
   if [ $? -ne 0 ]; then
     echo 'Problem encountered building the renderer side of the desktop app'
     exit 1
