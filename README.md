@@ -25,7 +25,7 @@ Then build the app via this command, which compiles the renderer side of the app
 ./build.sh
 ```
 
-Next run the app, to test the OpenID Connect desktop flow:
+Next run the app in a different terminal window, to test the OpenID Connect desktop flow:
 
 ```bash
 ./run.sh

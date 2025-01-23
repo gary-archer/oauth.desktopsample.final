@@ -115,22 +115,10 @@ class Main {
     }
 
     /*
-     * Set required or recommended headers
+     * Set a content security policy for the renderer app
      */
     private initialiseHttpHeaders() {
 
-        // Remove the 'Origin: file://' default header which may be rejected for security reasons with this message
-        // 'Browser requests to the token endpoint must be part of at least one whitelisted redirect_uri'
-        session.defaultSession.webRequest.onBeforeSendHeaders({urls: []} as any, (details, callback) => {
-
-            if (details.requestHeaders.Origin) {
-                delete details.requestHeaders.Origin;
-            }
-
-            callback({cancel: false, requestHeaders: details.requestHeaders});
-        });
-
-        // Set a content security policy as a security best practice
         session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 
             let policy = '';
