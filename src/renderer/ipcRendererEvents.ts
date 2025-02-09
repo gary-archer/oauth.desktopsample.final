@@ -137,9 +137,8 @@ export class IpcRendererEvents {
      */
     private handleDeepLink(args: any): void {
 
-        const path = args as string;
-        if (path) {
-            this.eventBus.emit(UIEventNames.DeepLink, null, new DeepLinkEvent(path));
+        if (args && args.path) {
+            this.eventBus.emit(UIEventNames.DeepLink, null, new DeepLinkEvent(args.path));
         }
     }
 

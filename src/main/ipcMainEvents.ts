@@ -79,7 +79,7 @@ export class IpcMainEvents {
         const url = UrlParser.tryParse(deepLinkUrl);
         if (url && url.pathname) {
             const path = url.pathname.replace(this.configuration.oauth.privateSchemeName + ':', '');
-            this.window?.webContents.send(IpcEventNames.ON_DEEP_LINK, {data: path});
+            this.window?.webContents.send(IpcEventNames.ON_DEEP_LINK, {path});
         }
 
         return false;
