@@ -5,7 +5,7 @@ import {FetchOptions} from '../../shared/api/fetchOptions';
 import {OAuthUserInfo} from '../../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {IpcRendererEvents} from '../ipcRendererEvents';
-import {AuthenticatorClient} from '../oauth/authenticatorClient';
+import {OAuthClient} from '../oauth/oauthClient';
 import {FetchCache} from './fetchCache';
 
 /*
@@ -15,14 +15,14 @@ export class FetchClient {
 
     private readonly fetchCache: FetchCache;
     private readonly ipcEvents: IpcRendererEvents;
-    private readonly authenticatorClient: AuthenticatorClient;
+    private readonly oauthClient: OAuthClient;
     private readonly sessionId: string;
 
-    public constructor(fetchCache: FetchCache, ipcEvents: IpcRendererEvents, authenticatorClient: AuthenticatorClient) {
+    public constructor(fetchCache: FetchCache, ipcEvents: IpcRendererEvents, oauthClient: OAuthClient) {
 
         this.fetchCache = fetchCache;
         this.ipcEvents = ipcEvents;
-        this.authenticatorClient = authenticatorClient;
+        this.oauthClient = oauthClient;
         this.sessionId = crypto.randomUUID();
     }
 
@@ -102,7 +102,7 @@ export class FetchClient {
             try {
 
                 // Try to refresh the access token
-                await this.authenticatorClient.synchronizedRefresh();
+                await this.oauthClient.synchronizedRefresh();
 
             } catch (e2: any) {
 

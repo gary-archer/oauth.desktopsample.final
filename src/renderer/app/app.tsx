@@ -74,7 +74,7 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onHome(): Promise<void> {
 
-        const isLoggedIn = await model.getAuthenticatorClient().isLoggedIn();
+        const isLoggedIn = await model.getOAuthClient().isLoggedIn();
         if (!isLoggedIn) {
 
             // Update state to indicate a login is in progress

@@ -3,7 +3,7 @@ import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {UIError} from '../../../shared/errors/uiError';
 import {FetchCache} from '../../api/fetchCache';
 import {FetchCacheKeys} from '../../api/fetchCacheKeys';
-import {AuthenticatorClient} from '../../oauth/authenticatorClient';
+import {OAuthClient} from '../../oauth/oauthClient';
 import {LoginRequiredEvent} from '../events/loginRequiredEvent';
 import {UIEventNames} from '../events/uiEventNames';
 import {ViewModelFetchEvent} from '../events/viewModelFetchEvent';
@@ -16,7 +16,7 @@ export class ViewModelCoordinator {
 
     private readonly eventBus: EventBus;
     private readonly fetchCache: FetchCache;
-    private readonly authenticatorClient: AuthenticatorClient;
+    private readonly oauthClient: OAuthClient;
     private mainCacheKey: string;
     private loadingCount: number;
     private loadedCount: number;
@@ -24,11 +24,11 @@ export class ViewModelCoordinator {
     /*
      * Set the initial state
      */
-    public constructor(eventBus: EventBus, fetchCache: FetchCache, authenticatorClient: AuthenticatorClient) {
+    public constructor(eventBus: EventBus, fetchCache: FetchCache, oauthClient: OAuthClient) {
 
         this.eventBus = eventBus;
         this.fetchCache = fetchCache;
-        this.authenticatorClient = authenticatorClient;
+        this.oauthClient = oauthClient;
         this.mainCacheKey = '';
         this.loadingCount = 0;
         this.loadedCount = 0;
@@ -124,7 +124,7 @@ export class ViewModelCoordinator {
             // The sample's user behavior is to present an error, after which clicking Home runs a new login redirect
             // This allows the frontend application to get new tokens, which may fix the problem in some cases
             if (oauthConfigurationError) {
-                await this.authenticatorClient.clearLoginState();
+                await this.oauthClient.clearLoginState();
             }
         }
     }

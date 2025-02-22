@@ -8,8 +8,8 @@ import {UIError} from '../shared/errors/uiError';
 import {IpcEventNames} from '../shared/ipcEventNames';
 import {FetchService} from './api/fetchService';
 import {Configuration} from './configuration/configuration';
-import {AuthenticatorService} from './oauth/authenticatorService';
-import {AuthenticatorServiceImpl} from './oauth/authenticatorServiceImpl';
+import {OAuthService} from './oauth/oauthService';
+import {OAuthServiceImpl} from './oauth/oauthServiceImpl';
 import {HttpProxy} from './utilities/httpProxy';
 import {UrlParser} from './utilities/urlParser';
 
@@ -20,7 +20,7 @@ export class IpcMainEvents {
 
     private readonly configuration: Configuration;
     private readonly httpProxy: HttpProxy;
-    private readonly authenticatorService: AuthenticatorService;
+    private readonly oauthService: OAuthService;
     private readonly fetchService: FetchService;
     private window: BrowserWindow | null;
     private deepLinkStartupPath: string | null;
@@ -30,8 +30,8 @@ export class IpcMainEvents {
         this.configuration = configuration;
         this.httpProxy = new HttpProxy(this.configuration.app.useProxy, this.configuration.app.proxyUrl);
         this.window = null;
-        this.authenticatorService = new AuthenticatorServiceImpl(this.configuration.oauth, this.httpProxy);
-        this.fetchService = new FetchService(this.configuration, this.authenticatorService, this.httpProxy);
+        this.oauthService = new OAuthServiceImpl(this.configuration.oauth, this.httpProxy);
+        this.fetchService = new FetchService(this.configuration, this.oauthService, this.httpProxy);
         this.deepLinkStartupPath = null;
         this.setupCallbacks();
     }
@@ -49,7 +49,7 @@ export class IpcMainEvents {
     public register(window: BrowserWindow): void {
 
         this.window = window;
-        this.authenticatorService.initialise();
+        this.oauthService.initialise();
 
         ipcMain.handle(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, this.getDeepLinkStartupPath);
         ipcMain.handle(IpcEventNames.ON_GET_COMPANIES, this.onGetCompanyList);
@@ -71,7 +71,7 @@ export class IpcMainEvents {
     public handleDeepLink(deepLinkUrl: string): boolean {
 
         // Handle OAuth login or logout responses
-        if (this.authenticatorService.handleDeepLink(deepLinkUrl)) {
+        if (this.oauthService.handleDeepLink(deepLinkUrl)) {
             return true;
         }
 
@@ -148,7 +148,7 @@ export class IpcMainEvents {
         return this.handleAsyncOperation(
             event,
             IpcEventNames.ON_IS_LOGGED_IN,
-            () => this.authenticatorService.isLoggedIn());
+            () => this.oauthService.isLoggedIn());
     }
 
     /*
@@ -159,7 +159,7 @@ export class IpcMainEvents {
         return this.handleAsyncOperation(
             event,
             IpcEventNames.ON_LOGIN,
-            () => this.authenticatorService.login());
+            () => this.oauthService.login());
     }
 
     /*
@@ -170,7 +170,7 @@ export class IpcMainEvents {
         return this.handleAsyncOperation(
             event,
             IpcEventNames.ON_LOGOUT,
-            () => this.authenticatorService.logout());
+            () => this.oauthService.logout());
     }
 
     /*
@@ -181,7 +181,7 @@ export class IpcMainEvents {
         return this.handleAsyncOperation(
             event,
             IpcEventNames.ON_TOKEN_REFRESH,
-            () => this.authenticatorService.tokenRefresh());
+            () => this.oauthService.tokenRefresh());
     }
 
     /*
@@ -192,7 +192,7 @@ export class IpcMainEvents {
         return this.handleNonAsyncOperation(
             event,
             IpcEventNames.ON_CLEAR_LOGIN_STATE,
-            () => this.authenticatorService.clearLoginState());
+            () => this.oauthService.clearLoginState());
     }
 
     /*
@@ -203,7 +203,7 @@ export class IpcMainEvents {
         return this.handleNonAsyncOperation(
             event,
             IpcEventNames.ON_EXPIRE_ACCESS_TOKEN,
-            () => this.authenticatorService.expireAccessToken());
+            () => this.oauthService.expireAccessToken());
     }
 
     /*
@@ -214,7 +214,7 @@ export class IpcMainEvents {
         return this.handleNonAsyncOperation(
             event,
             IpcEventNames.ON_EXPIRE_REFRESH_TOKEN,
-            () => this.authenticatorService.expireRefreshToken());
+            () => this.oauthService.expireRefreshToken());
     }
 
     /*

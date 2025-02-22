@@ -6,8 +6,8 @@ import {UIError} from '../../shared/errors/uiError';
 import {FetchCache} from '../api/fetchCache';
 import {FetchClient} from '../api/fetchClient';
 import {IpcRendererEvents} from '../ipcRendererEvents';
-import {AuthenticatorClient} from '../oauth/authenticatorClient';
-import {AuthenticatorClientImpl} from '../oauth/authenticatorClientImpl';
+import {OAuthClient} from '../oauth/oauthClient';
+import {OAuthClientImpl} from '../oauth/oauthClientImpl';
 import {CompaniesContainerViewModel} from '../views/companies/companiesContainerViewModel';
 import {ErrorConsoleReporter} from '../views/errors/errorConsoleReporter';
 import {ReloadDataEvent} from '../views/events/reloadDataEvent';
@@ -27,7 +27,7 @@ export class AppViewModel {
     private readonly fetchCache: FetchCache;
 
     // OAuth and API requests
-    private readonly authenticatorClient: AuthenticatorClient;
+    private readonly oauthClient: OAuthClient;
     private readonly fetchClient: FetchClient;
     private readonly viewModelCoordinator: ViewModelCoordinator;
 
@@ -57,12 +57,12 @@ export class AppViewModel {
         this.ipcEvents.register();
 
         // Create objects to manage OAuth and API requests
-        this.authenticatorClient = new AuthenticatorClientImpl(this.ipcEvents);
-        this.fetchClient = new FetchClient(this.fetchCache, this.ipcEvents, this.authenticatorClient);
+        this.oauthClient = new OAuthClientImpl(this.ipcEvents);
+        this.fetchClient = new FetchClient(this.fetchCache, this.ipcEvents, this.oauthClient);
         this.viewModelCoordinator = new ViewModelCoordinator(
             this.eventBus,
             this.fetchCache,
-            this.authenticatorClient);
+            this.oauthClient);
 
         // Initialise state
         this.error = null;
@@ -89,8 +89,8 @@ export class AppViewModel {
         return this.error;
     }
 
-    public getAuthenticatorClient(): AuthenticatorClient {
-        return this.authenticatorClient;
+    public getOAuthClient(): OAuthClient {
+        return this.oauthClient;
     }
 
     public getFetchClient(): FetchClient {
@@ -140,7 +140,7 @@ export class AppViewModel {
         this.updateError(null);
 
         try {
-            await this.authenticatorClient.login();
+            await this.oauthClient.login();
 
         } catch (e: any) {
 
@@ -161,7 +161,7 @@ export class AppViewModel {
 
         try {
 
-            await this.authenticatorClient.logout();
+            await this.oauthClient.logout();
 
         } catch (e: any) {
 
@@ -221,7 +221,7 @@ export class AppViewModel {
         try {
 
             this.updateError(null);
-            await this.authenticatorClient.expireAccessToken();
+            await this.oauthClient.expireAccessToken();
 
         } catch (e: any) {
             this.updateError(ErrorFactory.fromException(e));
@@ -236,7 +236,7 @@ export class AppViewModel {
         try {
 
             this.updateError(null);
-            await this.authenticatorClient.expireRefreshToken();
+            await this.oauthClient.expireRefreshToken();
 
         } catch (e: any) {
             this.updateError(ErrorFactory.fromException(e));

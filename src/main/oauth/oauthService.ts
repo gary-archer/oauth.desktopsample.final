@@ -1,7 +1,7 @@
 /*
  * An interface to represent OAuth related operations on the main side of the app
  */
-export interface AuthenticatorService {
+export interface OAuthService {
 
     // Do initial startup
     initialise(): void;

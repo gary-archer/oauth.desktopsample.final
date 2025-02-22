@@ -1,7 +1,7 @@
 /*
  * OAuth related operations initiated by the renderer side of the app
  */
-export interface AuthenticatorClient {
+export interface OAuthClient {
 
     // See if logged in
     isLoggedIn(): Promise<boolean>;
