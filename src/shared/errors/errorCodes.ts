@@ -31,9 +31,6 @@ export class ErrorCodes {
     // Returned from APIs when an access token is rejected
     public static readonly invalidToken = 'invalid_token';
 
-    // Returned from APIs when an access token does not have the required scope
-    public static readonly insufficientScope = 'insufficient_scope';
-
     // Returned from APIs when it cannot find the claims it needs in access tokens
     public static readonly claimsFailure = 'claims_failure';
 
