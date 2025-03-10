@@ -3,7 +3,6 @@ import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {UIError} from '../../../shared/errors/uiError';
 import {FetchCache} from '../../api/fetchCache';
 import {FetchCacheKeys} from '../../api/fetchCacheKeys';
-import {OAuthClient} from '../../oauth/oauthClient';
 import {LoginRequiredEvent} from '../events/loginRequiredEvent';
 import {UIEventNames} from '../events/uiEventNames';
 import {ViewModelFetchEvent} from '../events/viewModelFetchEvent';
@@ -16,7 +15,6 @@ export class ViewModelCoordinator {
 
     private readonly eventBus: EventBus;
     private readonly fetchCache: FetchCache;
-    private readonly oauthClient: OAuthClient;
     private mainCacheKey: string;
     private loadingCount: number;
     private loadedCount: number;
@@ -24,11 +22,10 @@ export class ViewModelCoordinator {
     /*
      * Set the initial state
      */
-    public constructor(eventBus: EventBus, fetchCache: FetchCache, oauthClient: OAuthClient) {
+    public constructor(eventBus: EventBus, fetchCache: FetchCache) {
 
         this.eventBus = eventBus;
         this.fetchCache = fetchCache;
-        this.oauthClient = oauthClient;
         this.mainCacheKey = '';
         this.loadingCount = 0;
         this.loadedCount = 0;

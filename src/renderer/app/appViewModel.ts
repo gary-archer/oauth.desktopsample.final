@@ -59,10 +59,7 @@ export class AppViewModel {
         // Create objects to manage OAuth and API requests
         this.oauthClient = new OAuthClientImpl(this.ipcEvents);
         this.fetchClient = new FetchClient(this.fetchCache, this.ipcEvents, this.oauthClient);
-        this.viewModelCoordinator = new ViewModelCoordinator(
-            this.eventBus,
-            this.fetchCache,
-            this.oauthClient);
+        this.viewModelCoordinator = new ViewModelCoordinator(this.eventBus, this.fetchCache);
 
         // Initialise state
         this.error = null;
