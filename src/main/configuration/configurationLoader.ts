@@ -11,7 +11,7 @@ export class ConfigurationLoader {
      */
     public static load(configFilePath: string): Configuration {
 
-        const configurationBuffer = fs.readFileSync(configFilePath);
-        return JSON.parse(configurationBuffer.toString());
+        const configurationJson = fs.readFileSync(configFilePath, 'utf8');
+        return JSON.parse(configurationJson);
     }
 }
