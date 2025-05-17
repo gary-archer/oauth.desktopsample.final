@@ -4,7 +4,6 @@ import {Company} from '../shared/api/company';
 import {CompanyTransactions} from '../shared/api/companyTransactions';
 import {OAuthUserInfo} from '../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../shared/errors/errorFactory';
-import {UIError} from '../shared/errors/uiError';
 import {IpcEventNames} from '../shared/ipcEventNames';
 import {FetchService} from './api/fetchService';
 import {Configuration} from './configuration/configuration';
@@ -92,7 +91,6 @@ export class IpcMainEvents {
 
         return this.handleNonAsyncOperation(
             event,
-            IpcEventNames.ON_DEEP_LINK_STARTUP_PATH,
             () => this.deepLinkStartupPath);
     }
 
@@ -103,7 +101,6 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            IpcEventNames.ON_GET_COMPANIES,
             () => this.fetchService.getCompanyList(args.options));
     }
 
@@ -114,7 +111,6 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            IpcEventNames.ON_GET_TRANSACTIONS,
             () => this.fetchService.getCompanyTransactions(args.id, args.options));
     }
 
@@ -125,7 +121,6 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            IpcEventNames.ON_GET_OAUTH_USER_INFO,
             () => this.fetchService.getOAuthUserInfo(args.options));
     }
 
@@ -136,7 +131,6 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            IpcEventNames.ON_GET_API_USER_INFO,
             () => this.fetchService.getApiUserInfo(args.options));
     }
 
@@ -147,7 +141,6 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            IpcEventNames.ON_IS_LOGGED_IN,
             () => this.oauthService.isLoggedIn());
     }
 
@@ -158,7 +151,6 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            IpcEventNames.ON_LOGIN,
             () => this.oauthService.login());
     }
 
@@ -169,7 +161,6 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            IpcEventNames.ON_LOGOUT,
             () => this.oauthService.logout());
     }
 
@@ -180,7 +171,6 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            IpcEventNames.ON_TOKEN_REFRESH,
             () => this.oauthService.tokenRefresh());
     }
 
@@ -191,7 +181,6 @@ export class IpcMainEvents {
 
         return this.handleNonAsyncOperation(
             event,
-            IpcEventNames.ON_CLEAR_LOGIN_STATE,
             () => this.oauthService.clearLoginState());
     }
 
@@ -202,7 +191,6 @@ export class IpcMainEvents {
 
         return this.handleNonAsyncOperation(
             event,
-            IpcEventNames.ON_EXPIRE_ACCESS_TOKEN,
             () => this.oauthService.expireAccessToken());
     }
 
@@ -213,7 +201,6 @@ export class IpcMainEvents {
 
         return this.handleNonAsyncOperation(
             event,
-            IpcEventNames.ON_EXPIRE_REFRESH_TOKEN,
             () => this.oauthService.expireRefreshToken());
     }
 
@@ -223,7 +210,6 @@ export class IpcMainEvents {
      */
     private async handleAsyncOperation(
         event: IpcMainInvokeEvent,
-        name: string,
         action: () => Promise<any>): Promise<any> {
 
         try {
@@ -241,7 +227,6 @@ export class IpcMainEvents {
         } catch (e: any) {
 
             const error = ErrorFactory.fromException(e);
-            this.logError(name, error);
             return {
                 data: null,
                 error: error.toJson()
@@ -255,7 +240,6 @@ export class IpcMainEvents {
      */
     private async handleNonAsyncOperation(
         event: IpcMainInvokeEvent,
-        name: string,
         action: () => any): Promise<any> {
 
         try {
@@ -272,37 +256,10 @@ export class IpcMainEvents {
         } catch (e: any) {
 
             const error = ErrorFactory.fromException(e);
-            this.logError(name, error);
             return {
                 data: null,
                 error: error.toJson()
             };
-        }
-    }
-
-    /*
-     * Output some basic details to the console
-     */
-    private async logError(name: string, error: UIError) {
-
-        if (IS_DEBUG) {
-
-            let info = `Main ${name} error`;
-
-            const statusCode = error.getStatusCode();
-            if (statusCode) {
-                info += `, status: ${statusCode}`;
-            }
-
-            info += `, code: ${error.getErrorCode()}`;
-            const details = error.getDetails();
-            if (details) {
-                info += `, message: ${details}`;
-            } else if (error.message) {
-                info += `, message: ${error.message}`;
-            }
-
-            console.log(info);
         }
     }
 
