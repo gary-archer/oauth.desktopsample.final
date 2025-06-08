@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <meta charset='utf-8'>
+        <title>Logout Complete</title>
+
+        <script>
+            window.addEventListener("DOMContentLoaded", function() {
+                
+                var redirectUri = "x-authsamples-desktopapp:/logoutcallback";
+                document.getElementById('continueButton').onclick = function() {
+                    window.location.href = redirectUri;
+                };
+            });
+        </script>
+
+        <style>
+            #container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-family: sans-serif;
+                padding: 10px;
+                font-size: 20px;
+            }
+            #continueButton {
+                margin-top: 20px;
+                padding: 8px 32px;
+                color: white;
+                background-color: #2196F3;
+                font-size: 16px;
+            }
+            #usermessage {
+                align-content: center;
+            }
+            #heading {
+                color: #2196F3;
+            }
+        </style>
+    </head>
+    <body>
+        <div id='container'>
+            <h3 id='heading'>Logout Complete</h3>
+            <h5 id='result'>Logout completed successfully and you can close this window</h5>
+            <button id='continueButton'>Return to the App</button>
+        </div>
+    </body>
+</html>

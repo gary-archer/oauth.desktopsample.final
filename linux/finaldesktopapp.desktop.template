@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Final Desktop App
+Exec=$APP_COMMAND %U
+StartupNotify=false
+MimeType=x-scheme-handler/x-authsamples-desktopapp
