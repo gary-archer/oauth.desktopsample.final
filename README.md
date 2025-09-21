@@ -18,7 +18,7 @@ The app uses user attributes from both the OpenID Connect userinfo endpoint and 
 
 ## Local Development Quick Start
 
-First ensure that Node.js 22+ is installed.\
+First ensure that Node.js 24+ is installed.\
 Then build the app via this command, which compiles the renderer side of the app in watch mode:
 
 ```bash
