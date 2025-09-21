@@ -62,7 +62,7 @@ export class FetchClient {
     }
 
     /*
-     * A parameterized method containing application specific logic for managing API calls
+     * The entry point to get data deals with caching
      */
     private async getDataFromApi(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
 
@@ -83,48 +83,58 @@ export class FetchClient {
 
         try {
 
+            // Get the data and update the cache item for this request
+            const data = await this.getDataFromApiWithTokenRefresh(options, callback);
+            cacheItem.setData(data);
+            return data;
+
+        } catch (e: any) {
+
+            // Get the data and update the cache item for this request
+            cacheItem.setError(e);
+            throw e;
+        }
+    }
+
+    /*
+     * A standard algorithm for token refresh
+     */
+    private async getDataFromApiWithTokenRefresh(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
+
+        try {
+
             // Call the API and return data on success
             options.sessionId = this.sessionId;
-            const data1 = await callback();
-            cacheItem.setData(data1);
-            return data1;
+            return await callback();
 
         } catch (e1: any) {
 
+            // Report errors if this is not a 401
             const error1 = ErrorFactory.fromException(e1);
             if (error1.getStatusCode() !== 401) {
-
-                // Report errors if this is not a 401
-                cacheItem.setError(error1);
                 throw error1;
             }
 
-            try {
-
-                // Try to refresh the access token
-                await this.oauthClient.synchronizedRefresh();
-
-            } catch (e2: any) {
-
-                // Report refresh errors
-                const error2 = ErrorFactory.fromException(e2);
-                cacheItem.setError(error2);
-                throw error2;
-            }
+            // Try to refresh the access token
+            await this.oauthClient.synchronizedRefresh();
 
             try {
 
-                // Call the API again with the rewritten access token
-                const data2 = await callback();
-                cacheItem.setData(data2);
-                return data2;
+                // Call the API again with the new access token
+                return await callback();
 
-            }  catch (e3: any) {
+            }  catch (e2: any) {
 
                 // Report retry errors
-                const error3 = ErrorFactory.fromException(e3);
-                cacheItem.setError(error3);
-                throw error3;
+                const error2 = ErrorFactory.fromException(e2);
+                if (error2.getStatusCode() !== 401) {
+                    throw error2;
+                }
+
+                // A permanent API 401 error triggers a new login.
+                // This could be caused by an invalid API configuration.
+                this.oauthClient.clearLoginState();
+                throw ErrorFactory.fromLoginRequired();
             }
         }
     }
