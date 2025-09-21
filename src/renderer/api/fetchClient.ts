@@ -90,7 +90,7 @@ export class FetchClient {
 
         } catch (e: any) {
 
-            // Get the data and update the cache item for this request
+            // Get the error and update the cache item for this request
             cacheItem.setError(e);
             throw e;
         }
