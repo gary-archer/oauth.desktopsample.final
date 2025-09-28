@@ -100,14 +100,14 @@ export class FetchService {
                 'Authorization': `Bearer ${accessToken}`,
 
                 // Context headers included in API logs
-                'x-authsamples-api-client':     'FinalDesktopApp',
-                'x-authsamples-session-id':     options.sessionId,
-                'x-authsamples-correlation-id': crypto.randomUUID(),
+                'authsamples-api-client':     'FinalDesktopApp',
+                'authsamples-session-id':     options.sessionId,
+                'authsamples-correlation-id': crypto.randomUUID(),
             };
 
             // A special header can be sent to ask the API to throw a simulated exception
             if (options.causeError) {
-                headers['x-authsamples-test-exception'] = 'FinalApi';
+                headers['authsamples-test-exception'] = 'FinalApi';
             }
 
             const requestOptions = {
