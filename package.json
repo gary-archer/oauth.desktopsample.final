@@ -34,7 +34,6 @@
     "axios": "^1.12.2",
     "base64url": "^3.0.1",
     "electron-store": "^10.1.0",
-    "fs-extra": "^11.3.0",
     "https-proxy-agent": "^7.0.6",
     "js-event-bus": "^1.1.1",
     "open": "^10.1.0",
@@ -46,7 +45,6 @@
   "devDependencies": {
     "@electron/packager": "^18.4.4",
     "@eslint/js": "^9.35.0",
-    "@types/fs-extra": "^11.0.4",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@types/react-modal": "^3.16.3",

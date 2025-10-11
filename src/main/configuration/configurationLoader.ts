@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from 'fs';
 import {Configuration} from './configuration';
 
 /*
@@ -11,7 +11,7 @@ export class ConfigurationLoader {
      */
     public static load(configFilePath: string): Configuration {
 
-        const configurationJson = fs.readFileSync(configFilePath, 'utf8');
+        const configurationJson = fs.readFileSync(configFilePath, 'utf-8');
         return JSON.parse(configurationJson);
     }
 }
