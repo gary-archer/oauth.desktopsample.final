@@ -6,8 +6,8 @@ export interface OAuthService {
     // Do initial startup
     initialise(): void;
 
-    // Query if logged in
-    isLoggedIn(): Promise<boolean>;
+    // Get ID token claims if logged in
+    getSession(): Promise<any>;
 
     // Use the user info endpoint from metadata for API calls
     getUserInfoEndpoint(): Promise<string | null>;
@@ -18,8 +18,8 @@ export interface OAuthService {
     // Try to refresh tokens
     tokenRefresh(): Promise<void>;
 
-    // Run the login on the system browser
-    login(): Promise<void>;
+    // Run the login on the system browser and get ID token claims
+    login(): Promise<any>;
 
     // Run the logout on the system browser
     logout(): Promise<void>;

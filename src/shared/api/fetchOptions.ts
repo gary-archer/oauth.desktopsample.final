@@ -5,5 +5,4 @@ export interface FetchOptions {
     cacheKey: string;
     forceReload: boolean;
     causeError: boolean;
-    sessionId?: string;
 }

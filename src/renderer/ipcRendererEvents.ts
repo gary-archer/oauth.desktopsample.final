@@ -71,17 +71,17 @@ export class IpcRendererEvents {
     }
 
     /*
-     * Ask the main side of the app if it is logged in
+     * Ask the main side of the app for ID token data
      */
-    public async isLoggedIn() : Promise<boolean> {
-        return await this.sendMessage(IpcEventNames.ON_IS_LOGGED_IN, {});
+    public async getSession() : Promise<any> {
+        return await this.sendMessage(IpcEventNames.ON_GET_SESSION, {});
     }
 
     /*
      * Run a login on the main side of the app
      */
-    public async login(): Promise<void> {
-        await this.sendMessage(IpcEventNames.ON_LOGIN, {});
+    public async login(): Promise<any> {
+        return await this.sendMessage(IpcEventNames.ON_LOGIN, {});
     }
 
     /*

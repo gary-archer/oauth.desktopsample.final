@@ -9,32 +9,57 @@ export class OAuthClientImpl implements OAuthClient {
 
     private readonly ipcEvents: IpcRendererEvents;
     private readonly concurrencyHandler: ConcurrentActionHandler;
+    private idTokenClaims: any;
 
     public constructor(ipcEvents: IpcRendererEvents) {
 
         this.ipcEvents = ipcEvents;
         this.concurrencyHandler = new ConcurrentActionHandler();
+        this.idTokenClaims = null;
         this.setupCallbacks();
     }
 
     /*
-     * See if currently logged in
+     * At application startup, see if there is a session due to stored tokens
      */
-    public async isLoggedIn(): Promise<boolean> {
-        return await this.ipcEvents.isLoggedIn();
+    public async getSession(): Promise<any> {
+
+        const claims = await this.ipcEvents.getSession();
+        if (claims) {
+            this.idTokenClaims = claims;
+        }
     }
 
     /*
-     * Forward to the main side of the app to perform the login work
+     * Indicate whether logged in
      */
-    public async login(): Promise<void> {
-        await this.ipcEvents.login();
+    public isLoggedIn(): boolean {
+        return !!this.idTokenClaims;
+    }
+
+    /*
+     * Do a login on the main side of the app and return ID token claims
+     */
+    public async login(): Promise<any> {
+
+        const claims = await this.ipcEvents.login();
+        if (claims) {
+            this.idTokenClaims = claims;
+        }
+    }
+
+    /*
+     * Return the delegation ID for display as the API session ID
+     */
+    public getDelegationId(): string {
+        return this.idTokenClaims?.delegationId || '';
     }
 
     /*
      * Forward to the main side of the app to perform the logout work
      */
     public async logout(): Promise<void> {
+        this.idTokenClaims = null;
         await this.ipcEvents.logout();
     }
 
@@ -49,6 +74,7 @@ export class OAuthClientImpl implements OAuthClient {
      * Allow the login state to be cleared when required
      */
     public async clearLoginState(): Promise<void> {
+        this.idTokenClaims = null;
         await this.ipcEvents.clearLoginState();
     }
 
@@ -66,6 +92,7 @@ export class OAuthClientImpl implements OAuthClient {
      */
     public async expireRefreshToken(): Promise<void> {
         await this.ipcEvents.expireRefreshToken();
+        this.idTokenClaims = null;
     }
 
     /*

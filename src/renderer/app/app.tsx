@@ -70,12 +70,11 @@ export function App(props: AppProps): JSX.Element {
     }
 
     /*
-     * The home button moves to the home view but also deals with error recovery
+     * The home button renders 'Sign In' when the user is not logged in
      */
     async function onHome(): Promise<void> {
 
-        const isLoggedIn = await model.getOAuthClient().isLoggedIn();
-        if (!isLoggedIn) {
+        if (!model.getOAuthClient().isLoggedIn()) {
 
             // Update state to indicate a login is in progress
             model.getEventBus().emit(UIEventNames.LoginStarted, null, new LoginStartedEvent());
@@ -178,7 +177,7 @@ export function App(props: AppProps): JSX.Element {
     function getSessionProps(): SessionViewProps {
 
         return {
-            sessionId: model.getFetchClient().getSessionId(),
+            sessionId: model.getSessionId(),
             eventBus: model.getEventBus(),
         };
     }

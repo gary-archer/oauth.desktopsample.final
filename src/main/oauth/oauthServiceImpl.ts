@@ -9,6 +9,7 @@ import EventEmitter from 'node:events';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {OAuthConfiguration} from '../configuration/oauthConfiguration';
+import {Base64Url} from '../utilities/base64url';
 import {HttpProxy} from '../utilities/httpProxy';
 import {UrlParser} from '../utilities/urlParser';
 import {OAuthService} from './oauthService';
@@ -54,10 +55,24 @@ export class OAuthServiceImpl implements OAuthService {
     }
 
     /*
-     * Return true if there are existing tokens
+     * If there are stored tokens, return ID token claims as a JSON object
      */
-    public async isLoggedIn(): Promise<boolean> {
-        return !!this.tokens;
+    public async getSession(): Promise<any> {
+
+        if (!this.tokens || !this.tokens.idToken) {
+            return null;
+        }
+
+        // Get the ID token payload
+        const payload = JSON.parse(Base64Url.decode(this.tokens.idToken.split('.')[1]));
+        if (!payload.delegationId && payload[this.configuration.delegationIdClaimName]) {
+
+            // Return a fixed 'delegationId' claim to the frontend
+            payload.delegationId = payload[this.configuration.delegationIdClaimName];
+            delete payload.delegationIdClaimName;
+        }
+
+        return payload;
     }
 
     /*
@@ -98,9 +113,9 @@ export class OAuthServiceImpl implements OAuthService {
     }
 
     /*
-     * Do the login work
+     * Do the login and return ID token claims
      */
-    public async login(): Promise<void> {
+    public async login(): Promise<any> {
 
         const result = await this.startLogin();
         if (result.error) {
@@ -108,6 +123,7 @@ export class OAuthServiceImpl implements OAuthService {
         }
 
         await this.endLogin(result);
+        return await this.getSession();
     }
 
     /*

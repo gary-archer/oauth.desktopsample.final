@@ -94,20 +94,15 @@ export class FetchService {
                 throw ErrorFactory.fromLoginRequired();
             }
 
+            // Add the authorization header and also a correlation ID for logging
             const headers: any = {
-
-                // The required authorization header
                 'Authorization': `Bearer ${accessToken}`,
-
-                // Context headers included in API logs
-                'authsamples-api-client':     'FinalDesktopApp',
-                'authsamples-session-id':     options.sessionId,
-                'authsamples-correlation-id': crypto.randomUUID(),
+                'correlation-id': crypto.randomUUID(),
             };
 
-            // A special header can be sent to ask the API to throw a simulated exception
+            // If required, add a header to request that an API simulates a 500 exception
             if (options.causeError) {
-                headers['authsamples-test-exception'] = 'FinalApi';
+                headers['api-exception-simulation'] = 'FinalApi';
             }
 
             const requestOptions = {

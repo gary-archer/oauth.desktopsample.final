@@ -10,7 +10,7 @@ export class IpcEventNames {
     public static readonly ON_GET_API_USER_INFO = 'api_userinfo';
 
     // The UI calls the main process to perform these OAuth operations
-    public static readonly ON_IS_LOGGED_IN = 'oauth_isloggedin';
+    public static readonly ON_GET_SESSION = 'oauth_getSession';
     public static readonly ON_LOGIN = 'oauth_login';
     public static readonly ON_LOGOUT = 'oauth_logout';
     public static readonly ON_TOKEN_REFRESH = 'oauth_tokenrefresh';

@@ -33,6 +33,7 @@ export class AppViewModel {
 
     // State
     private error: UIError | null;
+    private sessionId: string;
     private isLoading: boolean;
 
     // Child view models
@@ -42,6 +43,7 @@ export class AppViewModel {
 
     // Callbacks to set model properties that affect view rendering
     private setError: Dispatch<SetStateAction<UIError | null>> | null;
+    private setSessionId: Dispatch<SetStateAction<string>> | null;
 
     /*
      * Set the initial state when the app starts
@@ -63,8 +65,10 @@ export class AppViewModel {
 
         // Initialise state
         this.error = null;
+        this.sessionId = '';
         this.isLoading = false;
         this.setError = null;
+        this.setSessionId = null;
 
         // Initialise child view models
         this.companiesViewModel = null;
@@ -79,11 +83,17 @@ export class AppViewModel {
     public useState(): void {
 
         const [, setError] = useState(this.error);
+        const [, setSessionId] = useState(this.sessionId);
         this.setError = setError;
+        this.setSessionId = setSessionId;
     }
 
     public getError(): UIError | null {
         return this.error;
+    }
+
+    public getSessionId(): string {
+        return this.sessionId;
     }
 
     public getOAuthClient(): OAuthClient {
@@ -116,6 +126,10 @@ export class AppViewModel {
             // If we were started via a deep link, navigate to that location
             await this.ipcEvents.setDeepLinkStartupUrlIfRequired();
 
+            // Call the OAuth client to see if there is a session with stored tokens
+            await this.oauthClient.getSession();
+            this.updateSessionId();
+
         } catch (e: any) {
 
             // Store startup errors
@@ -138,6 +152,7 @@ export class AppViewModel {
 
         try {
             await this.oauthClient.login();
+            this.updateSessionId();
 
         } catch (e: any) {
 
@@ -159,6 +174,7 @@ export class AppViewModel {
         try {
 
             await this.oauthClient.logout();
+            this.updateSessionId();
 
         } catch (e: any) {
 
@@ -265,6 +281,17 @@ export class AppViewModel {
         this.error = error;
         if (this.setError) {
             this.setError(error);
+        }
+    }
+
+    /*
+     * Update error state and the binding system
+     */
+    private updateSessionId(): void {
+
+        this.sessionId = this.oauthClient.getDelegationId();
+        if (this.setSessionId) {
+            this.setSessionId(this.sessionId);
         }
     }
 

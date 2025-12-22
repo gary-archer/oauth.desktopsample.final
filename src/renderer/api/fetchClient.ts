@@ -16,21 +16,12 @@ export class FetchClient {
     private readonly fetchCache: FetchCache;
     private readonly ipcEvents: IpcRendererEvents;
     private readonly oauthClient: OAuthClient;
-    private readonly sessionId: string;
 
     public constructor(fetchCache: FetchCache, ipcEvents: IpcRendererEvents, oauthClient: OAuthClient) {
 
         this.fetchCache = fetchCache;
         this.ipcEvents = ipcEvents;
         this.oauthClient = oauthClient;
-        this.sessionId = crypto.randomUUID();
-    }
-
-    /*
-     * Return the session ID for display
-     */
-    public getSessionId(): string {
-        return this.sessionId;
     }
 
     /*
@@ -104,7 +95,6 @@ export class FetchClient {
         try {
 
             // Call the API and return data on success
-            options.sessionId = this.sessionId;
             return await callback();
 
         } catch (e1: any) {

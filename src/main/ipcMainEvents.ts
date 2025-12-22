@@ -55,7 +55,7 @@ export class IpcMainEvents {
         ipcMain.handle(IpcEventNames.ON_GET_TRANSACTIONS, this.onGetCompanyTransactions);
         ipcMain.handle(IpcEventNames.ON_GET_OAUTH_USER_INFO, this.onGetOAuthUserInfo);
         ipcMain.handle(IpcEventNames.ON_GET_API_USER_INFO, this.onGetApiUserInfo);
-        ipcMain.handle(IpcEventNames.ON_IS_LOGGED_IN, this.onIsLoggedIn);
+        ipcMain.handle(IpcEventNames.ON_GET_SESSION, this.onGetSession);
         ipcMain.handle(IpcEventNames.ON_LOGIN, this.onLogin);
         ipcMain.handle(IpcEventNames.ON_LOGOUT, this.onLogout);
         ipcMain.handle(IpcEventNames.ON_TOKEN_REFRESH, this.onTokenRefresh);
@@ -117,7 +117,7 @@ export class IpcMainEvents {
     /*
      * Make an API request to get OAuth user info
      */
-    private async onGetOAuthUserInfo(event: IpcMainInvokeEvent, args: any): Promise<any> {
+    private async onGetOAuthUserInfo(event: IpcMainInvokeEvent, args: any): Promise<OAuthUserInfo> {
 
         return this.handleAsyncOperation(
             event,
@@ -127,7 +127,7 @@ export class IpcMainEvents {
     /*
      * Make an API request to get API user info
      */
-    private async onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<OAuthUserInfo> {
+    private async onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<ApiUserInfo> {
 
         return this.handleAsyncOperation(
             event,
@@ -135,19 +135,19 @@ export class IpcMainEvents {
     }
 
     /*
-     * See if there are any tokens
+     * Get ID token claims if logged in
      */
-    private async onIsLoggedIn(event: IpcMainInvokeEvent): Promise<ApiUserInfo> {
+    private async onGetSession(event: IpcMainInvokeEvent): Promise<any> {
 
         return this.handleAsyncOperation(
             event,
-            () => this.oauthService.isLoggedIn());
+            () => this.oauthService.getSession());
     }
 
     /*
      * Run a login redirect on the system browser
      */
-    private async onLogin(event: IpcMainInvokeEvent): Promise<void> {
+    private async onLogin(event: IpcMainInvokeEvent): Promise<any> {
 
         return this.handleAsyncOperation(
             event,
@@ -272,7 +272,7 @@ export class IpcMainEvents {
         this.onGetCompanyTransactions = this.onGetCompanyTransactions.bind(this);
         this.onGetOAuthUserInfo = this.onGetOAuthUserInfo.bind(this);
         this.onGetApiUserInfo = this.onGetApiUserInfo.bind(this);
-        this.onIsLoggedIn = this.onIsLoggedIn.bind(this);
+        this.onGetSession = this.onGetSession.bind(this);
         this.onLogin = this.onLogin.bind(this);
         this.onLogout = this.onLogout.bind(this);
         this.onTokenRefresh = this.onTokenRefresh.bind(this);

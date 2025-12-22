@@ -3,11 +3,17 @@
  */
 export interface OAuthClient {
 
-    // See if logged in
-    isLoggedIn(): Promise<boolean>;
+    // See if logged in and get ID token claims
+    getSession(): Promise<any>;
 
-    // Do the login redirect and process the response
-    login(): Promise<void>;
+    // Allow the frontend to ask for the login status
+    isLoggedIn(): boolean;
+
+    // Do the login and get ID token claims
+    login(): Promise<any>;
+
+    // Get the delegation ID claim
+    getDelegationId(): string;
 
     // Do the logout redirect and process the response
     logout(): Promise<void>;
