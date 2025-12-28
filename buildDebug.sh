@@ -17,7 +17,7 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Change this to 'npm run webpackRendererDebugWatch' when you want to develop in watch mode
+# Build the renderer side of the Electron app in watch mode
 #
 echo
 echo 'Building renderer code in watch mode ...'

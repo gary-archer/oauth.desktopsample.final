@@ -17,7 +17,7 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Build the renderer side of the Electron app in watch mode
+# Build the renderer side of the Electron app
 #
 echo
 echo 'Building renderer code ...'
