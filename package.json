@@ -20,14 +20,8 @@
   },
   "scripts": {
     "lint": "npx eslint . --ignore-pattern dist",
-    "build": "./build.sh",
     "start": "./run.sh",
-    "pack": "./pack.sh",
-    "webpackMainDebug": "NODE_OPTIONS='--import tsx' webpack --config webpack/main/webpack.config.dev.ts",
-    "webpackMainRelease": "NODE_OPTIONS='--import tsx' webpack --config webpack/main/webpack.config.prod.ts",
-    "webpackRendererDebug": "NODE_OPTIONS='--import tsx' webpack --config webpack/renderer/webpack.config.dev.ts",
-    "webpackRendererDebugWatch": "NODE_OPTIONS='--import tsx' webpack --config webpack/renderer/webpack.config.dev.ts --watch",
-    "webpackRendererRelease": "NODE_OPTIONS='--import tsx' webpack --config webpack/renderer/webpack.config.prod.ts"
+    "package": "./package.sh"
   },
   "dependencies": {
     "@openid/appauth": "^1.3.2",

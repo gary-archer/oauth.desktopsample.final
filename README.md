@@ -43,7 +43,7 @@ After login you can test all lifecycle operations, including token refresh, expi
 You can then package a platform-specific executable and test the release build behavior:
 
 ```bash
-./pack.sh
+./package.sh
 ```
 
 ## Further Information

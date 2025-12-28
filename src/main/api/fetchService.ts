@@ -89,7 +89,7 @@ export class FetchService {
         try {
 
             // A logic is required if we don't have an access token
-            const accessToken = await this.oauthService.getAccessToken();
+            const accessToken = this.oauthService.getAccessToken();
             if (!accessToken) {
                 throw ErrorFactory.fromLoginRequired();
             }
