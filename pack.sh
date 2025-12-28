@@ -34,8 +34,8 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Source map files could be used enable exception source line lookup
-# This code sample just deletes them, to prevent packaging them
+# We build source map files that could be backed up for latest exception diagnosis
+# This code sample just deletes the source map files instead
 #
 rm dist/*.js.map
 

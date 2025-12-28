@@ -19,19 +19,13 @@ The app uses user attributes from both the OpenID Connect userinfo endpoint and 
 ## Local Development Quick Start
 
 First ensure that Node.js 24+ is installed.\
-Then build the app via this command, which compiles the renderer side of the app in watch mode:
+Then build and run the app with the following command:
 
 ```bash
-./build.sh
+./start.sh
 ```
 
-Next run the app in a different terminal window, to test the OpenID Connect desktop flow:
-
-```bash
-./run.sh
-```
-
-Run the app to trigger an OpenID Connect code flow to authenticate the user with the AppAuth pattern.\
+The app prompts to run an OpenID Connect code flow and authenticate the user.\
 The login runs in the default system browser and the app cannot access the user's credentials:
 
 ![Desktop App Login](./images/login.png)
@@ -44,7 +38,7 @@ You can login to the desktop app using my AWS Cognito test account:
 ```
 
 The app receives the login response using a private URI scheme redirect URI.\
-Interstitial web pages ensure a user gesture after login and logout, so that responses return to the app reliably.\
+Intermediate web pages ensure a user gesture after login and logout, so that responses reliably return to the app.\
 After login you can test all lifecycle operations, including token refresh, expiry events and logout.\
 You can then package a platform-specific executable and test the release build behavior:
 

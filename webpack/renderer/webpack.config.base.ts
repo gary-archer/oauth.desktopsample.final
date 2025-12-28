@@ -43,9 +43,13 @@ const config: webpack.Configuration = {
     },
     output: {
 
-        // Output bundles to the dist folder
+        // Output ECMAScript bundles to the dist folder
         path: path.resolve(dirname, './dist'),
         filename: '[name].bundle.js',
+        module: true,
+    },
+    experiments: {
+        outputModule: true,
     },
     optimization: {
 

@@ -27,6 +27,14 @@ case "$(uname -s)" in
 	;;
 esac
 
+#
+# Build the application's Typescript code in debug mode
+#
+./build.sh
+if [ $? -ne 0 ]; then
+  echo 'Problem encountered building the desktop app code'
+  exit
+fi
 
 #
 # On Linux, register the app to use the Electron command to run the built files in the dist folder
