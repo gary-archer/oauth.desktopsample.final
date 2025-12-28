@@ -7,7 +7,7 @@ const devConfig: webpack.Configuration = {
     // Let webpack know this is a debug build
     mode: 'development',
 
-    // This setting enables us to step through our TypeScript in Visual Studio Code
+    // Enable stepping through frontend TypeScript code in the Visual Studio Code debugger
     output: Object.assign({}, baseConfig.output, {
         devtoolModuleFilenameTemplate: 'file:///[absolute-resource-path]'
     }),

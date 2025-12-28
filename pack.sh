@@ -1,8 +1,8 @@
 #!/bin/bash
 
-###################################################################
-# A script to package the desktop app into an executable and run it
-###################################################################
+##########################################################################
+# A script to package the desktop app into a release executable and run it
+##########################################################################
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 

@@ -8,7 +8,7 @@ const prodConfig: webpack.Configuration = {
     // Let webpack know this is a release build
     mode: 'production',
 
-    // Turn off performance warnings until we have a plan for dealing with them
+    // Turn off webpack warnings about bundle sizes
     performance: {
         hints: false
     },

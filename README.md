@@ -30,7 +30,7 @@ The login runs in the default system browser and the app cannot access the user'
 
 ![Desktop App Login](./images/login.png)
 
-You can login to the desktop app using my AWS Cognito test account:
+You can sign in using my AWS Cognito test account:
 
 ```text
 - User: guestuser@example.com
