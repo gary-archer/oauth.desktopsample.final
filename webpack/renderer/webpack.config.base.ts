@@ -10,7 +10,7 @@ const config: webpack.Configuration = {
     // Build for a web target
     target: ['web'],
 
-    // Always output source maps since we are building bundles
+    // Always output source maps so that we can decompile bundles
     devtool: 'source-map',
 
     // Set the working folder

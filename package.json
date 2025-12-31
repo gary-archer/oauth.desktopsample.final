@@ -2,7 +2,6 @@
   "name": "finaldesktopapp",
   "version": "2.0.0",
   "description": "The Final OpenID Connect secured Desktop App",
-  "keywords": [],
   "author": "Gary Archer",
   "license": "MIT",
   "main": "main.bundle.js",
@@ -39,6 +38,7 @@
   "devDependencies": {
     "@electron/packager": "^19.0.1",
     "@eslint/js": "^9.39.2",
+    "@types/node": "^24.10.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@types/react-modal": "^3.16.3",

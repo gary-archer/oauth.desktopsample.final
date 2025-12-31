@@ -10,7 +10,7 @@ const config: webpack.Configuration = {
     // Build for a node.js target
     target: ['electron-main'],
 
-    // Always output source maps since we need to decompile bundles
+    // Always output source maps so that we can decompile bundles
     devtool: 'source-map',
 
     // Set the working folder
@@ -43,7 +43,7 @@ const config: webpack.Configuration = {
     },
     output: {
 
-        // Output ECMAScript bundles to the dist folder
+        // For the main build, using ESM modules prevents CommonJS output
         path: path.resolve(dirname, './dist'),
         filename: 'main.bundle.js',
         module: true,
