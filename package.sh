@@ -34,13 +34,6 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Copy deployable assets that are not Javascript bundles
-#
-rm -rf dist 2>/dev/null
-mkdir dist
-cp index.html desktop.config.json css/* package.json src/preload.js dist
-
-#
 # Make code quality checks
 #
 npm run lint
@@ -48,6 +41,13 @@ if [ $? -ne 0 ]; then
   echo 'Code quality checks failed'
   exit 1
 fi
+
+#
+# Prepare the dist folder
+#
+rm -rf dist 2>/dev/null
+mkdir dist
+
 
 #
 # Build the code in watch mode

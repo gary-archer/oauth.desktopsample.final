@@ -1,3 +1,4 @@
+import CopyPlugin from 'copy-webpack-plugin';
 import path from 'path';
 import webpack from 'webpack';
 
@@ -14,11 +15,11 @@ const config: webpack.Configuration = {
     devtool: 'source-map',
 
     // Set the working folder
-    context: path.resolve(dirname, './src'),
+    context: path.resolve(dirname, '.'),
 
     entry: {
         // Pull in all dependencies starting from the renderer file
-        app: ['./renderer.tsx']
+        app: ['./src/renderer.tsx']
     },
     module: {
         rules: [
@@ -64,7 +65,23 @@ const config: webpack.Configuration = {
                 },
             }
         }
-    }
+    },
+    plugins: [
+
+        // Copy static files to the dist folder
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: 'index.html',
+                    to: path.resolve('dist'),
+                },
+                {
+                    from: 'css',
+                    to: path.resolve('dist'),
+                },
+            ]
+        }),
+    ]
 };
 
 export default config;

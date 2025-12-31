@@ -1,3 +1,4 @@
+import CopyPlugin from 'copy-webpack-plugin';
 import path from 'path';
 import webpack from 'webpack';
 
@@ -14,11 +15,11 @@ const config: webpack.Configuration = {
     devtool: 'source-map',
 
     // Set the working folder
-    context: path.resolve(dirname, './src'),
+    context: path.resolve(dirname, '.'),
 
     entry: {
         // Pull in all dependencies starting from the main file
-        app: ['./main.ts']
+        app: ['./src/main.ts']
     },
     module: {
         rules: [
@@ -51,6 +52,26 @@ const config: webpack.Configuration = {
     experiments: {
         outputModule: true,
     },
+    plugins: [
+
+        // Copy other required files to the dist folder
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: 'desktop.config.json',
+                    to: path.resolve('dist'),
+                },
+                {
+                    from: 'src/preload.js',
+                    to: path.resolve('dist'),
+                },
+                {
+                    from: 'package.json',
+                    to: path.resolve('dist'),
+                },
+            ]
+        }),
+    ]
 };
 
 export default config;
