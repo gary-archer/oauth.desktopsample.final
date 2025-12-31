@@ -13,6 +13,7 @@ echo 'Building main code ...'
 NODE_OPTIONS='--import tsx' npx webpack --config webpack/main/webpack.config.prod.ts
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the main side of the desktop app'
+  read -n 1
   exit 1
 fi
 
@@ -24,5 +25,11 @@ echo 'Building renderer code ...'
 NODE_OPTIONS='--import tsx' npx webpack --config webpack/renderer/webpack.config.prod.ts
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the renderer side of the desktop app'
+  read -n 1
   exit 1
 fi
+
+#
+# Wait for completion
+#
+read -n 1

@@ -8,9 +8,9 @@ const prodConfig: webpack.Configuration = {
     // Let webpack know this is a release build
     mode: 'production',
 
-    // Turn off webpack warnings about bundle sizes
+    // Increase the default limit a little to avoid warnings
     performance: {
-        hints: false
+        maxEntrypointSize: 300000,
     },
 
     plugins:[

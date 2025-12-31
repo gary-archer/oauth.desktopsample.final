@@ -48,7 +48,6 @@ fi
 rm -rf dist 2>/dev/null
 mkdir dist
 
-
 #
 # Build the code in watch mode
 #

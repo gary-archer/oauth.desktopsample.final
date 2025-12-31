@@ -8,11 +8,6 @@ const prodConfig: webpack.Configuration =
     // Let webpack know this is a release build
     mode: 'production',
 
-    // Turn off webpack warnings about bundle sizes
-    performance: {
-        hints: false
-    },
-
     plugins:[
         {
             // In release builds, remove source map references

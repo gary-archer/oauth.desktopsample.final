@@ -1,6 +1,6 @@
 import CopyPlugin from 'copy-webpack-plugin';
 import path from 'path';
-import webpack from 'webpack';
+import webpack, {Module, NormalModule} from 'webpack';
 
 /*
  * Performs tree shaking to avoid deploying main code to renderer bundles
@@ -54,15 +54,42 @@ const config: webpack.Configuration = {
     },
     optimization: {
 
-        // Indicate that third party code is built to a separate vendor bundle file
+        // Build third party code into two bundles, for React and non-React code
+        // Using a function works for both the webpack dev server and release builds
         splitChunks: {
             cacheGroups: {
-                vendor: {
-                    chunks: 'initial',
-                    name: 'vendor',
-                    test: /node_modules/,
-                    enforce: true,
+                react: {
+                    name: 'react',
+                    chunks: 'all',
+                    test: (module: Module) => {
+
+                        if (!(module instanceof NormalModule)) {
+                            return false;
+                        }
+
+                        if (module.resource.indexOf('node_modules') !== -1 && module.resource.indexOf('react') !== -1) {
+                            return true;
+                        }
+
+                        return false;
+                    },
                 },
+                vendor: {
+                    name: 'vendor',
+                    chunks: 'all',
+                    test: (module: Module) => {
+
+                        if (!(module instanceof NormalModule)) {
+                            return false;
+                        }
+
+                        if (module.resource.indexOf('node_modules') !== -1 && module.resource.indexOf('react') === -1) {
+                            return true;
+                        }
+
+                        return false;
+                    },
+                }
             }
         }
     },
