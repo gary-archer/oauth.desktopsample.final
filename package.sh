@@ -74,7 +74,7 @@ while [ ! -f ./dist/app.bundle.js ]; do
 done
 
 #
-# We build source map files that could be backed up for latest exception diagnosis
+# We build source map files that could be backed up for later exception diagnosis
 # This code sample just deletes the source map files to avoid packaging them
 #
 rm dist/*.js.map
