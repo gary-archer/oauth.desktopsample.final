@@ -9,7 +9,7 @@ const dirname = process.cwd();
 const config: webpack.Configuration = {
 
     // Build for a web target
-    target: ['web'],
+    target: 'web',
 
     // Always output source maps so that we can decompile bundles
     devtool: 'source-map',
@@ -19,7 +19,7 @@ const config: webpack.Configuration = {
 
     entry: {
         // Pull in all dependencies starting from the renderer file
-        app: ['./src/renderer.tsx']
+        app: './src/renderer.tsx',
     },
     module: {
         rules: [

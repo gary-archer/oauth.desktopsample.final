@@ -9,7 +9,7 @@ const dirname = process.cwd();
 const config: webpack.Configuration = {
 
     // Build for a node.js target
-    target: ['electron-main'],
+    target: 'electron-main',
 
     // Always output source maps so that we can decompile bundles
     devtool: 'source-map',
@@ -19,7 +19,7 @@ const config: webpack.Configuration = {
 
     entry: {
         // Pull in all dependencies starting from the main file
-        app: ['./src/main.ts']
+        app: './src/main.ts',
     },
     module: {
         rules: [
