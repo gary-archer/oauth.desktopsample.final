@@ -1,4 +1,4 @@
-import React, {JSX, useEffect} from 'react';
+import {JSX, useEffect} from 'react';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';

@@ -1,4 +1,4 @@
-import React, {JSX, useEffect} from 'react';
+import {JSX, useEffect} from 'react';
 import Modal from 'react-modal';
 import {Route, Routes, useNavigate} from 'react-router-dom';
 import {ErrorCodes} from '../../shared/errors/errorCodes';

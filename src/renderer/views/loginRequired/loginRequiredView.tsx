@@ -1,4 +1,4 @@
-import React, {JSX, useEffect, useState} from 'react';
+import {JSX, useEffect, useState} from 'react';
 import {UIEventNames} from '../events/uiEventNames';
 import {LoginStartedEvent} from '../events/loginStartedEvent';
 import {NavigatedEvent} from '../events/navigatedEvent';
