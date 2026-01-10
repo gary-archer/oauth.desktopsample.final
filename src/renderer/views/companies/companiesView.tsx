@@ -1,6 +1,15 @@
-import {JSX} from 'react';
-import {Link} from 'react-router-dom';
-import {Company} from '../../../shared/api/company';
+import {JSX, useEffect} from 'react';
+import {useLocation} from 'react-router-dom';
+import {ErrorCodes} from '../../../shared/errors/errorCodes';
+import {ErrorSummaryView} from '../errors/errorSummaryView';
+import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
+import {NavigatedEvent} from '../events/navigatedEvent';
+import {ReloadDataEvent} from '../events/reloadDataEvent';
+import {UIEventNames} from '../events/uiEventNames';
+import {CurrentLocation} from '../utilities/currentLocation';
+import {ViewLoadOptions} from '../utilities/viewLoadOptions';
+import {CompaniesChildView} from './companiesChildView';
+import {CompaniesChildViewProps} from './companiesChildViewProps';
 import {CompaniesViewProps} from './companiesViewProps';
 
 /*
@@ -8,54 +17,80 @@ import {CompaniesViewProps} from './companiesViewProps';
  */
 export function CompaniesView(props: CompaniesViewProps): JSX.Element {
 
-    /*
-     * Render a single company on a large screen
-     */
-    function renderItem(company: Company) {
+    const model = props.viewModel;
+    model.useState();
+    CurrentLocation.path = useLocation().pathname;
 
-        return (
-            <div className='row listRow' key={company.id}>
-                <div className='col-2 my-auto text-center'>
-                    {company.name}
-                </div>
-                <div className='col-2 my-auto text-center'>
-                    {company.region}
-                </div>
-                <div className='col-2 my-auto text-center'>
-                    <Link to={`/companies/${company.id}`}>
-                        View Transactions
-                    </Link>
-                </div>
-                <div className='col-2 my-auto highlightcolor fw-bold text-end'>
-                    {Number(company.targetUsd).toLocaleString()}
-                </div>
-                <div className='col-2 my-auto highlightcolor fw-bold text-end'>
-                    {Number(company.investmentUsd).toLocaleString()}
-                </div>
-                <div className='col-2 my-auto fw-bold text-end'>
-                    {company.noInvestors}
-                </div>
-            </div>
-        );
+    useEffect(() => {
+        startup();
+        return () => cleanup();
+    }, []);
+
+    /*
+     * Subscribe for reload events and then do the initial load of data
+     */
+    async function startup(): Promise<void> {
+
+        // Inform other parts of the app that the main view is active
+        model.getEventBus().emit(UIEventNames.Navigated, null, new NavigatedEvent(true));
+
+        // Subscribe for reload events
+        model.getEventBus().on(UIEventNames.ReloadData, onReload);
+
+        // Do the initial load of data
+        await loadData();
     }
 
     /*
-     * Render the collection of items
+     * Unsubscribe when we unload
      */
+    function cleanup(): void {
+        model.getEventBus().detach(UIEventNames.ReloadData, onReload);
+    }
+
+    /*
+     * Receive the reload event
+     */
+    function onReload(event: ReloadDataEvent): void {
+
+        const options = {
+            forceReload: true,
+            causeError: event.getCauseError()
+        };
+        loadData(options);
+    }
+
+    /*
+     * Get data from the API and update state
+     */
+    async function loadData(options?: ViewLoadOptions): Promise<void> {
+        await model.callApi(options);
+    }
+
+    function getErrorProps(): ErrorSummaryViewProps {
+
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        return {
+            error: model.getError()!,
+            errorsToIgnore: [ErrorCodes.loginRequired],
+            containingViewName: 'companies',
+            hyperlinkMessage: 'Problem Encountered in Companies View',
+            dialogTitle: 'Companies View Error',
+            centred: true,
+        };
+    }
+
+    function getChildProps(): CompaniesChildViewProps {
+
+        return {
+            companies: model.getCompanies(),
+        };
+    }
 
     return  (
-        <div className='card border-0'>
-            <div className='row card-header'>
-                <div className='col-2 fw-bold text-center'>Account</div>
-                <div className='col-2 fw-bold text-center'>Region</div>
-                <div className='col-2' />
-                <div className='col-2 fw-bold text-end'>Target USD</div>
-                <div className='col-2 fw-bold text-end'>Investment USD</div>
-                <div className='col-2 fw-bold text-end'># Investors</div>
-            </div>
-            <div className='card-body'>
-                {props.companies.map((company) => renderItem(company))}
-            </div>
-        </div>
+        <>
+            {model.getError() && <ErrorSummaryView {...getErrorProps()}/>}
+            {model.getCompanies().length > 0 && <CompaniesChildView {...getChildProps()}/>}
+        </>
     );
 }

@@ -8,11 +8,11 @@ import {FetchClient} from '../api/fetchClient';
 import {IpcRendererEvents} from '../ipcRendererEvents';
 import {OAuthClient} from '../oauth/oauthClient';
 import {OAuthClientImpl} from '../oauth/oauthClientImpl';
-import {CompaniesContainerViewModel} from '../views/companies/companiesContainerViewModel';
+import {CompaniesViewModel} from '../views/companies/companiesViewModel';
 import {ErrorConsoleReporter} from '../views/errors/errorConsoleReporter';
 import {ReloadDataEvent} from '../views/events/reloadDataEvent';
 import {UIEventNames} from '../views/events/uiEventNames';
-import {TransactionsContainerViewModel} from '../views/transactions/transactionsContainerViewModel';
+import {TransactionsViewModel} from '../views/transactions/transactionsViewModel';
 import {UserInfoViewModel} from '../views/userInfo/userInfoViewModel';
 import {ViewModelCoordinator} from '../views/utilities/viewModelCoordinator';
 
@@ -37,8 +37,8 @@ export class AppViewModel {
     private isLoading: boolean;
 
     // Child view models
-    private companiesViewModel: CompaniesContainerViewModel | null;
-    private transactionsViewModel: TransactionsContainerViewModel | null;
+    private companiesViewModel: CompaniesViewModel | null;
+    private transactionsViewModel: TransactionsViewModel | null;
     private userInfoViewModel: UserInfoViewModel | null;
 
     // Callbacks to set model properties that affect view rendering
@@ -183,11 +183,11 @@ export class AppViewModel {
         }
     }
 
-    public getCompaniesViewModel(): CompaniesContainerViewModel {
+    public getCompaniesViewModel(): CompaniesViewModel {
 
         if (!this.companiesViewModel) {
 
-            this.companiesViewModel = new CompaniesContainerViewModel(
+            this.companiesViewModel = new CompaniesViewModel(
                 this.fetchClient,
                 this.eventBus,
                 this.viewModelCoordinator,
@@ -197,11 +197,11 @@ export class AppViewModel {
         return this.companiesViewModel;
     }
 
-    public getTransactionsViewModel(): TransactionsContainerViewModel {
+    public getTransactionsViewModel(): TransactionsViewModel {
 
         if (!this.transactionsViewModel) {
 
-            this.transactionsViewModel = new TransactionsContainerViewModel
+            this.transactionsViewModel = new TransactionsViewModel
             (
                 this.fetchClient,
                 this.eventBus,

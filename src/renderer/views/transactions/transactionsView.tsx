@@ -1,65 +1,105 @@
-import {JSX} from 'react';
-import {Transaction} from '../../../shared/api/transaction';
+import {JSX, useEffect} from 'react';
+import {useLocation, useParams} from 'react-router-dom';
+import {ErrorCodes} from '../../../shared/errors/errorCodes';
+import {ErrorSummaryView} from '../errors/errorSummaryView';
+import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
+import {NavigatedEvent} from '../events/navigatedEvent';
+import {ReloadDataEvent} from '../events/reloadDataEvent';
+import {UIEventNames} from '../events/uiEventNames';
+import {CurrentLocation} from '../utilities/currentLocation';
+import {ViewLoadOptions} from '../utilities/viewLoadOptions';
+import {TransactionsChildView} from './transactionsChildView';
+import {TransactionsChildViewProps} from './transactionsChildViewProps';
 import {TransactionsViewProps} from './transactionsViewProps';
 
 /*
- * Render the transactions main view
+ * Render the transactions view
  */
 export function TransactionsView(props: TransactionsViewProps): JSX.Element {
 
-    /*
-     * Render a single item
-     */
-    function renderTransaction(transaction: Transaction): JSX.Element {
+    const model = props.viewModel;
+    model.useState();
+    CurrentLocation.path = useLocation().pathname;
 
-        return (
-            <div className='col-lg-4 col-md-6 col-xs-12' key={transaction.id}>
-                <div className='card'>
-                    <div className='card-body'>
-                        <div className='row'>
-                            <div className='col-6'>
-                                Transaction ID
-                            </div>
-                            <div className='col-6 text-end valuecolor fw-bold'>
-                                {transaction.id}
-                            </div>
-                        </div>
-                        <div className='row'>
-                            <div className='col-6'>
-                                Investor ID
-                            </div>
-                            <div className='col-6 text-end valuecolor fw-bold'>
-                                {transaction.investorId}
-                            </div>
-                        </div>
-                        <div className='row'>
-                            <div className='col-6'>
-                                Amount USD
-                            </div>
-                            <div className='col-6 text-end highlightcolor fw-bold'>
-                                {Number(transaction.amountUsd).toLocaleString()}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+    const params = useParams();
+    const companyId = params.id || '';
+
+    useEffect(() => {
+        startup();
+        return () => cleanup();
+    }, [companyId]);
+
+    /*
+     * Subscribe for reload events and then do the initial load of data
+     */
+    async function startup(): Promise<void> {
+
+        // Inform other parts of the app that the main view is active
+        model.getEventBus().emit(UIEventNames.Navigated, null, new NavigatedEvent(true));
+
+        // Subscribe for reload events
+        model.getEventBus().on(UIEventNames.ReloadData, onReload);
+
+        // Do the initial load of data
+        await loadData();
     }
 
     /*
-     * Render the data on a wide screen
+     * Unsubscribe when we unload
      */
-    return props.data &&
-        (
-            <div className='card border-0'>
-                <div className='card-header row fw-bold'>
-                    <div className='col-12 text-center mx-auto fw-bold'>
-                        Today&apos;s Transactions for {props.data.company.name}
-                    </div>
-                </div>
-                <div className='row'>
-                    {props.data.transactions.map((transaction) => renderTransaction(transaction))}
-                </div>
-            </div>
-        );
+    function cleanup(): void {
+        model.getEventBus().detach(UIEventNames.ReloadData, onReload);
+    }
+
+    /*
+     * Receive the reload event
+     */
+    function onReload(event: ReloadDataEvent): void {
+
+        const options = {
+            forceReload: true,
+            causeError: event.getCauseError()
+        };
+        loadData(options);
+    }
+
+    /*
+     * Get data from the API and update state
+     */
+    async function loadData(options?: ViewLoadOptions): Promise<void> {
+
+        await model.callApi(companyId, options);
+
+        // For expected forbidden errors, where the user edits the browser URL, return to the home view
+        if (model.isForbiddenError()) {
+            props.navigate('/');
+        }
+    }
+
+    function getErrorProps(): ErrorSummaryViewProps {
+
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        return {
+            error: model.getError()!,
+            errorsToIgnore: [ErrorCodes.loginRequired],
+            containingViewName: 'transactions',
+            hyperlinkMessage: 'Problem Encountered in Transactions View',
+            dialogTitle: 'Transactions View Error',
+            centred: true,
+        };
+    }
+
+    function getChildProps(): TransactionsChildViewProps {
+
+        return {
+            data: model.getTransactions()!,
+        };
+    }
+
+    return  (
+        <>
+            {model.getError() && <ErrorSummaryView {...getErrorProps()}/>}
+            {model.getTransactions() && <TransactionsChildView {...getChildProps()}/>}
+        </>
+    );
 }

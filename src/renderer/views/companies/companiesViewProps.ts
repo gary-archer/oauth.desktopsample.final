@@ -1,8 +1,8 @@
-import {Company} from '../../../shared/api/company';
+import {CompaniesViewModel} from './companiesViewModel';
 
 /*
  * Input to the companies view
  */
 export interface CompaniesViewProps {
-    companies: Company[];
+    viewModel: CompaniesViewModel;
 }

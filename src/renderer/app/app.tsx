@@ -2,8 +2,8 @@ import {JSX, useEffect} from 'react';
 import Modal from 'react-modal';
 import {Route, Routes, useNavigate} from 'react-router-dom';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
-import {CompaniesContainer} from '../views/companies/companiesContainer';
-import {CompaniesContainerProps} from '../views/companies/companiesContainerProps';
+import {CompaniesView} from '../views/companies/companiesView';
+import {CompaniesViewProps} from '../views/companies/companiesViewProps';
 import {ErrorSummaryView} from '../views/errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../views/errors/errorSummaryViewProps';
 import {DeepLinkEvent} from '../views/events/deepLinkEvent';
@@ -17,8 +17,8 @@ import {SessionViewProps} from '../views/headings/sessionViewProps';
 import {TitleView} from '../views/headings/titleView';
 import {TitleViewProps} from '../views/headings/titleViewProps';
 import {LoginRequiredView} from '../views/loginRequired/loginRequiredView';
-import {TransactionsContainer} from '../views/transactions/transactionsContainer';
-import {TransactionsContainerProps} from '../views/transactions/transactionsContainerProps';
+import {TransactionsView} from '../views/transactions/transactionsView';
+import {TransactionsViewProps} from '../views/transactions/transactionsViewProps';
 import {CurrentLocation} from '../views/utilities/currentLocation';
 import {AppProps} from './appProps';
 
@@ -182,14 +182,14 @@ export function App(props: AppProps): JSX.Element {
         };
     }
 
-    function getCompaniesProps(): CompaniesContainerProps {
+    function getCompaniesProps(): CompaniesViewProps {
 
         return {
             viewModel: model.getCompaniesViewModel(),
         };
     }
 
-    function getTransactionsProps(): TransactionsContainerProps {
+    function getTransactionsProps(): TransactionsViewProps {
 
         return {
             viewModel: model.getTransactionsViewModel(),
@@ -212,10 +212,10 @@ export function App(props: AppProps): JSX.Element {
             <>
                 <SessionView {...getSessionProps()} />
                 <Routes>
-                    <Route path='/'              element={<CompaniesContainer {...getCompaniesProps()} />} />
-                    <Route path='/companies/:id' element={<TransactionsContainer {...getTransactionsProps()} />} />
+                    <Route path='/'              element={<CompaniesView {...getCompaniesProps()} />} />
+                    <Route path='/companies/:id' element={<TransactionsView {...getTransactionsProps()} />} />
                     <Route path='/loggedout'     element={<LoginRequiredView {...getLoginRequiredProps()} />} />
-                    <Route path='*'              element={<CompaniesContainer {...getCompaniesProps()} />} />
+                    <Route path='*'              element={<CompaniesView {...getCompaniesProps()} />} />
                 </Routes>
             </>
         </>
