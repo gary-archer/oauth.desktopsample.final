@@ -41,9 +41,9 @@ export class UserInfoViewModel {
     }
 
     /*
-     * For the correct React behavior, the view initialises state every time it loads
+     * Initialize bindable model state when the view loads
      */
-    public useState(): void {
+    public use(): UserInfoViewModel {
 
         const [, setOAuthUserInfo] = useState(this.oauthUserInfo);
         this.setOAuthUserInfo = setOAuthUserInfo;
@@ -53,6 +53,8 @@ export class UserInfoViewModel {
 
         const [, setError] = useState(this.error);
         this.setError = setError;
+
+        return this;
     }
 
     /*

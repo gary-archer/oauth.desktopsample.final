@@ -36,15 +36,17 @@ export class CompaniesViewModel {
     }
 
     /*
-     * For the correct React behavior, the view initialises state every time it loads
+     * Initialize bindable model state when the view loads
      */
-    public useState(): void {
+    public use(): CompaniesViewModel {
 
         const [, setCompanies] = useState(this.companies);
         this.setCompanies = setCompanies;
 
         const [, setError] = useState(this.error);
         this.setError = setError;
+
+        return this;
     }
 
     /*

@@ -39,15 +39,17 @@ export class TransactionsViewModel {
     }
 
     /*
-     * For the correct React behavior, the view initialises state every time it loads
+     * Initialize bindable model state when the view loads
      */
-    public useState(): void {
+    public use(): TransactionsViewModel {
 
         const [, setTransactions] = useState(this.transactions);
         this.setTransactions = setTransactions;
 
         const [, setError] = useState(this.error);
         this.setError = setError;
+
+        return this;
     }
 
     /*
