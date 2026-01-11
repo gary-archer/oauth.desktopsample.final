@@ -89,12 +89,23 @@ if [ $? -ne 0 ]; then
   exit
 fi
 
+
 #
-# On Linux, register the app to use the packed command
-#
+# Post build behaviors for Linux desktop applications
+#  
 if [ "$PLATFORM" == 'LINUX' ]; then
+  
+  #
+  # Register the application's private URI scheme with the operating system
+  #
   export APP_COMMAND="$(pwd)/package/finaldesktopapp-linux-x64/finaldesktopapp"
   ./linux/register.sh
+
+  #
+  # Enter a password to work around this Electron issue:
+  # - https://github.com/electron/electron/issues/42510
+  #
+  sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 fi
 
 #

@@ -58,7 +58,6 @@ export class FetchClient {
     private async getDataFromApi(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
 
         // Remove the item from the cache when a reload is requested
-        console.log('*** here');
         if (options.forceReload) {
             this.fetchCache.removeItem(options.cacheKey);
         }
