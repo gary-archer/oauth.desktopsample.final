@@ -1,5 +1,4 @@
 import EventBus from 'js-event-bus';
-import {Dispatch, SetStateAction, useState} from 'react';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {UIError} from '../../shared/errors/uiError';
@@ -41,10 +40,6 @@ export class AppViewModel {
     private transactionsViewModel: TransactionsViewModel | null;
     private userInfoViewModel: UserInfoViewModel | null;
 
-    // Callbacks to set model properties that affect view rendering
-    private setError: Dispatch<SetStateAction<UIError | null>> | null;
-    private setSessionId: Dispatch<SetStateAction<string>> | null;
-
     /*
      * Set the initial state when the app starts
      */
@@ -67,25 +62,12 @@ export class AppViewModel {
         this.error = null;
         this.sessionId = '';
         this.isLoading = false;
-        this.setError = null;
-        this.setSessionId = null;
 
         // Initialise child view models
         this.companiesViewModel = null;
         this.transactionsViewModel = null;
         this.userInfoViewModel = null;
         this.setupCallbacks();
-    }
-
-    /*
-     * For the correct React behavior, the view initialises state every time it loads
-     */
-    public useState(): void {
-
-        const [, setError] = useState(this.error);
-        const [, setSessionId] = useState(this.sessionId);
-        this.setError = setError;
-        this.setSessionId = setSessionId;
     }
 
     public getError(): UIError | null {
@@ -121,19 +103,19 @@ export class AppViewModel {
 
             // Prevent re-entrancy due to React strict mode
             this.isLoading = true;
-            this.updateError(null);
+            this.error = null;
 
             // If we were started via a deep link, navigate to that location
             await this.ipcEvents.setDeepLinkStartupUrlIfRequired();
 
             // Call the OAuth client to see if there is a session with stored tokens
             await this.oauthClient.getSession();
-            this.updateSessionId();
+            this.sessionId = this.oauthClient.getDelegationId();
 
         } catch (e: any) {
 
             // Store startup errors
-            this.updateError(ErrorFactory.fromException(e));
+            this.error = ErrorFactory.fromException(e);
 
         } finally {
 
@@ -148,17 +130,17 @@ export class AppViewModel {
     public async login(): Promise<void> {
 
         this.viewModelCoordinator.resetState();
-        this.updateError(null);
+        this.error = null;
 
         try {
             await this.oauthClient.login();
-            this.updateSessionId();
+            this.sessionId = this.oauthClient.getDelegationId();
 
         } catch (e: any) {
 
             const error =  ErrorFactory.fromException(e);
             if (error.getErrorCode() !== ErrorCodes.loginCancelled) {
-                this.updateError(error);
+                this.error = error;
             }
         }
     }
@@ -169,12 +151,12 @@ export class AppViewModel {
     public async logout(): Promise<void> {
 
         this.viewModelCoordinator.resetState();
-        this.updateError(null);
+        this.error = null;
 
         try {
 
             await this.oauthClient.logout();
-            this.updateSessionId();
+            this.sessionId = this.oauthClient.getDelegationId();
 
         } catch (e: any) {
 
@@ -233,11 +215,11 @@ export class AppViewModel {
 
         try {
 
-            this.updateError(null);
+            this.error = null;
             await this.oauthClient.expireAccessToken();
 
         } catch (e: any) {
-            this.updateError(ErrorFactory.fromException(e));
+            this.error = ErrorFactory.fromException(e);
         }
     }
 
@@ -248,20 +230,20 @@ export class AppViewModel {
 
         try {
 
-            this.updateError(null);
+            this.error = null;
             await this.oauthClient.expireRefreshToken();
 
         } catch (e: any) {
-            this.updateError(ErrorFactory.fromException(e));
+            this.error = ErrorFactory.fromException(e);
         }
     }
 
     /*
-     * Ask all views to get updated data from the API
+     * Raise an event to ask all views to get updated data from the API
      */
-    public reloadData(causeError: boolean): void {
+    public triggerDataReload(causeError: boolean): void {
 
-        this.updateError(null);
+        this.error = null;
         this.viewModelCoordinator.resetState();
         this.eventBus.emit(UIEventNames.ReloadData, null, new ReloadDataEvent(causeError));
     }
@@ -269,36 +251,14 @@ export class AppViewModel {
     /*
      * See if there are any errors
      */
-    public hasError(): boolean {
+    public hasApiError(): boolean {
         return !!this.error || this.viewModelCoordinator.hasErrors();
-    }
-
-    /*
-     * Update error state and the binding system
-     */
-    private updateError(error: UIError | null): void {
-
-        this.error = error;
-        if (this.setError) {
-            this.setError(error);
-        }
-    }
-
-    /*
-     * Update error state and the binding system
-     */
-    private updateSessionId(): void {
-
-        this.sessionId = this.oauthClient.getDelegationId();
-        if (this.setSessionId) {
-            this.setSessionId(this.sessionId);
-        }
     }
 
     /*
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
     private setupCallbacks() {
-        this.reloadData = this.reloadData.bind(this);
+        this.triggerDataReload = this.triggerDataReload.bind(this);
     }
 }

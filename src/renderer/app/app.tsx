@@ -1,4 +1,4 @@
-import {JSX, useEffect} from 'react';
+import {JSX, useEffect, useState} from 'react';
 import Modal from 'react-modal';
 import {Route, Routes, useNavigate} from 'react-router-dom';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
@@ -27,8 +27,11 @@ import {AppProps} from './appProps';
  */
 export function App(props: AppProps): JSX.Element {
 
+    // Initialize React state from the view model
     const model = props.viewModel;
-    model.useState();
+    const [sessionId, setSessionId] = useState(model.getSessionId());
+    const [error, setError] = useState(model.getError());
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -50,6 +53,8 @@ export function App(props: AppProps): JSX.Element {
 
         // Initialise the model
         await model.initialise();
+        setSessionId(model.getSessionId());
+        setError(model.getError());
     }
 
     /*
@@ -63,7 +68,7 @@ export function App(props: AppProps): JSX.Element {
     }
 
     /*
-     * Redirect to the login required view when we need to sign in
+     * Redirect to the login required view when w7e need to sign in
      */
     function onLoginRequired(): void {
         navigate('/loggedout');
@@ -81,6 +86,8 @@ export function App(props: AppProps): JSX.Element {
 
             // Do the work of the login
             await model.login();
+            setSessionId(model.getSessionId());
+            setError(model.getError());
 
             // Move back to the location that took us to login required
             if (!model.getError()) {
@@ -93,17 +100,10 @@ export function App(props: AppProps): JSX.Element {
             navigate('/');
 
             // Force a data reload if recovering from errors
-            if (model.hasError()) {
-                model.reloadData(false);
+            if (model.hasApiError()) {
+                model.triggerDataReload(false);
             }
         }
-    }
-
-    /*
-     * Handle reloads and updating the error state
-     */
-    function onReloadData(causeError: boolean): void {
-        model.reloadData(causeError);
     }
 
     /*
@@ -124,6 +124,8 @@ export function App(props: AppProps): JSX.Element {
 
         // Do the logout redirect to remove the SSO cookie
         await model.logout();
+        setSessionId(model.getSessionId());
+        setError(model.getError());
     }
 
     /*
@@ -131,6 +133,7 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onExpireAccessToken(): Promise<void> {
         await model.expireAccessToken();
+        setError(model.getError());
     }
 
     /*
@@ -138,6 +141,7 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onExpireRefreshToken(): Promise<void> {
         await model.expireRefreshToken();
+        setError(model.getError());
     }
 
     function getTitleProps(): TitleViewProps {
@@ -156,7 +160,7 @@ export function App(props: AppProps): JSX.Element {
             handleHomeClick: onHome,
             handleExpireAccessTokenClick: onExpireAccessToken,
             handleExpireRefreshTokenClick: onExpireRefreshToken,
-            handleReloadDataClick: onReloadData,
+            handleReloadDataClick: model.triggerDataReload,
             handleLogoutClick: onLogout,
         };
     }
@@ -165,7 +169,7 @@ export function App(props: AppProps): JSX.Element {
 
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         return {
-            error: model.getError()!,
+            error: error!,
             errorsToIgnore: [ErrorCodes.loginCancelled],
             containingViewName: 'main',
             hyperlinkMessage: 'Problem Encountered',
@@ -177,7 +181,7 @@ export function App(props: AppProps): JSX.Element {
     function getSessionProps(): SessionViewProps {
 
         return {
-            sessionId: model.getSessionId(),
+            sessionId: sessionId,
             eventBus: model.getEventBus(),
         };
     }
@@ -208,7 +212,7 @@ export function App(props: AppProps): JSX.Element {
         <>
             <TitleView {...getTitleProps()} />
             <HeaderButtonsView {...getHeaderButtonProps()} />
-            {model.getError() && <ErrorSummaryView {...getErrorProps()} />}
+            {error && <ErrorSummaryView {...getErrorProps()} />}
             <>
                 <SessionView {...getSessionProps()} />
                 <Routes>
