@@ -214,7 +214,8 @@ export class IpcMainEvents {
 
         try {
 
-            if (!event.senderFrame?.url.startsWith('file:/')) {
+            console.log('1: ' + event.senderFrame?.url);
+            if (!event.senderFrame?.url.startsWith(this.configuration.oauth.privateSchemeName)) {
                 throw ErrorFactory.fromIpcForbiddenError();
             }
 
@@ -243,7 +244,9 @@ export class IpcMainEvents {
         action: () => any): Promise<any> {
 
         try {
-            if (!event.senderFrame?.url.startsWith('file:/')) {
+
+            console.log('2: ' + event.senderFrame?.url);
+            if (!event.senderFrame?.url.startsWith(this.configuration.oauth.privateSchemeName)) {
                 throw ErrorFactory.fromIpcForbiddenError();
             }
 

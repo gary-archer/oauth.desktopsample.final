@@ -1,5 +1,6 @@
-import {app, BrowserWindow, session} from 'electron';
+import {app, BrowserWindow, net, protocol, session} from 'electron';
 import path from 'path';
+import url from 'url';
 import {Configuration} from './main/configuration/configuration';
 import {ConfigurationLoader} from './main/configuration/configurationLoader';
 import {IpcMainEvents} from './main/ipcMainEvents';
@@ -55,12 +56,24 @@ class Main {
         if (startupUrl) {
             this.ipcEvents.deepLinkStartupUrl = startupUrl;
         }
+
+        // Enable HTML resource download using the private scheme
+        protocol.registerSchemesAsPrivileged([{
+            scheme: this.configuration.oauth.privateSchemeName,
+            privileges: {
+                bypassCSP: true,
+                supportFetchAPI: true,
+            },
+        }]);
     }
 
     /*
      * Do initialisation after the ready event
      */
     private async onReady(): Promise<void> {
+
+        // Handle requests for web files
+        protocol.handle(this.configuration.oauth.privateSchemeName, this.onServeWebFiles);
 
         // Create the window and use Electron recommended security options
         // https://www.electronjs.org/docs/tutorial/security
@@ -83,8 +96,8 @@ class Main {
         // Register for private URI scheme notifications
         this.registerPrivateUriScheme();
 
-        // Load the index.html of the app from the file system
-        this.window.loadFile('./index.html');
+        // Load the index.html of the app using the private URI scheme handler
+        this.window.loadURL(`${this.configuration.oauth.privateSchemeName}:/index.html`);
 
         // Configure HTTP headers
         this.initialiseHttpHeaders();
@@ -101,6 +114,17 @@ class Main {
         if (this.window === null) {
             this.onReady();
         }
+    }
+
+    /*
+     * Process requests for web files
+     * Use a custom protocol handler in line with Electron security recommendations
+     */
+    private onServeWebFiles(request: Request) {
+
+        const filePath = request.url.slice(`${this.configuration.oauth.privateSchemeName}:/`.length);
+        console.log('Serving ' + filePath);
+        return net.fetch(url.pathToFileURL(path.join(__dirname, filePath)).toString());
     }
 
     /*
@@ -242,6 +266,7 @@ class Main {
     private setupCallbacks() {
         this.onReady = this.onReady.bind(this);
         this.onActivate = this.onActivate.bind(this);
+        this.onServeWebFiles = this.onServeWebFiles.bind(this);
         this.onSecondInstance = this.onSecondInstance.bind(this);
         this.onOpenUrl = this.onOpenUrl.bind(this);
         this.handleDeepLink = this.handleDeepLink.bind(this);
