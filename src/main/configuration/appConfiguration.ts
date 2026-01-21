@@ -5,4 +5,5 @@ export interface AppConfiguration {
     apiBaseUrl: string;
     useProxy: boolean;
     proxyUrl: string;
+    protocolScheme: string;
 }

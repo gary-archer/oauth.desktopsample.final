@@ -59,7 +59,7 @@ class Main {
 
         // Enable HTML resource download using the private scheme
         protocol.registerSchemesAsPrivileged([{
-            scheme: this.configuration.oauth.privateSchemeName,
+            scheme: this.configuration.app.protocolScheme,
             privileges: {
                 bypassCSP: true,
                 supportFetchAPI: true,
@@ -73,7 +73,7 @@ class Main {
     private async onReady(): Promise<void> {
 
         // Handle requests for web files
-        protocol.handle(this.configuration.oauth.privateSchemeName, this.onServeWebFiles);
+        protocol.handle(this.configuration.app.protocolScheme, this.onServeWebFiles);
 
         // Create the window and use Electron recommended security options
         // https://www.electronjs.org/docs/tutorial/security
@@ -97,7 +97,7 @@ class Main {
         this.registerPrivateUriScheme();
 
         // Load the index.html of the app using the private URI scheme handler
-        this.window.loadURL(`${this.configuration.oauth.privateSchemeName}:/index.html`);
+        this.window.loadURL(`${this.configuration.app.protocolScheme}:/index.html`);
 
         // Configure HTTP headers
         this.initialiseHttpHeaders();
@@ -122,9 +122,8 @@ class Main {
      */
     private onServeWebFiles(request: Request) {
 
-        const filePath = request.url.slice(`${this.configuration.oauth.privateSchemeName}:/`.length);
-        console.log('Serving ' + filePath);
-        return net.fetch(url.pathToFileURL(path.join(__dirname, filePath)).toString());
+        const urlPath = new URL(request.url).pathname;
+        return net.fetch(url.pathToFileURL(path.join(__dirname, urlPath)).toString());
     }
 
     /*
@@ -212,7 +211,7 @@ class Main {
 
         for (const arg of argv) {
             const value = arg as string;
-            if (value.indexOf(this.configuration.oauth.privateSchemeName) !== -1) {
+            if (value.indexOf(this.configuration.app.protocolScheme) !== -1) {
                 return value;
             }
         }
@@ -239,7 +238,7 @@ class Main {
     }
 
     /*
-     * Handle private URI scheme registration on Windows or macOS
+     * Register for private URI scheme notifications on Windows or macOS
      * On Linux the registration is done by the run.sh script instead
      */
     private registerPrivateUriScheme(): void {
@@ -249,14 +248,14 @@ class Main {
             // Register the private URI scheme differently for Windows
             // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
             app.setAsDefaultProtocolClient(
-                this.configuration.oauth.privateSchemeName,
+                this.configuration.app.protocolScheme,
                 process.execPath,
                 [app.getAppPath()]);
 
         } else if (process.platform === 'darwin') {
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
-            app.setAsDefaultProtocolClient(this.configuration.oauth.privateSchemeName);
+            app.setAsDefaultProtocolClient(this.configuration.app.protocolScheme);
         }
     }
 
