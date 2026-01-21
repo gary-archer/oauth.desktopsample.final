@@ -24,6 +24,12 @@ case "$(uname -s)" in
 	;;
 esac
 
+if [ "$(uname -m)" == 'arm64' ]; then
+  ARCH='arm64'
+else
+  ARCH='x64'
+fi
+
 #
 # Download dependencies
 #
@@ -98,7 +104,7 @@ if [ "$PLATFORM" == 'LINUX' ]; then
   #
   # Register the application's private URI scheme with the operating system
   #
-  export APP_COMMAND="$(pwd)/package/finaldesktopapp-linux-x64/finaldesktopapp"
+  export APP_COMMAND="$(pwd)/package/finaldesktopapp-linux-$ARCH/finaldesktopapp"
   ./linux/register.sh
 
   #
@@ -113,13 +119,13 @@ fi
 #
 if [ "$PLATFORM" == 'MACOS' ]; then
   
-  open ./package/finaldesktopapp-darwin-x64/finaldesktopapp.app
+  open ./package/finaldesktopapp-darwin-$ARCH/finaldesktopapp.app
 
 elif [ "$PLATFORM" == 'WINDOWS' ]; then
 
-  start ./package/finaldesktopapp-win32-x64/finaldesktopapp.exe
+  start ./package/finaldesktopapp-win32-$ARCH/finaldesktopapp.exe
 
 elif [ "$PLATFORM" == 'LINUX' ]; then
 
-  ./package/finaldesktopapp-linux-x64/finaldesktopapp
+  ./package/finaldesktopapp-linux-$ARCH/finaldesktopapp
 fi
