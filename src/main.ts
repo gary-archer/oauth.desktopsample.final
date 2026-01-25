@@ -62,7 +62,6 @@ class Main {
             scheme: this.configuration.app.protocolScheme,
             privileges: {
                 bypassCSP: true,
-                supportFetchAPI: true,
             },
         }]);
     }
