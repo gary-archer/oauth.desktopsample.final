@@ -56,14 +56,6 @@ class Main {
         if (startupUrl) {
             this.ipcEvents.deepLinkStartupUrl = startupUrl;
         }
-
-        // Enable HTML resource download using the private scheme
-        protocol.registerSchemesAsPrivileged([{
-            scheme: this.configuration.app.protocolScheme,
-            privileges: {
-                bypassCSP: true,
-            },
-        }]);
     }
 
     /*
@@ -138,6 +130,7 @@ class Main {
 
     /*
      * Set a content security policy for the renderer app
+     * Include the custom protocol
      */
     private initialiseHttpHeaders() {
 
@@ -145,11 +138,13 @@ class Main {
 
             let policy = '';
             policy += "default-src 'none';";
+            //policy += ` script-src 'self' ${this.configuration.app.protocolScheme}:/;`;
+            //policy += ` style-src 'self' ${this.configuration.app.protocolScheme}:/;`;
             policy += " script-src 'self';";
+            policy += " style-src 'self';";
             policy += " connect-src 'self';";
             policy += " child-src 'self';";
             policy += " img-src 'self';";
-            policy += " style-src 'self';";
             policy += " object-src 'none';";
             policy += " frame-ancestors 'none';";
             policy += " base-uri 'self';";
