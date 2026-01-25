@@ -111,10 +111,22 @@ class Main {
      * Process requests for web files
      * Use a custom protocol handler in line with Electron security recommendations
      */
-    private onServeWebFiles(request: Request) {
+    private onServeWebFiles(request: Request): any {
 
-        const urlPath = new URL(request.url).pathname;
-        return net.fetch(url.pathToFileURL(path.join(__dirname, urlPath)).toString());
+        const fileName = new URL(request.url).pathname.toLowerCase().slice(1);
+        const authorizedFiles = [
+            'index.html',
+            'bootstrap.min.css',
+            'app.css',
+            'vendor.bundle.js',
+            'react.bundle.js',
+            'app.bundle.js',
+        ];
+
+        if (authorizedFiles.indexOf(fileName) !== -1) {
+            const webFilePath = url.pathToFileURL(path.join(__dirname, fileName)).toString();
+            return net.fetch(webFilePath);
+        }
     }
 
     /*
@@ -138,8 +150,6 @@ class Main {
 
             let policy = '';
             policy += "default-src 'none';";
-            //policy += ` script-src 'self' ${this.configuration.app.protocolScheme}:/;`;
-            //policy += ` style-src 'self' ${this.configuration.app.protocolScheme}:/;`;
             policy += " script-src 'self';";
             policy += " style-src 'self';";
             policy += " connect-src 'self';";

@@ -68,9 +68,15 @@ export function App(props: AppProps): JSX.Element {
     }
 
     /*
-     * Redirect to the login required view when w7e need to sign in
+     * Redirect to the login required view when we need to sign in
      */
-    function onLoginRequired(): void {
+    async function onLoginRequired(): Promise<void> {
+
+        // Ensure that logged in state is removed
+        await model.clearLoginState();
+        setError(model.getError());
+
+        // Then navigate
         navigate('/loggedout');
     }
 
