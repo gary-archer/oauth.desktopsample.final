@@ -9,7 +9,6 @@ import {LoginRequiredViewProps} from './loginRequiredViewProps';
  */
 export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
 
-    // Initialize React state
     const [isSigningIn, setIsSigningIn] = useState(false);
 
     useEffect(() => {
