@@ -39,7 +39,7 @@ export class IpcMainEvents {
      * Store the deep link startup URL if applicable
      */
     public set deepLinkStartupUrl(startupUrl: string) {
-        this.deepLinkStartupPath = startupUrl.replace(this.configuration.oauth.privateSchemeName + ':', '');
+        this.deepLinkStartupPath = startupUrl.replace(this.configuration.app.protocolScheme + ':', '');
     }
 
     /*
@@ -77,7 +77,7 @@ export class IpcMainEvents {
         // If not handled, notify the React app, which will update its hash location based on the path
         const url = UrlParser.tryParse(deepLinkUrl);
         if (url && url.pathname) {
-            const path = url.pathname.replace(this.configuration.oauth.privateSchemeName + ':', '');
+            const path = url.pathname.replace(this.configuration.app.protocolScheme + ':', '');
             this.window?.webContents.send(IpcEventNames.ON_DEEP_LINK, {path});
         }
 
@@ -214,7 +214,7 @@ export class IpcMainEvents {
 
         try {
 
-            if (!event.senderFrame?.url.startsWith('file:/')) {
+            if (!event.senderFrame?.url.startsWith(this.configuration.app.protocolScheme)) {
                 throw ErrorFactory.fromIpcForbiddenError();
             }
 
@@ -243,7 +243,8 @@ export class IpcMainEvents {
         action: () => any): Promise<any> {
 
         try {
-            if (!event.senderFrame?.url.startsWith('file:/')) {
+
+            if (!event.senderFrame?.url.startsWith(this.configuration.app.protocolScheme)) {
                 throw ErrorFactory.fromIpcForbiddenError();
             }
 

@@ -1,5 +1,6 @@
-import {app, BrowserWindow, session} from 'electron';
+import {app, BrowserWindow, net, protocol, session} from 'electron';
 import path from 'path';
+import url from 'url';
 import {Configuration} from './main/configuration/configuration';
 import {ConfigurationLoader} from './main/configuration/configurationLoader';
 import {IpcMainEvents} from './main/ipcMainEvents';
@@ -62,6 +63,9 @@ class Main {
      */
     private async onReady(): Promise<void> {
 
+        // Handle requests for web files
+        protocol.handle(this.configuration.app.protocolScheme, this.onServeWebFiles);
+
         // Create the window and use Electron recommended security options
         // https://www.electronjs.org/docs/tutorial/security
         this.window = new BrowserWindow({
@@ -83,8 +87,8 @@ class Main {
         // Register for private URI scheme notifications
         this.registerPrivateUriScheme();
 
-        // Load the index.html of the app from the file system
-        this.window.loadFile('./index.html');
+        // Load the index.html of the app using the private URI scheme handler
+        this.window.loadURL(`${this.configuration.app.protocolScheme}:/index.html`);
 
         // Configure HTTP headers
         this.initialiseHttpHeaders();
@@ -104,6 +108,28 @@ class Main {
     }
 
     /*
+     * Process requests for web files
+     * Use a custom protocol handler in line with Electron security recommendations
+     */
+    private onServeWebFiles(request: Request): any {
+
+        const fileName = new URL(request.url).pathname.toLowerCase().slice(1);
+        const authorizedFiles = [
+            'index.html',
+            'bootstrap.min.css',
+            'app.css',
+            'vendor.bundle.js',
+            'react.bundle.js',
+            'app.bundle.js',
+        ];
+
+        if (authorizedFiles.indexOf(fileName) !== -1) {
+            const webFilePath = url.pathToFileURL(path.join(__dirname, fileName)).toString();
+            return net.fetch(webFilePath);
+        }
+    }
+
+    /*
      * On Windows and Linux, this is called when we receive login responses or other deep links
      */
     private onSecondInstance(event: any, argv: any): void {
@@ -116,6 +142,7 @@ class Main {
 
     /*
      * Set a content security policy for the renderer app
+     * Include the custom protocol
      */
     private initialiseHttpHeaders() {
 
@@ -124,10 +151,10 @@ class Main {
             let policy = '';
             policy += "default-src 'none';";
             policy += " script-src 'self';";
+            policy += " style-src 'self';";
             policy += " connect-src 'self';";
             policy += " child-src 'self';";
             policy += " img-src 'self';";
-            policy += " style-src 'self';";
             policy += " object-src 'none';";
             policy += " frame-ancestors 'none';";
             policy += " base-uri 'self';";
@@ -188,7 +215,7 @@ class Main {
 
         for (const arg of argv) {
             const value = arg as string;
-            if (value.indexOf(this.configuration.oauth.privateSchemeName) !== -1) {
+            if (value.indexOf(this.configuration.app.protocolScheme) !== -1) {
                 return value;
             }
         }
@@ -215,7 +242,7 @@ class Main {
     }
 
     /*
-     * Handle private URI scheme registration on Windows or macOS
+     * Register for private URI scheme notifications on Windows or macOS
      * On Linux the registration is done by the run.sh script instead
      */
     private registerPrivateUriScheme(): void {
@@ -225,14 +252,14 @@ class Main {
             // Register the private URI scheme differently for Windows
             // https://stackoverflow.com/questions/45570589/electron-protocol-handler-not-working-on-windows
             app.setAsDefaultProtocolClient(
-                this.configuration.oauth.privateSchemeName,
+                this.configuration.app.protocolScheme,
                 process.execPath,
                 [app.getAppPath()]);
 
         } else if (process.platform === 'darwin') {
 
             // Register our private URI scheme for a packaged app after running 'npm run pack'
-            app.setAsDefaultProtocolClient(this.configuration.oauth.privateSchemeName);
+            app.setAsDefaultProtocolClient(this.configuration.app.protocolScheme);
         }
     }
 
@@ -242,6 +269,7 @@ class Main {
     private setupCallbacks() {
         this.onReady = this.onReady.bind(this);
         this.onActivate = this.onActivate.bind(this);
+        this.onServeWebFiles = this.onServeWebFiles.bind(this);
         this.onSecondInstance = this.onSecondInstance.bind(this);
         this.onOpenUrl = this.onOpenUrl.bind(this);
         this.handleDeepLink = this.handleDeepLink.bind(this);

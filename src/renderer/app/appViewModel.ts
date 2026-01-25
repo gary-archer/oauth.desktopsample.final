@@ -165,6 +165,25 @@ export class AppViewModel {
         }
     }
 
+    /*
+     * Enable the view to force clearing of login state
+     */
+    public async clearLoginState(): Promise<void> {
+
+        try {
+
+            await this.oauthClient.clearLoginState();
+
+        } catch (e: any) {
+
+            const error = ErrorFactory.fromException(e);
+            ErrorConsoleReporter.output(error);
+        }
+    }
+
+    /*
+     * Return view models
+     */
     public getCompaniesViewModel(): CompaniesViewModel {
 
         if (!this.companiesViewModel) {
