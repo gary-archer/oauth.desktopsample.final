@@ -19,7 +19,7 @@
   },
   "scripts": {
     "lint": "npx eslint . --ignore-pattern dist",
-    "start": "./run.sh",
+    "start": "./start.sh",
     "package": "./package.sh"
   },
   "dependencies": {
