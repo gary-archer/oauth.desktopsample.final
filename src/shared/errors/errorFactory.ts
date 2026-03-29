@@ -230,10 +230,10 @@ export class ErrorFactory {
             const oauthError = await response.json() as any;
             if (oauthError) {
 
-                if (oauthError?.error) {
+                if (oauthError.error) {
                     error.setErrorCode(oauthError.error);
                 }
-                if (oauthError?.error_description) {
+                if (oauthError.error_description) {
                     details = oauthError.error_description;
                 }
             }
@@ -258,13 +258,13 @@ export class ErrorFactory {
             const apiError = await response.json() as any;
             if (apiError) {
 
-                if (apiError?.code && apiError?.message) {
+                if (apiError.code && apiError.message) {
                     error.setErrorCode(apiError.code);
                     details = apiError.message;
                 }
 
                 // Set extra details returned for 5xx errors
-                if (apiError?.area && apiError?.id && apiError?.utcTime) {
+                if (apiError.area && apiError.id && apiError.utcTime) {
                     error.setApiErrorDetails(apiError.area, apiError.id, apiError.utcTime);
                 }
             }

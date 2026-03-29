@@ -114,7 +114,7 @@ export class LoginRequestHandler extends AuthorizationRequestHandler {
         if (error) {
 
             // Handle error responses if required
-            const errorDescription = args.get('error_description') || '';
+            const errorDescription = args.get('error_description') || 'Authorization response error';
             const errorJson = {
                 error,
                 error_description: errorDescription || '',
