@@ -277,14 +277,27 @@ export class ErrorFactory {
     }
 
     /*
-     * Get the message from an exception and avoid returning [object Object]
+     * Get the message from an exception
      */
     private static getExceptionMessage(exception: any): string {
 
-        if (exception.message) {
-            return exception.message;
+        // Prefer to return a code and message
+        const code = exception?.code || exception?.cause?.code || '';
+        const message = exception.message || '';
+
+        const parts = [];
+        if (code) {
+            parts.push(code);
+        }
+        if (code) {
+            parts.push(message);
         }
 
+        if (parts.length > 0) {
+            return parts.join(', ');
+        }
+
+        // Otherwise get raw details and avoid returning [object Object]
         const details = exception.toString();
         if (details !== {}.toString()) {
             return details;
