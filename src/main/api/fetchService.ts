@@ -1,4 +1,4 @@
-import axios, {AxiosRequestConfig, Method} from 'axios';
+import {fetch, HeadersInit, RequestInit} from 'undici';
 import {ApiUserInfo} from '../../shared/api/apiUserInfo';
 import {Company} from '../../shared/api/company';
 import {CompanyTransactions} from '../../shared/api/companyTransactions';
@@ -7,7 +7,6 @@ import {OAuthUserInfo} from '../../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {Configuration} from '../configuration/configuration';
 import {OAuthService} from '../oauth/oauthService';
-import {AxiosUtils} from '../utilities/axiosUtils';
 import {HttpProxy} from '../utilities/httpProxy';
 
 /*
@@ -81,49 +80,49 @@ export class FetchService {
      * A parameterized method containing application specific logic for managing API calls
      */
     private async callApi(
-        method: Method,
+        method: string,
         url: string,
-        options: FetchOptions,
+        fetchOptions: FetchOptions,
         dataToSend: any = null): Promise<any> {
 
         try {
 
-            // A logic is required if we don't have an access token
             const accessToken = this.oauthService.getAccessToken();
             if (!accessToken) {
                 throw ErrorFactory.fromLoginRequired();
             }
 
-            // Add the authorization header and also a correlation ID for logging
-            const headers: any = {
-                'Authorization': `Bearer ${accessToken}`,
+            const headers: HeadersInit = {
+                'authorization': `Bearer ${accessToken}`,
+                'accept': 'application/json',
                 'correlation-id': crypto.randomUUID(),
             };
 
-            // If required, add a header to request that an API simulates a 500 exception
-            if (options.causeError) {
+            if (fetchOptions.causeError) {
                 headers['api-exception-simulation'] = 'FinalApi';
             }
 
-            const requestOptions = {
-                url,
+            const options: RequestInit = {
                 method,
-                data: dataToSend,
                 headers,
-            } as AxiosRequestConfig;
+                dispatcher: this.httpProxy.getDispatcher() || undefined,
+            };
 
-            if (this.httpProxy.getAgent()) {
-                requestOptions.httpsAgent = this.httpProxy.getAgent();
+            if (dataToSend) {
+                headers['content-type'] = 'application/json';
+                options.body = JSON.stringify(dataToSend);
             }
 
-            const response = await axios.request(requestOptions);
-            AxiosUtils.checkJson(response.data);
-            return response.data;
+            const response = await fetch(url, options);
+            if (response.ok) {
+                return await response.json();
+            }
+
+            throw await ErrorFactory.getFromApiResponseError(response);
 
         } catch (e: any) {
 
-            // Report refresh errors
-            throw ErrorFactory.fromHttpError(e, url, 'API');
+            throw ErrorFactory.getFromFetchError(e, url, 'web API');
         }
     }
 }

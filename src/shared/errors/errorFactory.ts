@@ -1,3 +1,5 @@
+import {AuthorizationError} from '@openid/appauth';
+import {Response} from 'undici';
 import {ErrorCodes} from './errorCodes';
 import {UIError} from './uiError';
 
@@ -62,9 +64,9 @@ export class ErrorFactory {
     }
 
     /*
-     * Handle sign in errors
+     * Handle authorization request errors
      */
-    public static fromLoginOperation(exception: any, errorCode: string): UIError {
+    public static fromLoginRequestOperation(exception: any, errorCode: string): UIError {
 
         // Already handled errors
         if (exception instanceof UIError) {
@@ -75,11 +77,25 @@ export class ErrorFactory {
         const error = new UIError(
             'Login',
             errorCode,
-            'A technical problem occurred during login processing',
+            'A technical problem occurred during login request processing',
             exception.stack);
 
         // Set technical details from the received exception
-        error.setDetails(ErrorFactory.getOAuthExceptionMessage(exception));
+        error.setDetails(ErrorFactory.getExceptionMessage(exception));
+        return error;
+    }
+
+    /*
+     * Handle authorization response errors
+     */
+    public static fromLoginResponseOperation(authorizationError: AuthorizationError): UIError {
+
+        const error = new UIError(
+            'Login',
+            authorizationError.error,
+            'The authorization server returned a login error response');
+
+        error.setDetails(authorizationError.errorDescription || '');
         return error;
     }
 
@@ -101,16 +117,16 @@ export class ErrorFactory {
             exception.stack);
 
         // Set technical details from the received exception
-        error.setDetails(ErrorFactory.getOAuthExceptionMessage(exception));
+        error.setDetails(ErrorFactory.getExceptionMessage(exception));
         return error;
     }
 
     /*
-     * Handle errors to the token endpoint
+     * Handle errors from the token endpoint
      */
     public static fromTokenError(exception: any, errorCode: string): UIError {
 
-        // Already handled errors
+        // Already handled
         if (exception instanceof UIError) {
             return exception;
         }
@@ -123,7 +139,7 @@ export class ErrorFactory {
             exception.stack);
 
         // Set technical details from the received exception
-        error.setDetails(ErrorFactory.getOAuthExceptionMessage(exception));
+        error.setDetails(ErrorFactory.getExceptionMessage(exception));
         return error;
     }
 
@@ -154,109 +170,110 @@ export class ErrorFactory {
     }
 
     /*
-     * Return an object for Ajax errors
+     * Exceptions during fetches could be caused by misconfiguration, server unavailable or JSON parsing failures
      */
-    public static fromHttpError(exception: any, url: string, source: string): UIError {
+    public static getFromFetchError(exception: any, url: string, source: string): UIError {
 
-        // Already handled errors
+        // Already handled
         if (exception instanceof UIError) {
             return exception;
         }
 
-        // Calculate the status code
-        let statusCode = 0;
-        if (exception.response && exception.response.status) {
-            statusCode = exception.response.status;
-        }
+        let error: UIError;
+        if (exception.constructor.name === 'SyntaxError') {
 
-        let error: UIError | null = null;
-        if (statusCode === 0) {
-
-            // This status is generally an availability problem
-            error = new UIError(
-                'Network',
-                ErrorCodes.apiNetworkError,
-                `A network problem occurred when the UI called the ${source}`,
-                exception.stack);
-            error.setDetails(this.getExceptionMessage(exception));
-
-        } else if (statusCode >= 200 && statusCode <= 299) {
-
-            // This status is generally a JSON parsing error
+            // Handle JSON parse errors
             error = new UIError(
                 'Data',
-                ErrorCodes.apiDataError,
-                `A technical problem occurred parsing received data from the ${source}`,
-                exception.stack);
-            error.setDetails(this.getExceptionMessage(exception));
+                ErrorCodes.dataError,
+                `Unexpected data received from the ${source}`);
 
         } else {
 
-            // Create a default API error, which may include an error response
+            // Handle connection errors
             error = new UIError(
-                'API',
-                ErrorCodes.apiResponseError,
-                `A technical problem occurred when the UI called the ${source}`,
+                'Connection',
+                ErrorCodes.connectionError,
+                `A connection error occurred when the UI called the ${source}`,
                 exception.stack);
-            error.setDetails(this.getExceptionMessage(exception));
-
-            // Read response error payloads
-            if (exception.response && exception.response.data && typeof exception.response.data === 'object') {
-                ErrorFactory.updateFromErrorResponseBody(error, exception.response.data);
-            }
         }
 
-        error.setStatusCode(statusCode);
+        error.setDetails(this.getExceptionMessage(exception));
         error.setUrl(url);
         return error;
     }
 
     /*
-     * Try to update the default error with response details
+     * Response errors can contain an API error response or may be issued by an API gateway
      */
-    private static updateFromErrorResponseBody(error: UIError, payload: any): void {
+    public static async getFromFetchResponseError(response: Response, source: string): Promise<UIError> {
 
-        // Attempt to read the API error response
-        if (payload) {
-
-            // Handle API errors, which include extra details for 5xx errors
-            if (payload.code && payload.message) {
-
-                error.setErrorCode(payload.code);
-                error.message = payload.details;
-
-                if (payload.area && payload.id && payload.utcTime) {
-                    error.setApiErrorDetails(payload.area, payload.id, payload.utcTime);
-                }
-            }
-
-            // Handle OAuth errors in HTTP reponses
-            if (payload.error && payload.error_description) {
-
-                error.setErrorCode(payload.error);
-                error.message = payload.error_description;
-            }
-        }
+        const error = new UIError(
+            source,
+            ErrorCodes.fetchError,
+            `An error response was returned from the ${source}`
+        );
+        error.setStatusCode(response.status);
+        return error;
     }
 
     /*
-     * Get the message from an OAuth exception
+     * Response errors can contain the OAuth error and error_description fields
      */
-    private static getOAuthExceptionMessage(exception: any): string {
+    public static async getFromOAuthFetchResponseError(response: Response): Promise<UIError> {
 
-        let oauthError = '';
-        if (exception.error) {
-            oauthError = exception.error;
-            if (exception.errorDescription) {
-                oauthError += ` : ${exception.errorDescription}`;
+        const error = await this.getFromFetchResponseError(response, 'authorization server');
+        let details = 'Problem encountered during an OAuth request';
+
+        try {
+
+            const oauthError = await response.json() as any;
+            if (oauthError) {
+
+                if (oauthError?.error) {
+                    error.setErrorCode(oauthError.error);
+                }
+                if (oauthError?.error_description) {
+                    details = oauthError.error_description;
+                }
             }
+        } catch {
+            // Swallow JSON parse errors for unexpected responses
         }
 
-        if (oauthError) {
-            return oauthError;
-        } else {
-            return ErrorFactory.getExceptionMessage(exception);
+        error.setDetails(details);
+        return error;
+    }
+
+    /*
+     * Response errors can contain an API error response or may be issued by an API gateway
+     */
+    public static async getFromApiResponseError(response: Response): Promise<UIError> {
+
+        const error = await this.getFromFetchResponseError(response, 'web API');
+        let details = 'Problem encountered during an API request';
+
+        try {
+            // The API returns JSON responses for all errors so try to read JSON
+            const apiError = await response.json() as any;
+            if (apiError) {
+
+                if (apiError?.code && apiError?.message) {
+                    error.setErrorCode(apiError.code);
+                    details = apiError.message;
+                }
+
+                // Set extra details returned for 5xx errors
+                if (apiError?.area && apiError?.id && apiError?.utcTime) {
+                    error.setApiErrorDetails(apiError.area, apiError.id, apiError.utcTime);
+                }
+            }
+        } catch {
+            // Swallow JSON parse errors for unexpected responses
         }
+
+        error.setDetails(details);
+        return error;
     }
 
     /*
@@ -266,10 +283,6 @@ export class ErrorFactory {
 
         if (exception.message) {
             return exception.message;
-        }
-
-        if (exception.errorSummary) {
-            return exception.errorSummary;
         }
 
         const details = exception.toString();

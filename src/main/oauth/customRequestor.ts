@@ -1,11 +1,10 @@
-import axios, {AxiosRequestConfig, Method} from 'axios';
 import {Requestor} from '@openid/appauth';
+import {fetch, RequestInit} from 'undici';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
-import {AxiosUtils} from '../utilities/axiosUtils';
 import {HttpProxy} from '../utilities/httpProxy';
 
 /*
- * Override the requestor object of AppAuthJS, so that OAuth error codes are returned
+ * Override the requestor object, to capture OAuth errors and to support the use of an HTTP proxy
  */
 export class CustomRequestor extends Requestor {
 
@@ -21,35 +20,29 @@ export class CustomRequestor extends Requestor {
      */
     public async xhr<T>(settings: JQueryAjaxSettings): Promise<T> {
 
+        const url = settings.url || '';
         try {
 
-            // Configure and send the request
-            const options: AxiosRequestConfig = {
-                url: settings.url,
-                method: settings.method as Method,
-                data: settings.data,
+            const options: RequestInit = {
+                method: settings.method,
                 headers: settings.headers as any,
+                dispatcher: this.httpProxy.getDispatcher() || undefined,
             };
 
-            if (this.httpProxy.getAgent()) {
-                options.httpsAgent = this.httpProxy.getAgent();
+            if (typeof settings.data === 'string') {
+                options.body = settings.data;
             }
 
-            const response = await axios.request(options);
+            const response = await fetch(url || '', options);
+            if (response.ok) {
+                return await response.json() as T;
+            }
 
-            // All messages use a JSON response
-            AxiosUtils.checkJson(response.data);
-            return response.data as T;
+            throw await ErrorFactory.getFromOAuthFetchResponseError(response);
 
         } catch (e: any) {
 
-            // If the response is an OAuth error object from the authorization server then throw that
-            if (e.response && e.response.data) {
-                throw e.response.data;
-            }
-
-            // Otherwise throw the technical error details
-            throw ErrorFactory.fromHttpError(e, settings.url || '', 'authorization server');
+            throw ErrorFactory.getFromFetchError(e, url, 'authorization server');
         }
     }
 }

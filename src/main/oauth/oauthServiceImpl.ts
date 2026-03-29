@@ -67,7 +67,7 @@ export class OAuthServiceImpl implements OAuthService {
         const payload = JSON.parse(Base64Url.decode(this.tokens.idToken.split('.')[1]));
         if (!payload.delegationId && payload[this.configuration.delegationIdClaimName]) {
 
-            // Return a fixed 'delegationId' claim to the frontend
+            // Return a fixed 'delegationId' field name to the frontend
             payload.delegationId = payload[this.configuration.delegationIdClaimName];
             delete payload.delegationIdClaimName;
         }
@@ -119,7 +119,7 @@ export class OAuthServiceImpl implements OAuthService {
 
         const result = await this.startLogin();
         if (result.error) {
-            throw ErrorFactory.fromLoginOperation(result.error, ErrorCodes.loginResponseFailed);
+            throw ErrorFactory.fromLoginResponseOperation(result.error);
         }
 
         await this.endLogin(result);
@@ -226,18 +226,9 @@ export class OAuthServiceImpl implements OAuthService {
     private async loadMetadata() {
 
         if (!this.metadata) {
-
-            try {
-
-                this.metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
-                    this.configuration.authority,
-                    this.customRequestor);
-
-            } catch (e: any) {
-
-                // Do error translation if required
-                throw ErrorFactory.fromHttpError(e, this.configuration.authority, 'authorization server');
-            }
+            this.metadata = await AuthorizationServiceConfiguration.fetchFromIssuer(
+                this.configuration.authority,
+                this.customRequestor);
         }
     }
 
@@ -262,7 +253,7 @@ export class OAuthServiceImpl implements OAuthService {
         } catch (e: any) {
 
             // Do error translation if required
-            throw ErrorFactory.fromLoginOperation(e, ErrorCodes.loginRequestFailed);
+            throw ErrorFactory.fromLoginRequestOperation(e, ErrorCodes.loginRequestFailed);
         }
     }
 
@@ -305,7 +296,7 @@ export class OAuthServiceImpl implements OAuthService {
         } catch (e: any) {
 
             // Do error translation if required
-            throw ErrorFactory.fromLoginOperation(e, ErrorCodes.loginRequestFailed);
+            throw ErrorFactory.fromLoginResponseOperation(e);
         }
     }
 
@@ -355,7 +346,8 @@ export class OAuthServiceImpl implements OAuthService {
 
         } catch (e: any) {
 
-            if (e.error === ErrorCodes.refreshTokenExpired) {
+            const error = ErrorFactory.fromException(e);
+            if (error.getErrorCode() === ErrorCodes.refreshTokenExpired) {
 
                 // For invalid_grant errors, clear token data and return success, to force a login redirect
                 this.clearLoginState();
@@ -363,7 +355,7 @@ export class OAuthServiceImpl implements OAuthService {
             } else {
 
                 // Rethrow other errors
-                throw ErrorFactory.fromTokenError(e, ErrorCodes.tokenRenewalError);
+                throw error;
             }
         }
     }

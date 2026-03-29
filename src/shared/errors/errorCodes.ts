@@ -43,14 +43,14 @@ export class ErrorCodes {
     // Indicates an untrusted sender of IPC events
     public static readonly ipcForbidden = 'ipc_forbidden_error';
 
-    // An error making an Ajax call to get API data
-    public static readonly apiNetworkError = 'api_network_error';
+    // A general fetch error
+    public static readonly fetchError = 'fetch_error';
+
+    // An error making a fetch request to get API data
+    public static readonly connectionError = 'connection_error';
 
     // An error receiving API data as JSON
-    public static readonly apiDataError = 'api_data_error';
-
-    // An error response fropm the API
-    public static readonly apiResponseError = 'api_response_error';
+    public static readonly dataError = 'data_error';
 
     // An error rendering a React view
     public static readonly renderError = 'react_render_error';
