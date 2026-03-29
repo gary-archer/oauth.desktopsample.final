@@ -6,9 +6,9 @@
     "jsx": "react-jsx",
     "module": "ES2022",
     "moduleResolution": "Bundler",
-    "allowSyntheticDefaultImports": true,
     "outDir": "dist",
-    "sourceMap": true
+    "sourceMap": true,
+    "rootDir": "./src"
   },
   "include": [
     "./src"
