@@ -46,10 +46,10 @@ export class ErrorCodes {
     // A general fetch error
     public static readonly fetchError = 'fetch_error';
 
-    // An error making a fetch request to get API data
+    // A connection error making a fetch request
     public static readonly connectionError = 'connection_error';
 
-    // An error receiving API data as JSON
+    // A data parsing error
     public static readonly dataError = 'data_error';
 
     // An error rendering a React view
