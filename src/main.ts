@@ -51,6 +51,14 @@ class Main {
         // Handle login responses or deep linking requests against the running app on Mac OS
         app.on('open-url', this.onOpenUrl);
 
+        // This bypasses CORS when serving web files with a custom protocol handler
+        protocol.registerSchemesAsPrivileged([{
+            scheme: this.configuration.app.protocolScheme,
+            privileges: {
+                corsEnabled: true,
+            },
+        }]);
+
         // For Windows or Linux we receive a startup deep link URL as a command line parameter
         const startupUrl = this.getDeepLinkUrl(process.argv);
         if (startupUrl) {
