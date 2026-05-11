@@ -64,7 +64,9 @@ class Main {
     private async onReady(): Promise<void> {
 
         // Handle requests for web files
-        protocol.handle(this.configuration.app.protocolScheme, this.onServeWebFiles);
+        protocol.handle(this.configuration.app.protocolScheme, (request: Request) => {
+            return this.onServeWebFiles(request);
+        });
 
         // Create the window and use Electron recommended security options
         // https://www.electronjs.org/docs/tutorial/security
