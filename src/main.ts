@@ -131,7 +131,6 @@ class Main {
             fileName = fileName.slice(1);
         }
 
-        console.log(fileName);
         const authorizedFiles = new Set([
             'index.html',
             'bootstrap.min.css',
@@ -142,12 +141,10 @@ class Main {
         ]);
 
         if (!authorizedFiles.has(fileName)) {
-            console.log(`Unauthorized file: ${fileName}`);
             fileName = 'index.html';
         }
 
         const filePath = path.join(__dirname, fileName);
-        console.log(`Final value: ${filePath}`);
         return net.fetch(url.pathToFileURL(filePath).toString());
     }
 
