@@ -137,6 +137,9 @@ class Main {
             const webFilePath = url.pathToFileURL(path.join(__dirname, fileName)).toString();
             return net.fetch(webFilePath);
         }
+
+        const notFoundFilePath = url.pathToFileURL(path.join(__dirname, 'index.html')).toString();
+        return net.fetch(url.pathToFileURL(notFoundFilePath).toString());
     }
 
     /*
