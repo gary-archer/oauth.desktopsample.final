@@ -51,6 +51,17 @@ class Main {
         // Handle login responses or deep linking requests against the running app on Mac OS
         app.on('open-url', this.onOpenUrl);
 
+        // This bypasses CORS when serving web files with a custom protocol handler
+        protocol.registerSchemesAsPrivileged([{
+            scheme: this.configuration.app.protocolScheme,
+            privileges: {
+                standard: true,
+                secure: true,
+                supportFetchAPI: true,
+                corsEnabled: true,
+            },
+        }]);
+
         // For Windows or Linux we receive a startup deep link URL as a command line parameter
         const startupUrl = this.getDeepLinkUrl(process.argv);
         if (startupUrl) {
@@ -64,7 +75,9 @@ class Main {
     private async onReady(): Promise<void> {
 
         // Handle requests for web files
-        protocol.handle(this.configuration.app.protocolScheme, this.onServeWebFiles);
+        protocol.handle(this.configuration.app.protocolScheme, (request: Request) => {
+            return this.onServeWebFiles(request);
+        });
 
         // Create the window and use Electron recommended security options
         // https://www.electronjs.org/docs/tutorial/security
@@ -113,20 +126,29 @@ class Main {
      */
     private onServeWebFiles(request: Request): any {
 
-        const fileName = new URL(request.url).pathname.toLowerCase().slice(1);
-        const authorizedFiles = [
+        let fileName = new URL(request.url).pathname.toLowerCase();
+        if (fileName.startsWith('/')) {
+            fileName = fileName.slice(1);
+        }
+
+        console.log(fileName);
+        const authorizedFiles = new Set([
             'index.html',
             'bootstrap.min.css',
             'app.css',
             'vendor.bundle.js',
             'react.bundle.js',
             'app.bundle.js',
-        ];
+        ]);
 
-        if (authorizedFiles.indexOf(fileName) !== -1) {
-            const webFilePath = url.pathToFileURL(path.join(__dirname, fileName)).toString();
-            return net.fetch(webFilePath);
+        if (!authorizedFiles.has(fileName)) {
+            console.log(`Unauthorized file: ${fileName}`);
+            fileName = 'index.html';
         }
+
+        const filePath = path.join(__dirname, fileName);
+        console.log(`Final value: ${filePath}`);
+        return net.fetch(url.pathToFileURL(filePath).toString());
     }
 
     /*
