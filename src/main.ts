@@ -55,6 +55,9 @@ class Main {
         protocol.registerSchemesAsPrivileged([{
             scheme: this.configuration.app.protocolScheme,
             privileges: {
+                standard: true,
+                secure: true,
+                supportFetchAPI: true,
                 corsEnabled: true,
             },
         }]);
@@ -123,23 +126,29 @@ class Main {
      */
     private onServeWebFiles(request: Request): any {
 
-        const fileName = new URL(request.url).pathname.toLowerCase().slice(1);
-        const authorizedFiles = [
+        let fileName = new URL(request.url).pathname.toLowerCase();
+        if (fileName.startsWith('/')) {
+            fileName = fileName.slice(1);
+        }
+
+        console.log(fileName);
+        const authorizedFiles = new Set([
             'index.html',
             'bootstrap.min.css',
             'app.css',
             'vendor.bundle.js',
             'react.bundle.js',
             'app.bundle.js',
-        ];
+        ]);
 
-        if (authorizedFiles.indexOf(fileName) !== -1) {
-            const webFilePath = url.pathToFileURL(path.join(__dirname, fileName)).toString();
-            return net.fetch(webFilePath);
+        if (!authorizedFiles.has(fileName)) {
+            console.log(`Unauthorized file: ${fileName}`);
+            fileName = 'index.html';
         }
 
-        const notFoundFilePath = url.pathToFileURL(path.join(__dirname, 'index.html')).toString();
-        return net.fetch(url.pathToFileURL(notFoundFilePath).toString());
+        const filePath = path.join(__dirname, fileName);
+        console.log(`Final value: ${filePath}`);
+        return net.fetch(url.pathToFileURL(filePath).toString());
     }
 
     /*
