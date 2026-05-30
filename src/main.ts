@@ -1,6 +1,6 @@
 import {app, BrowserWindow, net, protocol, session} from 'electron';
 import path from 'path';
-import url from 'url';
+import {pathToFileURL} from 'url';
 import {Configuration} from './main/configuration/configuration';
 import {ConfigurationLoader} from './main/configuration/configurationLoader';
 import {IpcMainEvents} from './main/ipcMainEvents';
@@ -70,7 +70,7 @@ class Main {
     }
 
     /*
-     * Do initialisation after the ready event
+     * Do initialization after the ready event
      */
     private async onReady(): Promise<void> {
 
@@ -121,10 +121,13 @@ class Main {
     }
 
     /*
-     * Process requests for web files
      * Use a custom protocol handler in line with Electron security recommendations
+     * The Chromium browser does not handle private URL schemes intuitively
+     * Requests get paths like these, and the following logic needs to account for that behavior
+     * - x-authsamples-desktopapp://index.html/app.bundle.js
+     * - x-authsamples-desktopapp://index.html/app.bundle.js.map
      */
-    private onServeWebFiles(request: Request): any {
+    private onServeWebFiles(request: Request): Promise<Response> {
 
         let fileName = new URL(request.url).pathname.toLowerCase();
         if (fileName.startsWith('/')) {
@@ -136,16 +139,20 @@ class Main {
             'bootstrap.min.css',
             'app.css',
             'vendor.bundle.js',
+            'vendor.bundle.js.map',
             'react.bundle.js',
+            'react.bundle.js.map',
             'app.bundle.js',
+            'app.bundle.js.map',
         ]);
 
         if (!authorizedFiles.has(fileName)) {
             fileName = 'index.html';
         }
 
-        const filePath = path.join(__dirname, fileName);
-        return net.fetch(url.pathToFileURL(filePath).toString());
+        const filePath = path.join(app.getAppPath(), fileName);
+        const filePathUrl = pathToFileURL(filePath).toString();
+        return net.fetch(filePathUrl);
     }
 
     /*

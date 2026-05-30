@@ -11,7 +11,9 @@
     "rootDir": "src"
   },
   "include": [
-    "src"
+    "src/renderer.tsx",
+    "src/renderer/**/*.ts",
+    "src/shared/**/*.ts",
   ],
   "exclude": [
     "node_modules"
