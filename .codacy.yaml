@@ -5,5 +5,4 @@ exclude_paths: [
     'doc/**',
     'linux/**',
     'web/**',
-    'webpack/**'
 ]
