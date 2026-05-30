@@ -1,4 +1,3 @@
-
 import _commonjs from '@rollup/plugin-commonjs';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
 import _json from '@rollup/plugin-json';
@@ -11,7 +10,7 @@ import {defineConfig, RollupOptions} from 'rollup';
 // Type updates to prevent Visual Studio Code intellisense warnings
 // - https://github.com/rollup/plugins/issues/1662
 const commonjs = _commonjs as unknown as typeof _commonjs.default;
-const json = _commonjs as unknown as typeof _json.default;
+const json = _json as unknown as typeof _json.default;
 const typescript = _typescript as unknown as typeof _typescript.default;
 const terser = _terser as unknown as typeof _terser.default;
 
@@ -36,14 +35,25 @@ const options: RollupOptions = {
         },
     },
 
-    // Avoid packaging Node.js built in modules and the AWS SDK
+    // Avoid packaging Node.js built-in modules
     external: [
+        'electron',
         ...builtinModules,
-        ...builtinModules.map((m) => `node:${m}`),
+        //...builtinModules.map((m) => `node:${m}`),
     ],
 
     watch: {
         clearScreen: false,
+    },
+
+    // Ignore circular dependency warnings for these modules, that I cannot control
+    onwarn(warning, warn) {
+        if (warning.code === 'CIRCULAR_DEPENDENCY' &&
+            (warning.message.includes('stubborn-fs') || warning.message.includes('semver'))) {
+            return;
+        }
+
+        warn(warning);
     },
 
     plugins: [
@@ -53,15 +63,16 @@ const options: RollupOptions = {
             preferBuiltins: true,
         }),
 
-        // Handle code that imports JSON
-        json(),
-
         // Convert any commonjs libraries from the node_modules folder to ECMAScript
         commonjs(),
+
+        // The ajv module imports JSON so we need this plugin to prevent JSON being interpreted as JavaScript
+        json(),
 
         // Use tslib and the typescript plugin with the settings from the tsconfig.json file
         typescript({
             ignoreDeprecations: '6.0',
+            include: ['src/main.ts', 'src/main/**/*.ts', 'src/shared/**/*.ts'],
         }),
 
         // Minimize release bundles

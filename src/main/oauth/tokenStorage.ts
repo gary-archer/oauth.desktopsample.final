@@ -2,6 +2,8 @@ import {safeStorage} from 'electron';
 import Store from 'electron-store';
 import {TokenData} from './tokenData';
 
+type TokenStore = Record<string, string>;
+
 /*
  * A class to store OAuth tokens under the current user profile using operating system encryption
  */
@@ -9,8 +11,8 @@ export class TokenStorage {
 
     private readonly key = 'EncryptedData';
     private store = new Store<Record<string, string>>({
-        name: 'tokens'
-    });
+        name: 'tokens',
+    }) as any;
 
     /*
      * Safe storage uses an operating system service but make sure we are not saving tokens insecurely
@@ -20,6 +22,10 @@ export class TokenStorage {
         if (!safeStorage.isEncryptionAvailable()) {
             throw new Error('The environment does not support safe storage');
         }
+
+        this.store = new Store<TokenStore>({
+            name: 'tokens',
+        });
     }
 
     /*

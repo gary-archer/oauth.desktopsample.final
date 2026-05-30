@@ -17,6 +17,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+read -n 1
 echo 'Quit early'
 exit 1
 
