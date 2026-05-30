@@ -4,11 +4,14 @@ import _replace from '@rollup/plugin-replace';
 import _terser from '@rollup/plugin-terser';
 import path from 'path';
 import {defineConfig, RollupOptions} from 'rollup';
+import _copy from 'rollup-plugin-copy';
 import esbuild from 'rollup-plugin-esbuild';
+import {finalizeBundles} from './plugins/productionPlugins.js';
 
 // Type updates to prevent Visual Studio Code intellisense warnings
 // - https://github.com/rollup/plugins/issues/1662
 const commonjs = _commonjs as unknown as typeof _commonjs.default;
+const copy = _copy as unknown as typeof _copy.default;
 const replace = _replace as unknown as typeof _replace.default;
 const terser = _terser as unknown as typeof _terser.default;
 
@@ -85,8 +88,22 @@ const options: RollupOptions = {
             preventAssignment: true,
         }),
 
-        // Minimize release bundles
-        isDevelopment ? [] : [ terser() ]
+        // Copy these static files to the output folder when a build completes
+        copy({
+            targets: [
+                { src: 'index.html', dest: outputFolder },
+                { src: 'css', dest: outputFolder },
+            ],
+        }),
+
+        isDevelopment ? [
+
+        ] : [
+
+            // Minimize release bundles and remove source map references from them
+            terser(),
+            finalizeBundles(),
+        ]
     ],
 };
 

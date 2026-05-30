@@ -124,14 +124,13 @@ class Main {
      * Process requests for web files
      * Use a custom protocol handler in line with Electron security recommendations
      */
-    private onServeWebFiles(request: Request): any {
+    private onServeWebFiles(request: Request): Promise<Response> {
 
         let fileName = new URL(request.url).pathname.toLowerCase();
         if (fileName.startsWith('/')) {
             fileName = fileName.slice(1);
         }
 
-        console.log(fileName);
         const authorizedFiles = new Set([
             'index.html',
             'bootstrap.min.css',
@@ -142,12 +141,10 @@ class Main {
         ]);
 
         if (!authorizedFiles.has(fileName)) {
-            console.log(`Unauthorized file: ${fileName}`);
             fileName = 'index.html';
         }
 
         const filePath = path.join(__dirname, fileName);
-        console.log(`Final value: ${filePath}`);
         return net.fetch(url.pathToFileURL(filePath).toString());
     }
 

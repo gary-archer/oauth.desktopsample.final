@@ -5,11 +5,13 @@ import _terser from '@rollup/plugin-terser';
 import {builtinModules} from 'module';
 import path from 'path';
 import {defineConfig, RollupOptions} from 'rollup';
+import _copy from 'rollup-plugin-copy';
 import esbuild from 'rollup-plugin-esbuild';
 
 // Type updates to prevent Visual Studio Code intellisense warnings
 // - https://github.com/rollup/plugins/issues/1662
 const commonjs = _commonjs as unknown as typeof _commonjs.default;
+const copy = _copy as unknown as typeof _copy.default;
 const json = _json as unknown as typeof _json.default;
 const terser = _terser as unknown as typeof _terser.default;
 
@@ -65,13 +67,22 @@ const options: RollupOptions = {
         // Convert any commonjs libraries from the node_modules folder to ECMAScript
         commonjs(),
 
-        // The ajv module imports JSON so we need this plugin to prevent JSON being interpreted as JavaScript
+        // Prevent errors with the ajv module, which imports JSON, which rollup would otherwise interpret as JavaScript
         json(),
 
         // Use esbuild as an up to date plugin for building typescript code
         esbuild({
             tsconfig: './tsconfig-main.json',
             target: 'es2022',
+        }),
+
+        // Copy required files to the dist folder
+        copy({
+            targets: [
+                { src: 'desktop.config.json', dest: outputFolder },
+                { src: 'src/preload.js', dest: outputFolder },
+                { src: 'package.json', dest: outputFolder },
+            ],
         }),
 
         // Minimize release bundles
