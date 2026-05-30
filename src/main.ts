@@ -121,8 +121,11 @@ class Main {
     }
 
     /*
-     * Process requests for web files
      * Use a custom protocol handler in line with Electron security recommendations
+     * The Chromium browser does not handle private URL schemes intuitively
+     * Requests get paths like these, and the following logic needs to account for that behavior
+     * - x-authsamples-desktopapp://index.html/app.bundle.js
+     * - x-authsamples-desktopapp://index.html/app.bundle.js.map
      */
     private onServeWebFiles(request: Request): Promise<Response> {
 
@@ -136,8 +139,11 @@ class Main {
             'bootstrap.min.css',
             'app.css',
             'vendor.bundle.js',
+            'vendor.bundle.js.map',
             'react.bundle.js',
+            'react.bundle.js.map',
             'app.bundle.js',
+            'app.bundle.js.map',
         ]);
 
         if (!authorizedFiles.has(fileName)) {
