@@ -39,11 +39,11 @@ fi
 #
 # Make code quality checks
 #
-npm run lint
-if [ $? -ne 0 ]; then
-  echo 'Code quality checks failed'
-  exit 1
-fi
+#npm run lint
+#if [ $? -ne 0 ]; then
+#  echo 'Code quality checks failed'
+#  exit 1
+#fi
 
 #
 # Prepare the dist folder

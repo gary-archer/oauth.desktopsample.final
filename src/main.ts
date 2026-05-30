@@ -19,7 +19,6 @@ class Main {
 
         this.configuration = ConfigurationLoader.load(`${app.getAppPath()}/desktop.config.json`);
         this.ipcEvents = new IpcMainEvents(this.configuration);
-        console.log(this.ipcEvents);
         this.window = null;
         this.setupCallbacks();
     }

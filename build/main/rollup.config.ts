@@ -39,6 +39,7 @@ const options: RollupOptions = {
     // Avoid packaging Node.js built-in modules
     external: [
         'electron',
+        'electron-store',
         ...builtinModules,
         ...builtinModules.map((m) => `node:${m}`),
     ],
