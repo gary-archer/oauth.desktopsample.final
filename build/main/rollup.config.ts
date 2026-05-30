@@ -71,6 +71,7 @@ const options: RollupOptions = {
         // Use esbuild as an up to date plugin for building typescript code
         esbuild({
             tsconfig: './tsconfig-main.json',
+            target: 'es2022',
         }),
 
         // Minimize release bundles
