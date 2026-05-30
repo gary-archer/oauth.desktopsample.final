@@ -92,7 +92,7 @@ const options: RollupOptions = {
         copy({
             targets: [
                 { src: 'index.html', dest: outputFolder },
-                { src: 'css', dest: outputFolder },
+                { src: 'css/*', dest: outputFolder },
             ],
         }),
 
