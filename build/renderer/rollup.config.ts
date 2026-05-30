@@ -1,8 +1,7 @@
 import _commonjs from '@rollup/plugin-commonjs';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
-import _json from '@rollup/plugin-json';
+import _replace from '@rollup/plugin-replace';
 import _terser from '@rollup/plugin-terser';
-import {builtinModules} from 'module';
 import path from 'path';
 import {defineConfig, RollupOptions} from 'rollup';
 import esbuild from 'rollup-plugin-esbuild';
@@ -10,7 +9,7 @@ import esbuild from 'rollup-plugin-esbuild';
 // Type updates to prevent Visual Studio Code intellisense warnings
 // - https://github.com/rollup/plugins/issues/1662
 const commonjs = _commonjs as unknown as typeof _commonjs.default;
-const json = _json as unknown as typeof _json.default;
+const replace = _replace as unknown as typeof _replace.default;
 const terser = _terser as unknown as typeof _terser.default;
 
 // Set base values and use an environment variable to distinguish between development v production builds
@@ -19,13 +18,28 @@ const outputFolder = 'dist';
 
 const options: RollupOptions = {
 
-    input: './src/main.ts',
+    input: './src/renderer.tsx',
     output: {
 
         // Output ECMAScript modules
         dir: outputFolder,
         format: 'esm',
-        entryFileNames: 'main.bundle.js',
+
+        // Define chunks names for the entry point app chunk, and any initial chunks referenced in index.html
+        entryFileNames: 'app.bundle.js',
+        chunkFileNames: '[name].bundle.js',
+        manualChunks: (id: string) => {
+
+            if (!id.includes('node_modules')) {
+                return null;
+            }
+
+            if (/node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) {
+                return 'react';
+            }
+
+            return 'vendor';
+        },
 
         // Enable source maps and use correct paths to support debugging
         sourcemap: true,
@@ -34,21 +48,14 @@ const options: RollupOptions = {
         },
     },
 
-    // Avoid packaging Node.js built-in modules
-    external: [
-        'electron',
-        ...builtinModules,
-        ...builtinModules.map((m) => `node:${m}`),
-    ],
-
     watch: {
         clearScreen: false,
     },
 
-    // Ignore circular dependency warnings for these modules, that I cannot control
+    // Ignore this React warning
     onwarn(warning, warn) {
-        if (warning.code === 'CIRCULAR_DEPENDENCY' &&
-            (warning.message.includes('stubborn-fs') || warning.message.includes('semver'))) {
+
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('use client')) {
             return;
         }
 
@@ -57,21 +64,25 @@ const options: RollupOptions = {
 
     plugins: [
 
-        // Use Node.js resolution for node_modules
+        // Use browser resolution for node_modules
         nodeResolve({
-            preferBuiltins: true,
+            browser: true,
         }),
 
         // Convert any commonjs libraries from the node_modules folder to ECMAScript
         commonjs(),
 
-        // The ajv module imports JSON so we need this plugin to prevent JSON being interpreted as JavaScript
-        json(),
-
         // Use esbuild as an up to date plugin for building typescript code
         esbuild({
-            tsconfig: './tsconfig-main.json',
-            target: 'es2022',
+            tsconfig: './tsconfig.json',
+            target: 'es2020',
+        }),
+
+        // React requires the NODE_ENV value and we add IS_DEBUG to determine whether to render exception stack traces
+        replace({
+            'process.env.NODE_ENV': JSON.stringify('production'),
+            'IS_DEBUG': JSON.stringify(isDevelopment),
+            preventAssignment: true,
         }),
 
         // Minimize release bundles
