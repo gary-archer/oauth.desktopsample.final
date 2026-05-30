@@ -2,16 +2,15 @@ import _commonjs from '@rollup/plugin-commonjs';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
 import _json from '@rollup/plugin-json';
 import _terser from '@rollup/plugin-terser';
-import _typescript from '@rollup/plugin-typescript';
 import {builtinModules} from 'module';
 import path from 'path';
 import {defineConfig, RollupOptions} from 'rollup';
+import esbuild from 'rollup-plugin-esbuild';
 
 // Type updates to prevent Visual Studio Code intellisense warnings
 // - https://github.com/rollup/plugins/issues/1662
 const commonjs = _commonjs as unknown as typeof _commonjs.default;
 const json = _json as unknown as typeof _json.default;
-const typescript = _typescript as unknown as typeof _typescript.default;
 const terser = _terser as unknown as typeof _terser.default;
 
 // Set base values and use the watch flag to distinguish between development v production builds
@@ -39,7 +38,7 @@ const options: RollupOptions = {
     external: [
         'electron',
         ...builtinModules,
-        //...builtinModules.map((m) => `node:${m}`),
+        ...builtinModules.map((m) => `node:${m}`),
     ],
 
     watch: {
@@ -69,10 +68,9 @@ const options: RollupOptions = {
         // The ajv module imports JSON so we need this plugin to prevent JSON being interpreted as JavaScript
         json(),
 
-        // Use tslib and the typescript plugin with the settings from the tsconfig.json file
-        typescript({
-            ignoreDeprecations: '6.0',
-            include: ['src/main.ts', 'src/main/**/*.ts', 'src/shared/**/*.ts'],
+        // Use esbuild as an up to date plugin for building typescript code
+        esbuild({
+            tsconfig: './tsconfig-main.json',
         }),
 
         // Minimize release bundles
