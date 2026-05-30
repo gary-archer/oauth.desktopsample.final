@@ -1,16 +1,16 @@
 import {BrowserWindow, ipcMain, IpcMainInvokeEvent} from 'electron';
-import {ApiUserInfo} from '../shared/api/apiUserInfo';
-import {Company} from '../shared/api/company';
-import {CompanyTransactions} from '../shared/api/companyTransactions';
-import {OAuthUserInfo} from '../shared/api/oauthUserInfo';
+//import {ApiUserInfo} from '../shared/api/apiUserInfo';
+//import {Company} from '../shared/api/company';
+//import {CompanyTransactions} from '../shared/api/companyTransactions';
+//import {OAuthUserInfo} from '../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../shared/errors/errorFactory';
 import {IpcEventNames} from '../shared/ipcEventNames';
-import {FetchService} from './api/fetchService';
+//import {FetchService} from './api/fetchService';
 import {Configuration} from './configuration/configuration';
-import {OAuthService} from './oauth/oauthService';
-import {OAuthServiceImpl} from './oauth/oauthServiceImpl';
+//import {OAuthService} from './oauth/oauthService';
+//import {OAuthServiceImpl} from './oauth/oauthServiceImpl';
 import {HttpProxy} from './utilities/httpProxy';
-import {UrlParser} from './utilities/urlParser';
+//import {UrlParser} from './utilities/urlParser';
 
 /*
  * A class that deals with IPC events of the main side of the app
@@ -19,8 +19,8 @@ export class IpcMainEvents {
 
     private readonly configuration: Configuration;
     private readonly httpProxy: HttpProxy;
-    private readonly oauthService: OAuthService;
-    private readonly fetchService: FetchService;
+    //private readonly oauthService: OAuthService;
+    //private readonly fetchService: FetchService;
     private window: BrowserWindow | null;
     private deepLinkStartupPath: string | null;
 
@@ -29,8 +29,8 @@ export class IpcMainEvents {
         this.configuration = configuration;
         this.httpProxy = new HttpProxy(this.configuration.app.useProxy, this.configuration.app.proxyUrl);
         this.window = null;
-        this.oauthService = new OAuthServiceImpl(this.configuration.oauth, this.httpProxy);
-        this.fetchService = new FetchService(this.configuration, this.oauthService, this.httpProxy);
+        //this.oauthService = new OAuthServiceImpl(this.configuration.oauth, this.httpProxy);
+        //this.fetchService = new FetchService(this.configuration, this.oauthService, this.httpProxy);
         this.deepLinkStartupPath = null;
         this.setupCallbacks();
     }
@@ -48,10 +48,10 @@ export class IpcMainEvents {
     public register(window: BrowserWindow): void {
 
         this.window = window;
-        this.oauthService.initialise();
+        /*this.oauthService.initialise();*/
 
         ipcMain.handle(IpcEventNames.ON_DEEP_LINK_STARTUP_PATH, this.getDeepLinkStartupPath);
-        ipcMain.handle(IpcEventNames.ON_GET_COMPANIES, this.onGetCompanyList);
+        /*ipcMain.handle(IpcEventNames.ON_GET_COMPANIES, this.onGetCompanyList);
         ipcMain.handle(IpcEventNames.ON_GET_TRANSACTIONS, this.onGetCompanyTransactions);
         ipcMain.handle(IpcEventNames.ON_GET_OAUTH_USER_INFO, this.onGetOAuthUserInfo);
         ipcMain.handle(IpcEventNames.ON_GET_API_USER_INFO, this.onGetApiUserInfo);
@@ -61,7 +61,7 @@ export class IpcMainEvents {
         ipcMain.handle(IpcEventNames.ON_TOKEN_REFRESH, this.onTokenRefresh);
         ipcMain.handle(IpcEventNames.ON_CLEAR_LOGIN_STATE, this.onClearLoginState);
         ipcMain.handle(IpcEventNames.ON_EXPIRE_ACCESS_TOKEN, this.onExpireAccessToken);
-        ipcMain.handle(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, this.onExpireRefreshToken);
+        ipcMain.handle(IpcEventNames.ON_EXPIRE_REFRESH_TOKEN, this.onExpireRefreshToken);*/
     }
 
     /*
@@ -69,8 +69,10 @@ export class IpcMainEvents {
      */
     public handleDeepLink(deepLinkUrl: string): boolean {
 
+        console.log(deepLinkUrl);
+
         // Handle OAuth login or logout responses
-        if (this.oauthService.handleDeepLink(deepLinkUrl)) {
+        /*if (this.oauthService.handleDeepLink(deepLinkUrl)) {
             return true;
         }
 
@@ -79,7 +81,7 @@ export class IpcMainEvents {
         if (url && url.pathname) {
             const path = url.pathname.replace(this.configuration.app.protocolScheme + ':', '');
             this.window?.webContents.send(IpcEventNames.ON_DEEP_LINK, {path});
-        }
+        }*/
 
         return false;
     }
@@ -97,118 +99,118 @@ export class IpcMainEvents {
     /*
      * Make an API request to get companies
      */
-    private async onGetCompanyList(event: IpcMainInvokeEvent, args: any): Promise<Company[]> {
+    /*private async onGetCompanyList(event: IpcMainInvokeEvent, args: any): Promise<Company[]> {
 
         return this.handleAsyncOperation(
             event,
             () => this.fetchService.getCompanyList(args.options));
-    }
+    }*/
 
     /*
      * Make an API request to get transactions
      */
-    private async onGetCompanyTransactions(event: IpcMainInvokeEvent, args: any): Promise<CompanyTransactions> {
+    /*private async onGetCompanyTransactions(event: IpcMainInvokeEvent, args: any): Promise<CompanyTransactions> {
 
         return this.handleAsyncOperation(
             event,
             () => this.fetchService.getCompanyTransactions(args.id, args.options));
-    }
+    }*/
 
     /*
      * Make an API request to get OAuth user info
      */
-    private async onGetOAuthUserInfo(event: IpcMainInvokeEvent, args: any): Promise<OAuthUserInfo> {
+    /*private async onGetOAuthUserInfo(event: IpcMainInvokeEvent, args: any): Promise<OAuthUserInfo> {
 
         return this.handleAsyncOperation(
             event,
             () => this.fetchService.getOAuthUserInfo(args.options));
-    }
+    }*/
 
     /*
      * Make an API request to get API user info
      */
-    private async onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<ApiUserInfo> {
+    /*private async onGetApiUserInfo(event: IpcMainInvokeEvent, args: any): Promise<ApiUserInfo> {
 
         return this.handleAsyncOperation(
             event,
             () => this.fetchService.getApiUserInfo(args.options));
-    }
+    }*/
 
     /*
      * Get ID token claims if logged in
      */
-    private async onGetSession(event: IpcMainInvokeEvent): Promise<any> {
+    /*private async onGetSession(event: IpcMainInvokeEvent): Promise<any> {
 
         return this.handleAsyncOperation(
             event,
             () => this.oauthService.getSession());
-    }
+    }*/
 
     /*
      * Run a login redirect on the system browser
      */
-    private async onLogin(event: IpcMainInvokeEvent): Promise<any> {
+    /*private async onLogin(event: IpcMainInvokeEvent): Promise<any> {
 
         return this.handleAsyncOperation(
             event,
             () => this.oauthService.login());
-    }
+    }*/
 
     /*
      * Run a logout redirect on the system browser
      */
-    private async onLogout(event: IpcMainInvokeEvent): Promise<void> {
+    /*private async onLogout(event: IpcMainInvokeEvent): Promise<void> {
 
         return this.handleAsyncOperation(
             event,
             () => this.oauthService.logout());
-    }
+    }*/
 
     /*
      * Perform token refresh
      */
-    private async onTokenRefresh(event: IpcMainInvokeEvent): Promise<void> {
+    /*private async onTokenRefresh(event: IpcMainInvokeEvent): Promise<void> {
 
         return this.handleAsyncOperation(
             event,
             () => this.oauthService.tokenRefresh());
-    }
+    }*/
 
     /*
      * Clear login state after certain errors
      */
-    private async onClearLoginState(event: IpcMainInvokeEvent): Promise<void> {
+    /*private async onClearLoginState(event: IpcMainInvokeEvent): Promise<void> {
 
         return this.handleNonAsyncOperation(
             event,
             () => this.oauthService.clearLoginState());
-    }
+    }*/
 
     /*
      * For testing, make the access token act expired
      */
-    private async onExpireAccessToken(event: IpcMainInvokeEvent): Promise<void> {
+    /*private async onExpireAccessToken(event: IpcMainInvokeEvent): Promise<void> {
 
         return this.handleNonAsyncOperation(
             event,
             () => this.oauthService.expireAccessToken());
-    }
+    }*/
 
     /*
      * For testing, make the refresh token act expired
      */
-    private async onExpireRefreshToken(event: IpcMainInvokeEvent): Promise<void> {
+    /*private async onExpireRefreshToken(event: IpcMainInvokeEvent): Promise<void> {
 
         return this.handleNonAsyncOperation(
             event,
             () => this.oauthService.expireRefreshToken());
-    }
+    }*/
 
     /*
      * Run an async operation and return data and error values so that the frontend gets error objects
      * Also make common security checks to ensure that the sender is the application
      */
-    private async handleAsyncOperation(
+    /*private async handleAsyncOperation(
         event: IpcMainInvokeEvent,
         action: () => Promise<any>): Promise<any> {
 
@@ -232,7 +234,7 @@ export class IpcMainEvents {
                 error: error.toJson()
             };
         }
-    }
+    }*/
 
     /*
      * Run a non-async operation and return data and error values so that the frontend gets error objects
@@ -269,7 +271,7 @@ export class IpcMainEvents {
      */
     private setupCallbacks() {
 
-        this.onGetCompanyList = this.onGetCompanyList.bind(this);
+        /*this.onGetCompanyList = this.onGetCompanyList.bind(this);
         this.onGetCompanyTransactions = this.onGetCompanyTransactions.bind(this);
         this.onGetOAuthUserInfo = this.onGetOAuthUserInfo.bind(this);
         this.onGetApiUserInfo = this.onGetApiUserInfo.bind(this);
@@ -279,7 +281,7 @@ export class IpcMainEvents {
         this.onTokenRefresh = this.onTokenRefresh.bind(this);
         this.onClearLoginState = this.onClearLoginState.bind(this);
         this.onExpireAccessToken = this.onExpireAccessToken.bind(this);
-        this.onExpireRefreshToken = this.onExpireRefreshToken.bind(this);
+        this.onExpireRefreshToken = this.onExpireRefreshToken.bind(this);*/
         this.getDeepLinkStartupPath = this.getDeepLinkStartupPath.bind(this);
     }
 }
