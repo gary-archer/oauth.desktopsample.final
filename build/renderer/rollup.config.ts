@@ -6,6 +6,7 @@ import path from 'path';
 import {defineConfig, RollupOptions} from 'rollup';
 import _copy from 'rollup-plugin-copy';
 import esbuild from 'rollup-plugin-esbuild';
+import {copyOnEdit, notifyBrowser} from './plugins/developmentPlugins.js';
 import {finalizeBundles} from './plugins/productionPlugins.js';
 
 // Type updates to prevent Visual Studio Code intellisense warnings
@@ -82,7 +83,7 @@ const options: RollupOptions = {
             jsx: 'automatic',
         }),
 
-        // React requires the NODE_ENV value and we add IS_DEBUG to determine whether to render exception stack traces
+        // React requires the NODE_ENV value and we set IS_DEBUG to true in development mode
         replace({
             'process.env.NODE_ENV': JSON.stringify('production'),
             'IS_DEBUG': JSON.stringify(isDevelopment),
@@ -98,6 +99,9 @@ const options: RollupOptions = {
         }),
 
         isDevelopment ? [
+
+            copyOnEdit(),
+            notifyBrowser(),
 
         ] : [
 

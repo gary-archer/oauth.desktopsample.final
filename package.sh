@@ -24,6 +24,9 @@ case "$(uname -s)" in
 	;;
 esac
 
+#
+# Support ARM64
+#
 if [ "$(uname -m)" == 'arm64' ]; then
   ARCH='arm64'
 else

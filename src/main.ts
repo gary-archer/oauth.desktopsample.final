@@ -146,6 +146,10 @@ class Main {
             'app.bundle.js.map',
         ]);
 
+        if (IS_DEBUG) {
+            authorizedFiles.add('livereload.bundle.js');
+        }
+
         if (!authorizedFiles.has(fileName)) {
             fileName = 'index.html';
         }
@@ -167,18 +171,24 @@ class Main {
     }
 
     /*
-     * Set a content security policy for the renderer app
-     * Include the custom protocol
+     * Set response headers for static content requests
      */
     private initialiseHttpHeaders() {
 
         session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 
+            // During development, allow notifications from the live reload server
+            let connectSrcHosts = "'self'";
+            if (IS_DEBUG) {
+                connectSrcHosts += ' ws://localhost:35729';
+            }
+
+            // Configure a strong content security policy
             let policy = '';
             policy += "default-src 'none';";
             policy += " script-src 'self';";
             policy += " style-src 'self';";
-            policy += " connect-src 'self';";
+            policy += ` connect-src ${connectSrcHosts};`;
             policy += " child-src 'self';";
             policy += " img-src 'self';";
             policy += " object-src 'none';";
@@ -186,11 +196,20 @@ class Main {
             policy += " base-uri 'self';";
             policy += " form-action 'self'";
 
+            const responseHeaders: Record<string, string | string[]> = {
+                ...details.responseHeaders,
+                'content-security-policy': policy,
+            };
+
+            // During development, prevent use of browser caching
+            if (IS_DEBUG) {
+                responseHeaders['cache-control'] = 'no-cache, must-revalidate';
+            } else {
+                responseHeaders['cache-control'] = 'public, max-age=31536000, immutable';
+            }
+
             callback({
-                responseHeaders: {
-                    ...details.responseHeaders,
-                    'Content-Security-Policy': [policy],
-                },
+                responseHeaders,
             });
         });
     }

@@ -52,20 +52,23 @@ rm -rf dist 2>/dev/null
 mkdir dist
 
 #
-# Build the code in watch mode
+# Build the code in watch mode, and run a live reload server
 #
 echo 'Building application bundles ...'
 if [ "$PLATFORM" == 'MACOS' ]; then
 
+  open -a Terminal ./tools/liveReloadServer.sh
   open -a Terminal ./buildDebug.sh
 
 elif [ "$PLATFORM" == 'WINDOWS' ]; then
   
   GIT_BASH="C:\Program Files\Git\git-bash.exe"
+  "$GIT_BASH" -c ./tools/liveReloadServer.sh &
   "$GIT_BASH" -c ./buildDebug.sh &
 
 elif [ "$PLATFORM" == 'LINUX' ]; then
 
+  gnome-terminal -- ./tools/liveReloadServer.sh
   gnome-terminal -- ./buildDebug.sh
 fi
 

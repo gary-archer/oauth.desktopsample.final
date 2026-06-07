@@ -1,6 +1,7 @@
 import _commonjs from '@rollup/plugin-commonjs';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
 import _json from '@rollup/plugin-json';
+import _replace from '@rollup/plugin-replace';
 import _terser from '@rollup/plugin-terser';
 import {builtinModules} from 'module';
 import path from 'path';
@@ -13,6 +14,7 @@ import esbuild from 'rollup-plugin-esbuild';
 const commonjs = _commonjs as unknown as typeof _commonjs.default;
 const copy = _copy as unknown as typeof _copy.default;
 const json = _json as unknown as typeof _json.default;
+const replace = _replace as unknown as typeof _replace.default;
 const terser = _terser as unknown as typeof _terser.default;
 
 // Set base values and use an environment variable to distinguish between development v production builds
@@ -75,6 +77,12 @@ const options: RollupOptions = {
         esbuild({
             tsconfig: './tsconfig-main.json',
             target: 'es2022',
+        }),
+
+        // Set IS_DEBUG to true in development mode
+        replace({
+            'IS_DEBUG': JSON.stringify(isDevelopment),
+            preventAssignment: true,
         }),
 
         // Copy required files to the dist folder
