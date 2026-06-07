@@ -7,7 +7,7 @@
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 #
-# Get the platform
+# Get the platform and architecture
 #
 case "$(uname -s)" in
 
@@ -24,9 +24,6 @@ case "$(uname -s)" in
 	;;
 esac
 
-#
-# Support ARM64
-#
 if [ "$(uname -m)" == 'arm64' ]; then
   ARCH='arm64'
 else
@@ -58,24 +55,14 @@ rm -rf dist 2>/dev/null
 mkdir dist
 
 #
-# Build the code in watch mode
+# Run the release build
 #
-echo 'Building application bundles ...'
-if [ "$PLATFORM" == 'MACOS' ]; then
-
-  open -a Terminal ./buildRelease.sh
-
-elif [ "$PLATFORM" == 'WINDOWS' ]; then
-  
-  GIT_BASH="C:\Program Files\Git\git-bash.exe"
-  "$GIT_BASH" -c ./buildRelease.sh &
-
-elif [ "$PLATFORM" == 'LINUX' ]; then
-
-  gnome-terminal -- ./buildRelease.sh
+./buildRelease.sh
+if [ $? -ne 0 ]; then
+  echo 'Release build failed'
+  exit 1
 fi
 
-#
 # Wait for built bundles to become available
 #
 while [ ! -f ./dist/app.bundle.js ]; do
@@ -84,7 +71,7 @@ done
 
 #
 # We build source map files that could be backed up for later exception diagnosis
-# This code sample just deletes the source map files to avoid packaging them
+# This example build just deletes the source map files to avoid packaging them
 #
 rm dist/*.js.map
 
@@ -97,7 +84,6 @@ if [ $? -ne 0 ]; then
   echo 'Problem encountered packaging the desktop app'
   exit
 fi
-
 
 #
 # Post build behaviors for Linux desktop applications
