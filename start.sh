@@ -57,18 +57,15 @@ mkdir dist
 echo 'Building application bundles ...'
 if [ "$PLATFORM" == 'MACOS' ]; then
 
-  open -a Terminal ./tools/liveReloadServer.sh
   open -a Terminal ./buildDebug.sh
 
 elif [ "$PLATFORM" == 'WINDOWS' ]; then
   
   GIT_BASH="C:\Program Files\Git\git-bash.exe"
-  "$GIT_BASH" -c ./tools/liveReloadServer.sh &
   "$GIT_BASH" -c ./buildDebug.sh &
 
 elif [ "$PLATFORM" == 'LINUX' ]; then
 
-  gnome-terminal -- ./tools/liveReloadServer.sh
   gnome-terminal -- ./buildDebug.sh
 fi
 

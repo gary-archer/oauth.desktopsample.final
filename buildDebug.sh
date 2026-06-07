@@ -9,7 +9,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 #
 # Build the main side of the Electron app
 #
-echo 'Building main code ...'
+echo 'Running rollup main build ...'
 NODE_OPTIONS='--import tsx' BUILD='debug' npx rollup --config build/main/rollup.config.ts
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the main side of the desktop app'
@@ -18,13 +18,10 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Build the renderer side of the Electron app in watch mode
+# Build renderer code and run a live reload server as child processes
 #
-echo
-echo 'Building renderer code in watch mode ...'
-NODE_OPTIONS='--import tsx' BUILD='debug' npx rollup --config build/renderer/rollup.config.ts --watch
+npx tsx tools/buildRenderer.ts
 if [ $? -ne 0 ]; then
-  echo 'Problem encountered building the renderer side of the desktop app'
   read -n 1
   exit 1
 fi
