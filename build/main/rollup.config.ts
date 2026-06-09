@@ -87,7 +87,7 @@ const options: RollupOptions = {
         }),
 
         // Minimize release bundles
-        isDevelopment ? [] : [ terser() ]
+        ...(isDevelopment ? [] : [ terser() ]),
     ],
 };
 

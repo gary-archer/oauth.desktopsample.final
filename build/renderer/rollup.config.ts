@@ -91,7 +91,7 @@ const options: RollupOptions = {
             ],
         }),
 
-        isDevelopment ? [
+        ...(isDevelopment ? [
 
             copyOnEdit(),
             notifyBrowser(),
@@ -101,7 +101,7 @@ const options: RollupOptions = {
             // Minimize release bundles and remove source map references from them
             terser(),
             finalizeBundles(),
-        ]
+        ]),
     ],
 };
 
