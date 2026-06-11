@@ -116,55 +116,53 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
      */
     const disabled = hasData ? false : true;
     return  (
-        <div className='row'>
-            <div className='col col-one-fifth my-2 d-flex p-1'>
+        <div className='flex flex-wrap'>
+            <div className='w-1/5 p-1 my-3 flex'>
                 <button
                     onClick={props.handleHomeClick}
-                    className='btn btn-primary w-100 p-1'
+                    className='w-full p-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg'
                     type='button'
                 >
                     <small>{homeTitle}</small>
                 </button>
             </div>
-            <div
-                className='col col-one-fifth my-2 d-flex p-1'
-                onTouchStart={handleReloadPress}
-                onTouchEnd={handleReloadRelease}
-                onMouseDown={handleReloadPress}
-                onMouseUp={handleReloadRelease}
-            >
+            <div className='w-1/5 p-1 my-3 flex'
+                 onTouchStart={handleReloadPress}
+                 onTouchEnd={handleReloadRelease}
+                 onMouseDown={handleReloadPress}
+                 onMouseUp={handleReloadRelease}>
                 <button
-                    className='btn btn-primary w-100 p-1'
+                    className='w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50'
                     disabled={disabled}
                     type='button'
                 >
                     <small>Reload Data</small>
                 </button>
             </div>
-            <div className='col col-one-fifth my-2 d-flex p-1'>
+            <div className='w-1/5 p-1 my-3 flex'>
                 <button
                     onClick={props.handleExpireAccessTokenClick}
-                    className='btn btn-primary w-100 p-1'
+                    className='w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50'
                     disabled={disabled}
                     type='button'
                 >
                     <small>Expire Access Token</small>
                 </button>
             </div>
-            <div className='col col-one-fifth my-2 d-flex p-1'>
+            <div className='w-1/5 p-1 my-3 flex'>
                 <button
                     onClick={props.handleExpireRefreshTokenClick}
-                    className='btn btn-primary w-100 p-1'
+                    className='w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50'
                     disabled={disabled}
                     type='button'
                 >
                     <small>Expire Refresh Token</small>
                 </button>
             </div>
-            <div className='col col-one-fifth my-2 d-flex p-1'>
+            <div className='w-1/5 p-1 my-3 flex'>
                 <button
                     onClick={onLogoutPressed}
-                    className='btn btn-primary w-100 p-1'
+                    className='w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50'
                     disabled={disabled}
                     type='button'
                 >
