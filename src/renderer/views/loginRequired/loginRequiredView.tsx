@@ -41,19 +41,19 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
 
         return (
             <>
-                <p className='signingincolor'>
+                <div className='text-lg text-green-700'>
                     Please sign in via your browser, then click continue to return here ...
-                </p>
+                </div>
             </>
         );
     }
 
     return  (
-        <div className='row'>
-            <div className='col-12 text-center mx-auto'>
-                <h6>
+        <div className='grid grid-cols-12'>
+            <div className='col-span-12 text-center mx-auto'>
+                <div className='text-lg'>
                     You are signed out - sign in to access the app ...
-                </h6>
+                </div>
                 {isSigningIn && renderSigningIn()}
             </div>
         </div>

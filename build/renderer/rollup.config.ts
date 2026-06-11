@@ -2,10 +2,13 @@ import commonjs from '@rollup/plugin-commonjs';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import terser from '@rollup/plugin-terser';
+import tailwind from '@tailwindcss/postcss';
+import cssnano from 'cssnano';
 import path from 'path';
 import {defineConfig, RollupOptions} from 'rollup';
 import copy from 'rollup-plugin-copy';
 import esbuild from 'rollup-plugin-esbuild';
+import postcss from 'rollup-plugin-postcss';
 import {copyOnEdit, notifyBrowser} from './plugins/developmentPlugins.js';
 import {finalizeBundles} from './plugins/productionPlugins.js';
 
@@ -87,16 +90,33 @@ const options: RollupOptions = {
         copy({
             targets: [
                 { src: 'index.html', dest: outputFolder },
-                { src: 'css/*', dest: outputFolder },
             ],
         }),
 
         ...(isDevelopment ? [
 
+            // Build development CSS
+            postcss({
+                extract: 'app.css',
+                plugins: [
+                    tailwind(),
+                ]
+            }),
+
+            // Add development plugins to copy non JavaScript files and to implement live reload
             copyOnEdit(),
             notifyBrowser(),
 
         ] : [
+
+            // Build production CSS
+            postcss({
+                extract: 'app.css',
+                plugins: [
+                    tailwind(),
+                    cssnano(),
+                ]
+            }),
 
             // Minimize release bundles and remove source map references from them
             terser(),

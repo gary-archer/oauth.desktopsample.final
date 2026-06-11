@@ -136,17 +136,16 @@ class Main {
 
         const authorizedFiles = new Set([
             'index.html',
-            'bootstrap.min.css',
             'app.css',
             'vendor.bundle.js',
-            'vendor.bundle.js.map',
             'react.bundle.js',
-            'react.bundle.js.map',
             'app.bundle.js',
-            'app.bundle.js.map',
         ]);
 
         if (IS_DEBUG) {
+            authorizedFiles.add('vendor.bundle.js.map');
+            authorizedFiles.add('react.bundle.js.map');
+            authorizedFiles.add('app.bundle.js.map');
             authorizedFiles.add('livereload.bundle.js');
         }
 
