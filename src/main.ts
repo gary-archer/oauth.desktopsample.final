@@ -48,7 +48,7 @@ class Main {
         // Handle reactivation
         app.on('activate', this.onActivate);
 
-        // Handle login responses or deep linking requests against the running app on Mac OS
+        // Handle login responses or deep linking requests against the running app on macOS
         app.on('open-url', this.onOpenUrl);
 
         // This bypasses CORS when serving web files with a custom protocol handler
