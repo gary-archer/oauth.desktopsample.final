@@ -25,7 +25,7 @@ const options: RollupOptions = {
 
         // Enable source maps and use correct paths to support debugging
         sourcemap: true,
-        sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
+        sourcemapPathTransform: (relativeSourcePath: string, sourcemapPath: string) => {
             return path.resolve(path.dirname(sourcemapPath), relativeSourcePath);
         },
     },
@@ -46,7 +46,7 @@ const options: RollupOptions = {
     },
 
     // Ignore circular dependency warnings for these modules, that I cannot control
-    onwarn(warning, warn) {
+    onwarn(warning: any, warn: any) {
         if (warning.code === 'CIRCULAR_DEPENDENCY' &&
             (warning.message.includes('stubborn-fs') || warning.message.includes('semver'))) {
             return;
