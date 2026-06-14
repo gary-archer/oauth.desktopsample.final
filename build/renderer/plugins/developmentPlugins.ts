@@ -23,7 +23,7 @@ let isBuilt = false;
 export function notifyBrowser(): Plugin {
 
     const plugin: Plugin = {
-        name: 'open-browser',
+        name: 'notify-browser',
         async writeBundle(): Promise<void> {
 
             if (!isBuilt) {

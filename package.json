@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "lint": "npx eslint . --ignore-pattern dist",
+    "lint": "eslint .",
     "start": "./start.sh",
     "package": "./package.sh"
   },
