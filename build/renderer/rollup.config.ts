@@ -43,7 +43,7 @@ const options: RollupOptions = {
 
         // Enable source maps and use correct paths to support debugging
         sourcemap: true,
-        sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
+        sourcemapPathTransform: (relativeSourcePath: string, sourcemapPath: string) => {
             return path.resolve(path.dirname(sourcemapPath), relativeSourcePath);
         },
     },
@@ -53,7 +53,7 @@ const options: RollupOptions = {
     },
 
     // Ignore this React warning
-    onwarn(warning, warn) {
+    onwarn(warning: any, warn: any) {
 
         if (warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('use client')) {
             return;
