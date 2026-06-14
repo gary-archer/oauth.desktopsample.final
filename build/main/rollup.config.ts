@@ -30,10 +30,13 @@ const options: RollupOptions = {
         },
     },
 
-    // Avoid packaging Node.js built-in modules
+    // Avoid packaging artifacts that rollup or the commonjs plugin may process incorrectly
+    // The output app.asar package includes a main.bundle.js and a node_modules folder with production dependencies
+    // Therefore, the desktop app can correctly resolve externals from production dependencies
     external: [
         'electron',
         'electron-store',
+        'undici',
         ...builtinModules,
         ...builtinModules.map((m) => `node:${m}`),
     ],
@@ -69,6 +72,7 @@ const options: RollupOptions = {
         esbuild({
             tsconfig: './tsconfig-main.json',
             target: 'es2022',
+            platform: 'node',
         }),
 
         // Set IS_DEBUG to true in development mode
