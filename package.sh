@@ -49,12 +49,6 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Prepare the dist folder
-#
-rm -rf dist 2>/dev/null
-mkdir dist
-
-#
 # Run the release build
 #
 ./buildRelease.sh

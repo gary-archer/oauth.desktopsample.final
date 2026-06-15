@@ -9,7 +9,7 @@ import {defineConfig, RollupOptions} from 'rollup';
 import copy from 'rollup-plugin-copy';
 import esbuild from 'rollup-plugin-esbuild';
 import postcss from 'rollup-plugin-postcss';
-import {copyOnEdit, notifyBrowser} from './plugins/developmentPlugins.js';
+import {notifyBrowser} from './plugins/developmentPlugins.js';
 import {finalizeBundles} from './plugins/productionPlugins.js';
 
 // Set base values and use an environment variable to distinguish between development v production builds
@@ -103,8 +103,7 @@ const options: RollupOptions = {
                 ]
             }),
 
-            // Add development plugins to copy non JavaScript files and to implement live reload
-            copyOnEdit(),
+            // Implement live reload
             notifyBrowser(),
 
         ] : [

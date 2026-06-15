@@ -46,12 +46,6 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Prepare the dist folder
-#
-rm -rf dist 2>/dev/null
-mkdir dist
-
-#
 # Build the code in watch mode, and run a live reload server
 #
 echo 'Building application bundles ...'

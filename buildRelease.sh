@@ -7,6 +7,12 @@
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 #
+# Prepare the dist folder
+#
+rm -rf dist 2>/dev/null
+mkdir dist
+
+#
 # Build the main side of the Electron app
 #
 echo 'Building main code ...'

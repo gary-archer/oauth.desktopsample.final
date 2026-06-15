@@ -1,22 +1,6 @@
 import {Plugin} from 'rollup';
 
 /*
- * Copy these resources to the output folder when they are edited
- */
-export function copyOnEdit(): Plugin {
-
-    const plugin: Plugin = {
-        name: 'copy-on-edit',
-        buildStart(): void {
-            this.addWatchFile('index.html');
-            this.addWatchFile('desktop.config.json');
-        }
-    };
-
-    return plugin;
-}
-
-/*
  * Notify the live reload server after edits, once the initial build completes
  */
 let isBuilt = false;
