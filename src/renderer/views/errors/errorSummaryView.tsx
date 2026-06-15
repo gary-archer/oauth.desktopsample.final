@@ -23,7 +23,7 @@ export function ErrorSummaryView(props: ErrorSummaryViewProps): JSX.Element {
         }
 
         return (
-            <a href='#' className='errorcolor largetext text-center' onClick={handleSummaryClick}>
+            <a href='#' className='text-red-600 text-center underline' onClick={handleSummaryClick}>
                 {props.hyperlinkMessage}
             </a>
         );
@@ -106,10 +106,8 @@ export function ErrorSummaryView(props: ErrorSummaryViewProps): JSX.Element {
 
             // Render the hyperlink as a centred row
             <>
-                <div className='row'>
-                    <div className='col-6 text-center mx-auto'>
-                        {renderHyperlink()}
-                    </div>
+                <div className='text-center mx-auto'>
+                    {renderHyperlink()}
                 </div>
                 {renderModalDialog()}
             </>
