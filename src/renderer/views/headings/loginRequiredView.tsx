@@ -47,7 +47,7 @@ export function LoginRequiredView(props: LoginRequiredViewProps): JSX.Element {
     }
 
     return  (
-        <div className='justify-center'>
+        <div>
             <div className='text-lg text-center'>
                 You are signed out - sign in to access the app ...
             </div>
