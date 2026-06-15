@@ -68,17 +68,17 @@ const options: RollupOptions = {
         // Prevent errors with the ajv module, which imports JSON, which rollup would otherwise interpret as JavaScript
         json(),
 
+        // Set IS_DEBUG to true in development mode
+        replace({
+            'IS_DEBUG': JSON.stringify(isDevelopment),
+            preventAssignment: true,
+        }),
+
         // Use esbuild as an up to date plugin for building typescript code
         esbuild({
             tsconfig: './tsconfig-main.json',
             target: 'es2022',
             platform: 'node',
-        }),
-
-        // Set IS_DEBUG to true in development mode
-        replace({
-            'IS_DEBUG': JSON.stringify(isDevelopment),
-            preventAssignment: true,
         }),
 
         // Copy required files to the dist folder
