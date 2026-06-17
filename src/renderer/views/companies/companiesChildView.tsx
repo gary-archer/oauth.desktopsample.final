@@ -14,7 +14,7 @@ export function CompaniesChildView(props: CompaniesChildViewProps): JSX.Element 
     function renderItem(company: Company) {
 
         return (
-            <div className='grid grid-cols-12 px-3 py-3 mt-5' key={company.id}>
+            <div key={company.id} className='grid grid-cols-12 px-3 py-3 mt-5'>
                 <div className='col-span-2 text-center'>
                     {company.name}
                 </div>
