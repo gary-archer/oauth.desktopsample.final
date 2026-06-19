@@ -1,6 +1,6 @@
 import {app, BrowserWindow, net, protocol, session} from 'electron';
-import path from 'path';
-import {pathToFileURL} from 'url';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {Configuration} from './main/configuration/configuration';
 import {ConfigurationLoader} from './main/configuration/configurationLoader';
 import {IpcMainEvents} from './main/ipcMainEvents';

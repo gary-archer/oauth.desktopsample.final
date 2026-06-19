@@ -1,6 +1,6 @@
 import {Crypto} from '@openid/appauth';
 import base64url from 'base64url';
-import {createHash, randomBytes} from 'crypto';
+import {createHash, randomBytes} from 'node:crypto';
 
 /*
  * A simple Node.js implementation of the AppAuth-JS Crypto interface
