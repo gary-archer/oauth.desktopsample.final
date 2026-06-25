@@ -45,11 +45,6 @@ export function App(props: AppProps): JSX.Element {
      */
     async function startup(): Promise<void> {
 
-        // Support live reload during development
-        if (IS_DEBUG) {
-            await import('./livereload');
-        }
-
         // Initialise the modal dialog system used for error popups
         Modal.setAppElement('#root');
 
@@ -61,6 +56,11 @@ export function App(props: AppProps): JSX.Element {
         await model.initialise();
         setSessionId(model.getSessionId());
         setError(model.getError());
+
+        // Once the app is initialized, support live reload during development
+        if (IS_DEBUG) {
+            await import('./livereload');
+        }
     }
 
     /*
@@ -79,6 +79,7 @@ export function App(props: AppProps): JSX.Element {
     async function onLoginRequired(): Promise<void> {
 
         // Ensure that logged in state is removed
+        console.log('*** RECEIVING LOGIN REQUIRED EVENT');
         await model.clearLoginState();
         setError(model.getError());
 
