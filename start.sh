@@ -84,7 +84,7 @@ if [ "$PLATFORM" == 'LINUX' ]; then
   #
   # Register the application's private URI scheme with the operating system
   #
-  export APP_COMMAND="npx electron $(pwd)/dist"
+  export APP_COMMAND="$(pwd)/node_modules/.bin/electron $(pwd)/dist"
   ./linux/register.sh
 
   #

@@ -79,7 +79,6 @@ export function App(props: AppProps): JSX.Element {
     async function onLoginRequired(): Promise<void> {
 
         // Ensure that logged in state is removed
-        console.log('*** RECEIVING LOGIN REQUIRED EVENT');
         await model.clearLoginState();
         setError(model.getError());
 
