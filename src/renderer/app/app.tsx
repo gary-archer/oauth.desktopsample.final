@@ -9,6 +9,7 @@ import {ErrorSummaryViewProps} from '../views/errors/errorSummaryViewProps';
 import {DeepLinkEvent} from '../views/events/deepLinkEvent';
 import {LoginStartedEvent} from '../views/events/loginStartedEvent';
 import {UIEventNames} from '../views/events/uiEventNames';
+import {ContainerView} from '../views/headings/containerView';
 import {HeaderButtonsView} from '../views/headings/headerButtonsView';
 import {HeaderButtonsViewProps} from '../views/headings/headerButtonsViewProps';
 import {LoginRequiredView} from '../views/headings/loginRequiredView';
@@ -220,7 +221,7 @@ export function App(props: AppProps): JSX.Element {
     }
 
     return (
-        <div className='sm:px-8 md:px-16 lg:px-24 py-2'>
+        <ContainerView>
             <TitleView {...getTitleProps()} />
             <HeaderButtonsView {...getHeaderButtonProps()} />
             {error && <ErrorSummaryView {...getErrorProps()} />}
@@ -233,6 +234,6 @@ export function App(props: AppProps): JSX.Element {
                     <Route path='*'              element={<CompaniesView {...getCompaniesProps()} />} />
                 </Routes>
             </>
-        </div>
+        </ContainerView>
     );
 }
