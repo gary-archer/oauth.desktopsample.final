@@ -203,8 +203,6 @@ class Main {
             // During development, prevent use of browser caching
             if (IS_DEBUG) {
                 responseHeaders['cache-control'] = 'no-cache, must-revalidate';
-            } else {
-                responseHeaders['cache-control'] = 'public, max-age=31536000, immutable';
             }
 
             callback({
