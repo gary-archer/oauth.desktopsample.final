@@ -200,7 +200,7 @@ class Main {
                 'content-security-policy': policy,
             };
 
-            // During development, prevent use of browser caching
+            // During development, prevent use of browser caching so that live reload works
             if (IS_DEBUG) {
                 responseHeaders['cache-control'] = 'no-cache, must-revalidate';
             }
