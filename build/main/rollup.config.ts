@@ -6,8 +6,8 @@ import terser from '@rollup/plugin-terser';
 import {builtinModules} from 'module';
 import path from 'path';
 import {defineConfig, RollupOptions} from 'rollup';
-import copy from 'rollup-plugin-copy';
 import esbuild from 'rollup-plugin-esbuild';
+import {copyFiles} from '../plugins.js';
 
 // Set base values and use an environment variable to distinguish between development v production builds
 const isDevelopment = process.env.BUILD === 'debug';
@@ -82,13 +82,11 @@ const options: RollupOptions = {
         }),
 
         // Copy required files to the dist folder
-        copy({
-            targets: [
-                { src: 'desktop.config.json', dest: outputFolder },
-                { src: 'src/preload.js', dest: outputFolder },
-                { src: 'package.json', dest: outputFolder },
-            ],
-        }),
+        copyFiles(outputFolder, [
+            'desktop.config.json',
+            'src/preload.js',
+            'package.json',
+        ]),
 
         // Minimize release bundles
         ...(isDevelopment ? [] : [ terser() ]),

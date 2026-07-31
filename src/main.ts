@@ -138,13 +138,11 @@ class Main {
             'index.html',
             'app.css',
             'vendor.bundle.js',
-            'react.bundle.js',
             'app.bundle.js',
         ]);
 
         if (IS_DEBUG) {
             authorizedFiles.add('vendor.bundle.js.map');
-            authorizedFiles.add('react.bundle.js.map');
             authorizedFiles.add('app.bundle.js.map');
             authorizedFiles.add('livereload.bundle.js');
         }
