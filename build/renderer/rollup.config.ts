@@ -46,10 +46,14 @@ const options: RollupOptions = {
         clearScreen: false,
     },
 
-    // Ignore this React warning
+    // Ignore benign React warnings
     onwarn(warning: any, warn: any) {
 
         if (warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('use client')) {
+            return;
+        }
+
+        if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('react-router')) {
             return;
         }
 

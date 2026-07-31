@@ -1,5 +1,5 @@
 import {JSX, useEffect, useState} from 'react';
-import {useLocation, useParams} from 'react-router-dom';
+import {useLocation, useParams} from 'react-router';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';

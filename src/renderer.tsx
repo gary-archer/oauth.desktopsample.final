@@ -1,7 +1,7 @@
 import './app.css';
 import {StrictMode} from 'react';
 import ReactDOM from 'react-dom/client';
-import {HashRouter} from 'react-router-dom';
+import {HashRouter} from 'react-router';
 import {App} from './renderer/app/app';
 import {AppViewModel} from './renderer/app/appViewModel';
 import {ErrorBoundary} from './renderer/views/errors/errorBoundary';

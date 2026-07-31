@@ -1,6 +1,6 @@
 import {JSX, useEffect, useState} from 'react';
 import Modal from 'react-modal';
-import {Route, Routes, useNavigate} from 'react-router-dom';
+import {Route, Routes, useNavigate} from 'react-router';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {CompaniesView} from '../views/companies/companiesView';
 import {CompaniesViewProps} from '../views/companies/companiesViewProps';

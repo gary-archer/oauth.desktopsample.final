@@ -45,16 +45,6 @@ const options: RollupOptions = {
         clearScreen: false,
     },
 
-    // Ignore circular dependency warnings for these modules, that I cannot control
-    onwarn(warning: any, warn: any) {
-        if (warning.code === 'CIRCULAR_DEPENDENCY' &&
-            (warning.message.includes('stubborn-fs') || warning.message.includes('semver'))) {
-            return;
-        }
-
-        warn(warning);
-    },
-
     plugins: [
 
         // Use Node.js resolution for node_modules
