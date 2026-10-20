@@ -9,7 +9,6 @@ import EventEmitter from 'node:events';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {OAuthConfiguration} from '../configuration/oauthConfiguration';
-import {Base64Url} from '../utilities/base64url';
 import {HttpProxy} from '../utilities/httpProxy';
 import {UrlParser} from '../utilities/urlParser';
 import {OAuthService} from './oauthService';
@@ -64,7 +63,9 @@ export class OAuthServiceImpl implements OAuthService {
         }
 
         // Get the ID token payload
-        const payload = JSON.parse(Base64Url.decode(this.tokens.idToken.split('.')[1]));
+        const payloadText = this.tokens.idToken.split('.')[1];
+        const payloadJson = Buffer.from(payloadText, 'base64url').toString('utf-8');
+        const payload = JSON.parse(payloadJson);
         if (!payload.delegationId && payload[this.configuration.delegationIdClaimName]) {
 
             // Return a fixed 'delegationId' field name to the frontend
