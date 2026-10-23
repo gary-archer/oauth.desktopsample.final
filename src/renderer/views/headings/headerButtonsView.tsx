@@ -1,7 +1,7 @@
 import {JSX, useEffect, useState} from 'react';
 import {NavigatedEvent} from '../events/navigatedEvent';
 import {UIEventNames} from '../events/uiEventNames';
-import {ViewModelFetchEvent} from '../events/viewModelFetchEvent';
+import {ApiRequestEvent} from '../events/apiRequestEvent';
 import {HeaderButtonsViewProps} from './headerButtonsViewProps';
 
 /*
@@ -18,12 +18,12 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
     }, []);
 
     function startup() {
-        props.eventBus.on(UIEventNames.ViewModelFetch, onViewModelFetch);
+        props.eventBus.on(UIEventNames.ApiRequest, onApiRequest);
         props.eventBus.on(UIEventNames.Navigated, onNavigated);
     }
 
     function cleanup() {
-        props.eventBus.detach(UIEventNames.ViewModelFetch, onViewModelFetch);
+        props.eventBus.detach(UIEventNames.ApiRequest, onApiRequest);
         props.eventBus.on(UIEventNames.Navigated, onNavigated);
     }
 
@@ -34,7 +34,7 @@ export function HeaderButtonsView(props: HeaderButtonsViewProps): JSX.Element {
     /*
      * The session button state changes when data starts and ends loading
      */
-    function onViewModelFetch(event: ViewModelFetchEvent) {
+    function onApiRequest(event: ApiRequestEvent) {
         setHasData(event.getLoaded());
     }
 

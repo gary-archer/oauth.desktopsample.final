@@ -1,10 +1,10 @@
 import EventBus from 'js-event-bus';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../../shared/errors/errorFactory';
-import {FetchCacheKeys} from '../../api/fetchCacheKeys';
-import {FetchClient} from '../../api/fetchClient';
+import {FetchCacheKeys} from '../../api/client/fetchCacheKeys';
+import {FetchClient} from '../../api/client/fetchClient';
 import {ViewLoadOptions} from '../utilities/viewLoadOptions';
-import {ViewModelCoordinator} from '../utilities/viewModelCoordinator';
+import {ApiRequestCoordinator} from '../../api/coordination/apiRequestCoordinator';
 import {TransactionsViewState} from './transactionsViewState';
 
 /*
@@ -14,7 +14,7 @@ export class TransactionsViewModel {
 
     private readonly fetchClient: FetchClient;
     private readonly eventBus: EventBus;
-    private readonly viewModelCoordinator: ViewModelCoordinator;
+    private readonly apiRequestCoordinator: ApiRequestCoordinator;
     private listener: (() => void) | null;
     private companyId: string | null;
     private snapshot: TransactionsViewState;
@@ -22,11 +22,11 @@ export class TransactionsViewModel {
     public constructor(
         fetchClient: FetchClient,
         eventBus: EventBus,
-        viewModelCoordinator: ViewModelCoordinator,
+        apiRequestCoordinator: ApiRequestCoordinator,
     ) {
         this.fetchClient = fetchClient;
         this.eventBus = eventBus;
-        this.viewModelCoordinator = viewModelCoordinator;
+        this.apiRequestCoordinator = apiRequestCoordinator;
         this.listener = null;
         this.companyId = null;
         this.snapshot = {transactions: null, error: null};
@@ -68,7 +68,7 @@ export class TransactionsViewModel {
             causeError: options?.causeError || false,
         };
 
-        this.viewModelCoordinator.onMainViewModelLoading();
+        this.apiRequestCoordinator.onApiRequestStart(fetchOptions.cacheKey);
         this.snapshot = {transactions: this.companyId !== id ? null : this.snapshot.transactions, error: null};
         this.companyId = id;
 
@@ -85,7 +85,7 @@ export class TransactionsViewModel {
 
         } finally {
 
-            await this.viewModelCoordinator.onMainViewModelLoaded(fetchOptions.cacheKey);
+            await this.apiRequestCoordinator.onApiRequestEnd();
             this.notifyView();
         }
     }

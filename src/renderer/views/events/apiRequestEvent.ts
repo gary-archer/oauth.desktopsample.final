@@ -1,7 +1,7 @@
 /*
- * An event sent before and after a view model fetches API data
+ * An event sent when the first API request fires and when all API requests complete
  */
-export class ViewModelFetchEvent {
+export class ApiRequestEvent {
 
     private readonly loaded: boolean;
 

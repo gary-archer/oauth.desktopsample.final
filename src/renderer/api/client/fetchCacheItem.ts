@@ -1,4 +1,4 @@
-import {UIError} from '../../shared/errors/uiError';
+import {UIError} from '../../../shared/errors/uiError';
 
 /*
  * A cache item represents an API response

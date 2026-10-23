@@ -1,11 +1,11 @@
-import {ApiUserInfo} from '../../shared/api/apiUserInfo';
-import {Company} from '../../shared/api/company';
-import {CompanyTransactions} from '../../shared/api/companyTransactions';
-import {FetchOptions} from '../../shared/api/fetchOptions';
-import {OAuthUserInfo} from '../../shared/api/oauthUserInfo';
-import {ErrorFactory} from '../../shared/errors/errorFactory';
-import {IpcRendererEvents} from '../ipcRendererEvents';
-import {OAuthClient} from '../oauth/oauthClient';
+import {ApiUserInfo} from '../../../shared/api/apiUserInfo';
+import {Company} from '../../../shared/api/company';
+import {CompanyTransactions} from '../../../shared/api/companyTransactions';
+import {FetchOptions} from '../../../shared/api/fetchOptions';
+import {OAuthUserInfo} from '../../../shared/api/oauthUserInfo';
+import {ErrorFactory} from '../../../shared/errors/errorFactory';
+import {IpcRendererEvents} from '../../ipcRendererEvents';
+import {OAuthClient} from '../../oauth/oauthClient';
 import {FetchCache} from './fetchCache';
 
 /*

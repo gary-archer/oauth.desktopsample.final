@@ -2,8 +2,9 @@ import EventBus from 'js-event-bus';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {UIError} from '../../shared/errors/uiError';
-import {FetchCache} from '../api/fetchCache';
-import {FetchClient} from '../api/fetchClient';
+import {FetchCache} from '../api/client/fetchCache';
+import {FetchClient} from '../api/client/fetchClient';
+import {ApiRequestCoordinator} from '../api/coordination/apiRequestCoordinator';
 import {IpcRendererEvents} from '../ipcRendererEvents';
 import {OAuthClient} from '../oauth/oauthClient';
 import {OAuthClientImpl} from '../oauth/oauthClientImpl';
@@ -13,7 +14,6 @@ import {ReloadDataEvent} from '../views/events/reloadDataEvent';
 import {UIEventNames} from '../views/events/uiEventNames';
 import {TransactionsViewModel} from '../views/transactions/transactionsViewModel';
 import {UserInfoViewModel} from '../views/userInfo/userInfoViewModel';
-import {ViewModelCoordinator} from '../views/utilities/viewModelCoordinator';
 
 /*
  * Global objects as input to the application view
@@ -28,7 +28,7 @@ export class AppViewModel {
     // OAuth and API requests
     private readonly oauthClient: OAuthClient;
     private readonly fetchClient: FetchClient;
-    private readonly viewModelCoordinator: ViewModelCoordinator;
+    private readonly apiRequestCoordinator: ApiRequestCoordinator;
 
     // State
     private error: UIError | null;
@@ -56,7 +56,7 @@ export class AppViewModel {
         // Create objects to manage OAuth and API requests
         this.oauthClient = new OAuthClientImpl(this.ipcEvents);
         this.fetchClient = new FetchClient(this.fetchCache, this.ipcEvents, this.oauthClient);
-        this.viewModelCoordinator = new ViewModelCoordinator(this.eventBus, this.fetchCache);
+        this.apiRequestCoordinator = new ApiRequestCoordinator(this.eventBus, this.fetchCache);
 
         // Initialise state
         this.error = null;
@@ -129,7 +129,7 @@ export class AppViewModel {
      */
     public async login(): Promise<void> {
 
-        this.viewModelCoordinator.resetState();
+        this.apiRequestCoordinator.resetState();
         this.error = null;
 
         try {
@@ -150,7 +150,7 @@ export class AppViewModel {
      */
     public async logout(): Promise<void> {
 
-        this.viewModelCoordinator.resetState();
+        this.apiRequestCoordinator.resetState();
         this.error = null;
 
         try {
@@ -191,7 +191,7 @@ export class AppViewModel {
             this.companiesViewModel = new CompaniesViewModel(
                 this.fetchClient,
                 this.eventBus,
-                this.viewModelCoordinator,
+                this.apiRequestCoordinator,
             );
         }
 
@@ -206,7 +206,7 @@ export class AppViewModel {
             (
                 this.fetchClient,
                 this.eventBus,
-                this.viewModelCoordinator,
+                this.apiRequestCoordinator,
             );
         }
 
@@ -220,7 +220,7 @@ export class AppViewModel {
             this.userInfoViewModel = new UserInfoViewModel(
                 this.fetchClient,
                 this.eventBus,
-                this.viewModelCoordinator,
+                this.apiRequestCoordinator,
             );
         }
 
@@ -263,7 +263,7 @@ export class AppViewModel {
     public triggerDataReload(causeError: boolean): void {
 
         this.error = null;
-        this.viewModelCoordinator.resetState();
+        this.apiRequestCoordinator.resetState();
         this.eventBus.emit(UIEventNames.ReloadData, null, new ReloadDataEvent(causeError));
     }
 
@@ -271,7 +271,7 @@ export class AppViewModel {
      * See if there are any errors
      */
     public hasApiError(): boolean {
-        return !!this.error || this.viewModelCoordinator.hasErrors();
+        return !!this.error || this.apiRequestCoordinator.hasErrors();
     }
 
     /*
