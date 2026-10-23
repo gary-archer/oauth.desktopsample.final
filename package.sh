@@ -33,7 +33,7 @@ fi
 #
 # Download dependencies
 #
-npm install
+npm ci
 if [ $? -ne 0 ]; then
   echo 'Problem encountered downloading dependencies'
   exit
