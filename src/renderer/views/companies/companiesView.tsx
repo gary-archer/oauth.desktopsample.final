@@ -1,4 +1,4 @@
-import {JSX, useEffect, useState} from 'react';
+import {JSX, useEffect, useSyncExternalStore} from 'react';
 import {useLocation} from 'react-router';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
@@ -17,10 +17,12 @@ import {CompaniesViewProps} from './companiesViewProps';
  */
 export function CompaniesView(props: CompaniesViewProps): JSX.Element {
 
-    // Initialize React state from the view model
+    // Subscribe to state from the view model
     const model = props.viewModel;
-    const [companies, setCompanies] = useState(model.getCompanies());
-    const [error, setError] = useState(model.getError());
+    const {companies, error} = useSyncExternalStore(
+        model.subscribe.bind(model),
+        model.getSnapshot.bind(model),
+    );
 
     // Update the current path
     CurrentLocation.path = useLocation().pathname;
@@ -65,13 +67,10 @@ export function CompaniesView(props: CompaniesViewProps): JSX.Element {
     }
 
     /*
-     * Get data from the API and update state
+     * Get data from the API; the view model notifies subscribers when done
      */
     async function loadData(options?: ViewLoadOptions): Promise<void> {
-
         await model.callApi(options);
-        setCompanies(model.getCompanies());
-        setError(model.getError());
     }
 
     function getErrorProps(): ErrorSummaryViewProps {
