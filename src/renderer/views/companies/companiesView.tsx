@@ -1,5 +1,6 @@
 import {JSX, useEffect, useSyncExternalStore} from 'react';
-import {useLocation} from 'react-router';
+import {Link, useLocation} from 'react-router';
+import {Company} from '../../../shared/api/company';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
@@ -8,8 +9,6 @@ import {ReloadDataEvent} from '../events/reloadDataEvent';
 import {UIEventNames} from '../events/uiEventNames';
 import {CurrentLocation} from '../utilities/currentLocation';
 import {ViewLoadOptions} from '../utilities/viewLoadOptions';
-import {CompaniesChildView} from './companiesChildView';
-import {CompaniesChildViewProps} from './companiesChildViewProps';
 import {CompaniesViewProps} from './companiesViewProps';
 
 /*
@@ -73,6 +72,9 @@ export function CompaniesView(props: CompaniesViewProps): JSX.Element {
         await model.callApi(options);
     }
 
+    /*
+     * Get properties for the error view
+     */
     function getErrorProps(): ErrorSummaryViewProps {
 
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -86,17 +88,63 @@ export function CompaniesView(props: CompaniesViewProps): JSX.Element {
         };
     }
 
-    function getChildProps(): CompaniesChildViewProps {
+    /*
+     * Render a single company as a row
+     */
+    function renderListRow(company: Company): JSX.Element {
 
-        return {
-            companies,
-        };
+        return (
+            <div key={company.id} className='grid grid-cols-12 px-3 py-3 mt-5'>
+                <div className='col-span-2 text-center'>
+                    {company.name}
+                </div>
+                <div className='col-span-2 text-center'>
+                    {company.region}
+                </div>
+                <div className='col-span-2 text-center'>
+                    <Link to={`/companies/${company.id}`} className='text-blue-600 underline'>
+                        View Transactions
+                    </Link>
+                </div>
+                <div className='col-span-2 text-green-700 font-bold text-right'>
+                    {Number(company.targetUsd).toLocaleString()}
+                </div>
+                <div className='col-span-2 text-green-700 font-bold text-right'>
+                    {Number(company.investmentUsd).toLocaleString()}
+                </div>
+                <div className='col-span-2 font-bold text-right'>
+                    {company.noInvestors}
+                </div>
+            </div>
+        );
+    }
+
+    /*
+     * Render the list of companies
+     */
+    function renderList(): JSX.Element {
+
+        return  (
+            <div className='mt-3'>
+                <div className='grid grid-cols-12 bg-gray-100 px-3 py-3'>
+                    <div className='col-span-2 font-bold text-center'>Account</div>
+                    <div className='col-span-2 font-bold text-center'>Region</div>
+                    <div className='col-span-2' />
+                    <div className='col-span-2 font-bold text-right'>Target USD</div>
+                    <div className='col-span-2 font-bold text-right'>Investment USD</div>
+                    <div className='col-span-2 font-bold text-right'># Investors</div>
+                </div>
+                <div>
+                    {companies.map((company) => renderListRow(company))}
+                </div>
+            </div>
+        );
     }
 
     return  (
         <>
             {error && <ErrorSummaryView {...getErrorProps()}/>}
-            {companies.length > 0 && <CompaniesChildView {...getChildProps()}/>}
+            {companies.length > 0 && renderList()}
         </>
     );
 }

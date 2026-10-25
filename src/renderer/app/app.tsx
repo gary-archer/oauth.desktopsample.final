@@ -160,7 +160,7 @@ export function App(props: AppProps): JSX.Element {
 
         return {
             userInfo: {
-                viewModel: model.getUserInfoViewModel(),
+                viewModel: model.getViewModelStore().getUserInfoViewModel(),
             },
         };
     }
@@ -201,14 +201,14 @@ export function App(props: AppProps): JSX.Element {
     function getCompaniesProps(): CompaniesViewProps {
 
         return {
-            viewModel: model.getCompaniesViewModel(),
+            viewModel: model.getViewModelStore().getCompaniesViewModel(),
         };
     }
 
     function getTransactionsProps(): TransactionsViewProps {
 
         return {
-            viewModel: model.getTransactionsViewModel(),
+            viewModel: model.getViewModelStore().getTransactionsViewModel(),
             navigate,
         };
     }

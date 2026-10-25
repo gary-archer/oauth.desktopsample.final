@@ -8,12 +8,10 @@ import {ApiRequestCoordinator} from '../api/coordination/apiRequestCoordinator';
 import {IpcRendererEvents} from '../ipcRendererEvents';
 import {OAuthClient} from '../oauth/oauthClient';
 import {OAuthClientImpl} from '../oauth/oauthClientImpl';
-import {CompaniesViewModel} from '../views/companies/companiesViewModel';
 import {ErrorConsoleReporter} from '../views/errors/errorConsoleReporter';
 import {ReloadDataEvent} from '../views/events/reloadDataEvent';
 import {UIEventNames} from '../views/events/uiEventNames';
-import {TransactionsViewModel} from '../views/transactions/transactionsViewModel';
-import {UserInfoViewModel} from '../views/userInfo/userInfoViewModel';
+import {ViewModelStore} from './viewModelStore';
 
 /*
  * Global objects as input to the application view
@@ -29,16 +27,12 @@ export class AppViewModel {
     private readonly oauthClient: OAuthClient;
     private readonly fetchClient: FetchClient;
     private readonly apiRequestCoordinator: ApiRequestCoordinator;
+    private viewModelStore!: ViewModelStore;
 
     // State
     private error: UIError | null;
     private sessionId: string;
     private isLoading: boolean;
-
-    // Child view models
-    private companiesViewModel: CompaniesViewModel | null;
-    private transactionsViewModel: TransactionsViewModel | null;
-    private userInfoViewModel: UserInfoViewModel | null;
 
     /*
      * Set the initial state when the app starts
@@ -58,15 +52,13 @@ export class AppViewModel {
         this.fetchClient = new FetchClient(this.fetchCache, this.ipcEvents, this.oauthClient);
         this.apiRequestCoordinator = new ApiRequestCoordinator(this.eventBus, this.fetchCache);
 
+        // Create an object to store view models
+        this.viewModelStore = new ViewModelStore(this.fetchClient, this.eventBus, this.apiRequestCoordinator);
+
         // Initialise state
         this.error = null;
         this.sessionId = '';
         this.isLoading = false;
-
-        // Initialise child view models
-        this.companiesViewModel = null;
-        this.transactionsViewModel = null;
-        this.userInfoViewModel = null;
         this.setupCallbacks();
     }
 
@@ -88,6 +80,10 @@ export class AppViewModel {
 
     public getEventBus(): EventBus {
         return this.eventBus;
+    }
+
+    public getViewModelStore(): ViewModelStore {
+        return this.viewModelStore;
     }
 
     /*
@@ -179,52 +175,6 @@ export class AppViewModel {
             const error = ErrorFactory.fromException(e);
             ErrorConsoleReporter.output(error);
         }
-    }
-
-    /*
-     * Return view models
-     */
-    public getCompaniesViewModel(): CompaniesViewModel {
-
-        if (!this.companiesViewModel) {
-
-            this.companiesViewModel = new CompaniesViewModel(
-                this.fetchClient,
-                this.eventBus,
-                this.apiRequestCoordinator,
-            );
-        }
-
-        return this.companiesViewModel;
-    }
-
-    public getTransactionsViewModel(): TransactionsViewModel {
-
-        if (!this.transactionsViewModel) {
-
-            this.transactionsViewModel = new TransactionsViewModel
-            (
-                this.fetchClient,
-                this.eventBus,
-                this.apiRequestCoordinator,
-            );
-        }
-
-        return this.transactionsViewModel;
-    }
-
-    public getUserInfoViewModel(): UserInfoViewModel {
-
-        if (!this.userInfoViewModel) {
-
-            this.userInfoViewModel = new UserInfoViewModel(
-                this.fetchClient,
-                this.eventBus,
-                this.apiRequestCoordinator,
-            );
-        }
-
-        return this.userInfoViewModel;
     }
 
     /*
