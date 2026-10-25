@@ -78,7 +78,7 @@ export function App(props: AppProps): JSX.Element {
      */
     async function onLoginRequired(): Promise<void> {
 
-        // Ensure that logged in state is removed
+        // Ensure that all logged in state is removed
         await model.clearLoginState();
         setError(model.getError());
 
@@ -112,7 +112,7 @@ export function App(props: AppProps): JSX.Element {
             navigate('/');
 
             // Force a data reload if recovering from errors
-            if (model.hasApiError()) {
+            if (model.hasErrors()) {
                 model.triggerDataReload(false);
             }
         }
@@ -144,6 +144,7 @@ export function App(props: AppProps): JSX.Element {
      * For test purposes this makes the access token act expired
      */
     async function onExpireAccessToken(): Promise<void> {
+
         await model.expireAccessToken();
         setError(model.getError());
     }
@@ -152,10 +153,14 @@ export function App(props: AppProps): JSX.Element {
      * For test purposes this makes the refresh token act expired
      */
     async function onExpireRefreshToken(): Promise<void> {
+
         await model.expireRefreshToken();
         setError(model.getError());
     }
 
+    /*
+     * Get properties for the title view
+     */
     function getTitleProps(): TitleViewProps {
 
         return {
@@ -165,6 +170,9 @@ export function App(props: AppProps): JSX.Element {
         };
     }
 
+    /*
+     * Get properties for the header buttons view
+     */
     function getHeaderButtonProps(): HeaderButtonsViewProps {
 
         return {
@@ -177,6 +185,9 @@ export function App(props: AppProps): JSX.Element {
         };
     }
 
+    /*
+     * Get properties for the error view
+     */
     function getErrorProps(): ErrorSummaryViewProps {
 
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -190,6 +201,9 @@ export function App(props: AppProps): JSX.Element {
         };
     }
 
+    /*
+     * Get properties for the companies view
+     */
     function getSessionProps(): SessionViewProps {
 
         return {
@@ -198,6 +212,9 @@ export function App(props: AppProps): JSX.Element {
         };
     }
 
+    /*
+     * Get properties for the companies view
+     */
     function getCompaniesProps(): CompaniesViewProps {
 
         return {
@@ -205,6 +222,9 @@ export function App(props: AppProps): JSX.Element {
         };
     }
 
+    /*
+     * Get properties for the transactions view
+     */
     function getTransactionsProps(): TransactionsViewProps {
 
         return {
@@ -213,6 +233,9 @@ export function App(props: AppProps): JSX.Element {
         };
     }
 
+    /*
+     * Get properties for the login required view
+     */
     function getLoginRequiredProps(): LoginRequiredViewProps {
 
         return {

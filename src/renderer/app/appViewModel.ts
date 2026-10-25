@@ -2,9 +2,7 @@ import EventBus from 'js-event-bus';
 import {ErrorCodes} from '../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {UIError} from '../../shared/errors/uiError';
-import {FetchCache} from '../api/client/fetchCache';
-import {FetchClient} from '../api/client/fetchClient';
-import {ApiRequestCoordinator} from '../api/coordination/apiRequestCoordinator';
+import {ApiClient} from '../api/client/apiClient';
 import {IpcRendererEvents} from '../ipcRendererEvents';
 import {OAuthClient} from '../oauth/oauthClient';
 import {OAuthClientImpl} from '../oauth/oauthClientImpl';
@@ -21,12 +19,10 @@ export class AppViewModel {
     // Infrastructure
     private readonly eventBus: EventBus;
     private readonly ipcEvents: IpcRendererEvents;
-    private readonly fetchCache: FetchCache;
 
     // OAuth and API requests
     private readonly oauthClient: OAuthClient;
-    private readonly fetchClient: FetchClient;
-    private readonly apiRequestCoordinator: ApiRequestCoordinator;
+    private readonly apiClient: ApiClient;
     private viewModelStore!: ViewModelStore;
 
     // State
@@ -39,9 +35,7 @@ export class AppViewModel {
      */
     public constructor() {
 
-        // Create objects used for coordination
         this.eventBus = new EventBus();
-        this.fetchCache = new FetchCache();
 
         // Register to receive Electron events from the main side of the app
         this.ipcEvents = new IpcRendererEvents(this.eventBus);
@@ -49,11 +43,10 @@ export class AppViewModel {
 
         // Create objects to manage OAuth and API requests
         this.oauthClient = new OAuthClientImpl(this.ipcEvents);
-        this.fetchClient = new FetchClient(this.fetchCache, this.ipcEvents, this.oauthClient);
-        this.apiRequestCoordinator = new ApiRequestCoordinator(this.eventBus, this.fetchCache);
+        this.apiClient = new ApiClient(this.ipcEvents, this.oauthClient, this.eventBus);
 
         // Create an object to store view models
-        this.viewModelStore = new ViewModelStore(this.fetchClient, this.eventBus, this.apiRequestCoordinator);
+        this.viewModelStore = new ViewModelStore(this.apiClient, this.eventBus);
 
         // Initialise state
         this.error = null;
@@ -72,10 +65,6 @@ export class AppViewModel {
 
     public getOAuthClient(): OAuthClient {
         return this.oauthClient;
-    }
-
-    public getFetchClient(): FetchClient {
-        return this.fetchClient;
     }
 
     public getEventBus(): EventBus {
@@ -125,10 +114,8 @@ export class AppViewModel {
      */
     public async login(): Promise<void> {
 
-        this.apiRequestCoordinator.resetState();
-        this.error = null;
-
         try {
+
             await this.oauthClient.login();
             this.sessionId = this.oauthClient.getDelegationId();
 
@@ -146,7 +133,7 @@ export class AppViewModel {
      */
     public async logout(): Promise<void> {
 
-        this.apiRequestCoordinator.resetState();
+        this.apiClient.clearLoginState();
         this.error = null;
 
         try {
@@ -168,6 +155,7 @@ export class AppViewModel {
 
         try {
 
+            this.apiClient.clearLoginState();
             await this.oauthClient.clearLoginState();
 
         } catch (e: any) {
@@ -175,6 +163,22 @@ export class AppViewModel {
             const error = ErrorFactory.fromException(e);
             ErrorConsoleReporter.output(error);
         }
+    }
+
+    /*
+     * Raise an event to ask all views to get updated data from the API
+     */
+    public triggerDataReload(causeError: boolean): void {
+
+        this.error = null;
+        this.eventBus.emit(UIEventNames.ReloadData, null, new ReloadDataEvent(causeError));
+    }
+
+    /*
+     * See if the last batch of API requests resulted in errors
+     */
+    public hasErrors(): boolean {
+        return !!this.error || this.apiClient.hasErrors();
     }
 
     /*
@@ -205,23 +209,6 @@ export class AppViewModel {
         } catch (e: any) {
             this.error = ErrorFactory.fromException(e);
         }
-    }
-
-    /*
-     * Raise an event to ask all views to get updated data from the API
-     */
-    public triggerDataReload(causeError: boolean): void {
-
-        this.error = null;
-        this.apiRequestCoordinator.resetState();
-        this.eventBus.emit(UIEventNames.ReloadData, null, new ReloadDataEvent(causeError));
-    }
-
-    /*
-     * See if there are any errors
-     */
-    public hasApiError(): boolean {
-        return !!this.error || this.apiRequestCoordinator.hasErrors();
     }
 
     /*

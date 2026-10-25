@@ -1,3 +1,4 @@
+import EventBus from 'js-event-bus';
 import {ApiUserInfo} from '../../../shared/api/apiUserInfo';
 import {Company} from '../../../shared/api/company';
 import {CompanyTransactions} from '../../../shared/api/companyTransactions';
@@ -6,22 +7,25 @@ import {OAuthUserInfo} from '../../../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../../../shared/errors/errorFactory';
 import {IpcRendererEvents} from '../../ipcRendererEvents';
 import {OAuthClient} from '../../oauth/oauthClient';
-import {FetchCache} from './fetchCache';
+import {FetchCache} from '../cache/fetchCache';
+import {ApiRequestCoordinator} from './apiRequestCoordinator';
 
 /*
  * API operations from the renderer side of the app
  */
-export class FetchClient {
+export class ApiClient {
 
     private readonly fetchCache: FetchCache;
     private readonly ipcEvents: IpcRendererEvents;
     private readonly oauthClient: OAuthClient;
+    private readonly requestCoordinator: ApiRequestCoordinator;
 
-    public constructor(fetchCache: FetchCache, ipcEvents: IpcRendererEvents, oauthClient: OAuthClient) {
+    public constructor(ipcEvents: IpcRendererEvents, oauthClient: OAuthClient, eventBus: EventBus) {
 
-        this.fetchCache = fetchCache;
         this.ipcEvents = ipcEvents;
         this.oauthClient = oauthClient;
+        this.fetchCache = new FetchCache();
+        this.requestCoordinator = new ApiRequestCoordinator(this.fetchCache, eventBus);
     }
 
     /*
@@ -53,6 +57,21 @@ export class FetchClient {
     }
 
     /*
+     * Return the overall status after a batch of concurrent API requests complete
+     */
+    public hasErrors(): boolean {
+        return this.requestCoordinator.hasErrors();
+    }
+
+    /*
+     * Clear any API state when the user logs out
+     */
+    public clearLoginState(): void {
+        this.fetchCache.clearAll();
+        this.requestCoordinator.resetState();
+    }
+
+    /*
      * The entry point to get data deals with caching
      */
     private async getDataFromApi(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
@@ -72,6 +91,9 @@ export class FetchClient {
         // Ensure that the cache item exists, to avoid further redundant API requests
         cacheItem = this.fetchCache.createItem(options.cacheKey);
 
+        // Notify the request coordinator that we are sending an API request
+        this.requestCoordinator.onApiRequestStart(options.cacheKey);
+
         try {
 
             // Get the data and update the cache item for this request
@@ -84,6 +106,11 @@ export class FetchClient {
             // Get the error and update the cache item for this request
             cacheItem.setError(e);
             throw e;
+
+        } finally {
+
+            // Notify the request coordinator that we sent an API request
+            this.requestCoordinator.onApiRequestEnd();
         }
     }
 

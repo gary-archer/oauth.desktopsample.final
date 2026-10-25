@@ -1,7 +1,7 @@
 import EventBus from 'js-event-bus';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {UIError} from '../../../shared/errors/uiError';
-import {FetchCache} from '../client/fetchCache';
+import {FetchCache} from '../cache/fetchCache';
 import {ApiRequestEvent} from '../../views/events/apiRequestEvent';
 import {LoginRequiredEvent} from '../../views/events/loginRequiredEvent';
 import {UIEventNames} from '../../views/events/uiEventNames';
@@ -11,102 +11,91 @@ import {UIEventNames} from '../../views/events/uiEventNames';
  */
 export class ApiRequestCoordinator {
 
-    private readonly eventBus: EventBus;
     private readonly fetchCache: FetchCache;
+    private readonly eventBus: EventBus;
     private cacheKeys: string[];
     private loadingCount: number;
     private loadedCount: number;
+    private errors: UIError[];
 
     /*
      * Set the initial state
      */
-    public constructor(eventBus: EventBus, fetchCache: FetchCache) {
+    public constructor(fetchCache: FetchCache, eventBus: EventBus) {
 
-        this.eventBus = eventBus;
         this.fetchCache = fetchCache;
+        this.eventBus = eventBus;
         this.cacheKeys = [];
         this.loadingCount = 0;
         this.loadedCount = 0;
+        this.errors = [];
         this.setupCallbacks();
     }
 
     /*
-     * Called by a view model when it starts an API request
-     * Accepts one or more cache keys to support view models that make concurrent requests
+     * Called when an API request starts
      * Fires ApiRequestEvent(false) on the first request of a batch to signal loading has begun
      */
-    public onApiRequestStart(...cacheKeys: string[]): void {
+    public onApiRequestStart(cacheKey: string): void {
 
         if (this.loadingCount === 0) {
             this.cacheKeys = [];
-        }
-
-        this.cacheKeys.push(...cacheKeys);
-        ++this.loadingCount;
-
-        if (this.loadingCount === 1) {
             this.eventBus.emit(UIEventNames.ApiRequest, null, new ApiRequestEvent(false));
         }
+
+        this.cacheKeys.push(cacheKey);
+        ++this.loadingCount;
     }
 
     /*
-     * Called by a view model when its API request completes
-     * Fires ApiRequestEvent(true) once all pending requests in the batch have finished successfully
+     * Called when an API request ends
+     * Fires ApiRequestEvent(true) once all pending requests in the batch have finished
      */
-    public async onApiRequestEnd(): Promise<void> {
+    public onApiRequestEnd(): void {
 
         ++this.loadedCount;
-        await this.handleAllRequestsComplete();
+        this.handleAllRequestsComplete();
     }
 
     /*
-     * Return true if there were any load errors
+     * Return true if there were any errors on the last batch of API requests
      */
     public hasErrors(): boolean {
-        return this.getLoadErrors().length > 0;
-    }
-
-    /*
-     * Reset state when the Reload Data button is clicked or on logout
-     */
-    public resetState(): void {
-        this.cacheKeys = [];
-        this.loadingCount = 0;
-        this.loadedCount = 0;
-        this.fetchCache.clearAll();
+        return this.errors.length > 0;
     }
 
     /*
      * Handle OAuth related errors once all requests in the batch finish
      */
-    private async handleAllRequestsComplete(): Promise<void> {
+    private handleAllRequestsComplete(): void {
 
         if (this.loadedCount === this.loadingCount) {
 
-            // Reset counts, which include extra calls triggered by React strict mode
+            // Reset counts
             this.loadingCount = 0;
             this.loadedCount = 0;
 
+            // Get error details stored in the fetch cache
+            this.errors = this.getAllErrors();
+
             // Notify subscribers when all API requests have completed successfully
-            const errors = this.getLoadErrors();
-            if (errors.length === 0) {
+            if (this.errors.length === 0) {
                 this.eventBus.emit(UIEventNames.ApiRequest, null, new ApiRequestEvent(true));
             }
 
             // Login required errors occur when there are no tokens yet or when token refresh fails
             // Raise a single event so that navigation to login required is triggered only once
-            const loginRequired = errors.find((e) => e.getErrorCode() === ErrorCodes.loginRequired);
+            const loginRequired = this.errors.find((e) => e.getErrorCode() === ErrorCodes.loginRequired);
             if (loginRequired) {
-                this.resetState();
                 this.eventBus.emit(UIEventNames.LoginRequired, new LoginRequiredEvent());
             }
         }
     }
 
     /*
-     * Collect errors from all cache keys registered in the current batch
+     * Collect errors for the current batch of requests
      */
-    private getLoadErrors(): UIError[] {
+    private getAllErrors(): UIError[] {
 
         const errors: UIError[] = [];
 
@@ -120,6 +109,17 @@ export class ApiRequestCoordinator {
         });
 
         return errors;
+    }
+
+    /*
+     * Reset all state when the user logs out
+     */
+    public resetState(): void {
+
+        this.errors = [];
+        this.cacheKeys = [];
+        this.loadingCount = 0;
+        this.loadedCount = 0;
     }
 
     /*
