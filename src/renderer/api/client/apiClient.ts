@@ -25,7 +25,7 @@ export class ApiClient {
         this.ipcEvents = ipcEvents;
         this.oauthClient = oauthClient;
         this.fetchCache = new FetchCache();
-        this.requestCoordinator = new ApiRequestCoordinator(this.fetchCache, eventBus);
+        this.requestCoordinator = new ApiRequestCoordinator(eventBus);
     }
 
     /*
@@ -82,13 +82,12 @@ export class ApiClient {
         }
 
         // Return existing data from the memory cache when available
-        // If a view is created whiles its API requests are in flight, this returns null to the view model
         let cacheItem = this.fetchCache.getItem(options.cacheKey);
-        if (cacheItem && !cacheItem.getError()) {
+        if (cacheItem) {
             return cacheItem.getData();
         }
 
-        // Ensure that the cache item exists, to avoid further redundant API requests
+        // Create the cache item with a null value, so that extra strict mode requests return null
         cacheItem = this.fetchCache.createItem(options.cacheKey);
 
         // Notify the request coordinator that we are sending an API request
@@ -97,20 +96,20 @@ export class ApiClient {
         try {
 
             // Get the data and update the cache item for this request
-            const data = await this.getDataFromApiWithTokenRefresh(options, callback);
-            cacheItem.setData(data);
-            return data;
+            const result = await this.getDataFromApiWithTokenRefresh(options, callback);
+            cacheItem.setData(result);
+            this.requestCoordinator.onApiRequestEnd();
+            return result;
 
         } catch (e: any) {
 
-            // Get the error and update the cache item for this request
-            cacheItem.setError(e);
-            throw e;
+            // Make sure we clear the item from the cache
+            this.fetchCache.removeItem(options.cacheKey);
 
-        } finally {
-
-            // Notify the request coordinator that we sent an API request
-            this.requestCoordinator.onApiRequestEnd();
+            // Handle the error and notify the request coordinator that the API request failed
+            const error = ErrorFactory.fromException(e);
+            this.requestCoordinator.onApiRequestEnd(error);
+            throw error;
         }
     }
 
