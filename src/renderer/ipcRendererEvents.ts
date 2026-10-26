@@ -2,7 +2,7 @@ import EventBus from 'js-event-bus';
 import {ApiUserInfo} from '../shared/api/apiUserInfo';
 import {Company} from '../shared/api/company';
 import {CompanyTransactions} from '../shared/api/companyTransactions';
-import {FetchOptions} from '../shared/api/fetchOptions';
+import {GetOptions} from '../shared/api/getOptions';
 import {OAuthUserInfo} from '../shared/api/oauthUserInfo';
 import {UIError} from '../shared/errors/uiError';
 import {IpcEventNames} from '../shared/ipcEventNames';
@@ -45,28 +45,28 @@ export class IpcRendererEvents {
     /*
      * Make an API request to get companies
      */
-    public async getCompanyList(options: FetchOptions) : Promise<Company[]> {
+    public async getCompanyList(options: GetOptions) : Promise<Company[]> {
         return await this.sendMessage(IpcEventNames.ON_GET_COMPANIES, {options});
     }
 
     /*
      * Make an API request to get company transactions
      */
-    public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<CompanyTransactions> {
+    public async getCompanyTransactions(id: string, options: GetOptions) : Promise<CompanyTransactions> {
         return await this.sendMessage(IpcEventNames.ON_GET_TRANSACTIONS, {id, options});
     }
 
     /*
      * Make an API request to get OAuth user info
      */
-    public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo> {
+    public async getOAuthUserInfo(options: GetOptions) : Promise<OAuthUserInfo> {
         return await this.sendMessage(IpcEventNames.ON_GET_OAUTH_USER_INFO, {options});
     }
 
     /*
      * Make an API request to get API user info
      */
-    public async getApiUserInfo(options: FetchOptions) : Promise<ApiUserInfo> {
+    public async getApiUserInfo(options: GetOptions) : Promise<ApiUserInfo> {
         return await this.sendMessage(IpcEventNames.ON_GET_API_USER_INFO, {options});
     }
 

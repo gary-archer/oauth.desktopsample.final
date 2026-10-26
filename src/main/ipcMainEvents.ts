@@ -5,7 +5,7 @@ import {CompanyTransactions} from '../shared/api/companyTransactions';
 import {OAuthUserInfo} from '../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../shared/errors/errorFactory';
 import {IpcEventNames} from '../shared/ipcEventNames';
-import {FetchService} from './api/fetchService';
+import {ApiService} from './api/apiService';
 import {Configuration} from './configuration/configuration';
 import {OAuthService} from './oauth/oauthService';
 import {OAuthServiceImpl} from './oauth/oauthServiceImpl';
@@ -20,7 +20,7 @@ export class IpcMainEvents {
     private readonly configuration: Configuration;
     private readonly httpProxy: HttpProxy;
     private readonly oauthService: OAuthService;
-    private readonly fetchService: FetchService;
+    private readonly apiService: ApiService;
     private window: BrowserWindow | null;
     private deepLinkStartupPath: string | null;
 
@@ -30,7 +30,7 @@ export class IpcMainEvents {
         this.httpProxy = new HttpProxy(this.configuration.app.useProxy, this.configuration.app.proxyUrl);
         this.window = null;
         this.oauthService = new OAuthServiceImpl(this.configuration.oauth, this.httpProxy);
-        this.fetchService = new FetchService(this.configuration, this.oauthService, this.httpProxy);
+        this.apiService = new ApiService(this.configuration, this.oauthService, this.httpProxy);
         this.deepLinkStartupPath = null;
         this.setupCallbacks();
     }
@@ -101,7 +101,7 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            () => this.fetchService.getCompanyList(args.options));
+            () => this.apiService.getCompanyList(args.options));
     }
 
     /*
@@ -111,7 +111,7 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            () => this.fetchService.getCompanyTransactions(args.id, args.options));
+            () => this.apiService.getCompanyTransactions(args.id, args.options));
     }
 
     /*
@@ -121,7 +121,7 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            () => this.fetchService.getOAuthUserInfo(args.options));
+            () => this.apiService.getOAuthUserInfo(args.options));
     }
 
     /*
@@ -131,7 +131,7 @@ export class IpcMainEvents {
 
         return this.handleAsyncOperation(
             event,
-            () => this.fetchService.getApiUserInfo(args.options));
+            () => this.apiService.getApiUserInfo(args.options));
     }
 
     /*

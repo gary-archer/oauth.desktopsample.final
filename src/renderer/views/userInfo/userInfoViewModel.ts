@@ -53,13 +53,13 @@ export class UserInfoViewModel {
      */
     public async callApi(options?: ViewLoadOptions): Promise<void> {
 
-        const oauthFetchOptions = {
+        const oauthGetOptions = {
             cacheKey: FetchCacheKeys.OAuthUserInfo,
             forceReload: options?.forceReload || false,
             causeError: options?.causeError || false,
         };
 
-        const apiFetchOptions = {
+        const apiGetOptions = {
             cacheKey: FetchCacheKeys.ApiUserInfo,
             forceReload: options?.forceReload || false,
             causeError: options?.causeError || false,
@@ -70,8 +70,8 @@ export class UserInfoViewModel {
         try {
 
             // Set up promises for the two sources of user info
-            const oauthUserInfoPromise = this.apiClient.getOAuthUserInfo(oauthFetchOptions);
-            const apiUserInfoPromise = this.apiClient.getApiUserInfo(apiFetchOptions);
+            const oauthUserInfoPromise = this.apiClient.getOAuthUserInfo(oauthGetOptions);
+            const apiUserInfoPromise = this.apiClient.getApiUserInfo(apiGetOptions);
 
             // Run the tasks in parallel
             const results = await Promise.all([oauthUserInfoPromise, apiUserInfoPromise]);

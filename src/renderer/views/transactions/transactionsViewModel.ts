@@ -57,7 +57,7 @@ export class TransactionsViewModel {
      */
     public async callApi(id: string, options: ViewLoadOptions, onForbidden: () => void): Promise<void> {
 
-        const fetchOptions = {
+        const getOptions = {
             cacheKey: `${FetchCacheKeys.Transactions}-${id}`,
             forceReload: options?.forceReload || false,
             causeError: options?.causeError || false,
@@ -68,7 +68,7 @@ export class TransactionsViewModel {
 
         try {
 
-            const result = await this.apiClient.getCompanyTransactions(id, fetchOptions);
+            const result = await this.apiClient.getCompanyTransactions(id, getOptions);
             if (result) {
                 this.snapshot = {data: result, error: null};
             }

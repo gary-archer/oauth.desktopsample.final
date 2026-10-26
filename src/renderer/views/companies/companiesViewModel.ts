@@ -53,7 +53,7 @@ export class CompaniesViewModel {
      */
     public async callApi(options?: ViewLoadOptions): Promise<void> {
 
-        const fetchOptions = {
+        const getOptions = {
             cacheKey: FetchCacheKeys.Companies,
             forceReload: options?.forceReload || false,
             causeError: options?.causeError || false,
@@ -63,7 +63,7 @@ export class CompaniesViewModel {
 
         try {
 
-            const result = await this.apiClient.getCompanyList(fetchOptions);
+            const result = await this.apiClient.getCompanyList(getOptions);
             if (result) {
                 this.snapshot = {companies: result, error: null};
             }

@@ -2,7 +2,7 @@ import {fetch, HeadersInit, RequestInit} from 'undici';
 import {ApiUserInfo} from '../../shared/api/apiUserInfo';
 import {Company} from '../../shared/api/company';
 import {CompanyTransactions} from '../../shared/api/companyTransactions';
-import {FetchOptions} from '../../shared/api/fetchOptions';
+import {GetOptions} from '../../shared/api/getOptions';
 import {OAuthUserInfo} from '../../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../../shared/errors/errorFactory';
 import {Configuration} from '../configuration/configuration';
@@ -12,7 +12,7 @@ import {HttpProxy} from '../utilities/httpProxy';
 /*
  * API operations from the main side of the app
  */
-export class FetchService {
+export class ApiService {
 
     private readonly configuration: Configuration;
     private readonly oauthService: OAuthService;
@@ -31,32 +31,32 @@ export class FetchService {
     /*
      * Get a list of companies
      */
-    public async getCompanyList(options: FetchOptions) : Promise<Company[] | null> {
+    public async getCompanyList(options: GetOptions) : Promise<Company[] | null> {
 
         const url = `${this.configuration.app.apiBaseUrl}/companies`;
-        return await this.callApi('GET', url, options);
+        return await this.callApi('GET', url, null, options.causeError);
     }
 
     /*
      * Get a list of transactions for a single company
      */
-    public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<CompanyTransactions | null> {
+    public async getCompanyTransactions(id: string, options: GetOptions) : Promise<CompanyTransactions | null> {
 
         const url = `${this.configuration.app.apiBaseUrl}/companies/${id}/transactions`;
-        return await this.callApi('GET', url, options);
+        return await this.callApi('GET', url, null, options.causeError);
     }
 
     /*
      * Get user information from the authorization server
      */
-    public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo | null> {
+    public async getOAuthUserInfo(options: GetOptions) : Promise<OAuthUserInfo | null> {
 
         const url = await this.oauthService.getUserInfoEndpoint();
         if (!url) {
             return null;
         }
 
-        const data = await this.callApi('GET', url, options);
+        const data = await this.callApi('GET', url, null, options.causeError);
         if (!data) {
             return null;
         }
@@ -70,10 +70,10 @@ export class FetchService {
     /*
      * Download user attributes the UI needs that are not stored in the authorization server
      */
-    public async getApiUserInfo(options: FetchOptions) : Promise<ApiUserInfo | null> {
+    public async getApiUserInfo(options: GetOptions) : Promise<ApiUserInfo | null> {
 
         const url = `${this.configuration.app.apiBaseUrl}/userinfo`;
-        return await this.callApi('GET', url, options);
+        return await this.callApi('GET', url, null, options.causeError);
     }
 
     /*
@@ -82,8 +82,8 @@ export class FetchService {
     private async callApi(
         method: string,
         url: string,
-        fetchOptions: FetchOptions,
-        dataToSend: any = null): Promise<any> {
+        dataToSend: any,
+        causeError: boolean): Promise<any> {
 
         try {
 
@@ -98,7 +98,7 @@ export class FetchService {
                 'correlation-id': crypto.randomUUID(),
             };
 
-            if (fetchOptions.causeError) {
+            if (causeError) {
                 headers['api-exception-simulation'] = 'FinalApi';
             }
 

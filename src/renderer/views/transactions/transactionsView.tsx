@@ -4,7 +4,7 @@ import {Transaction} from '../../../shared/api/transaction';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
-import {ApiRequestEvent} from '../events/apiRequestEvent';
+import {ApiRequestsEvent} from '../events/apiRequestsEvent';
 import {NavigatedEvent} from '../events/navigatedEvent';
 import {ReloadDataEvent} from '../events/reloadDataEvent';
 import {UIEventNames} from '../events/uiEventNames';
@@ -76,10 +76,13 @@ export function TransactionsView(props: TransactionsViewProps): JSX.Element {
      */
     async function loadData(options: ViewLoadOptions): Promise<void> {
 
-        // Forbidden errors are expected if the user edits the browser URL
-        // Treat the API request as successfully completed and navigate back to the home view
+        // The code sample treats forbidden due to unauthorized browser URL edits as a normal, non-error event
         const onForbidden = () => {
-            model.getEventBus().emit(UIEventNames.ApiRequest, null, new ApiRequestEvent(true));
+
+            // Indicate successful completion of the batch of API requests
+            model.getEventBus().emit(UIEventNames.ApiRequests, null, new ApiRequestsEvent(true));
+
+            // Navigate back to the home view
             props.navigate('/');
         };
 

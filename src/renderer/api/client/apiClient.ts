@@ -2,7 +2,7 @@ import EventBus from 'js-event-bus';
 import {ApiUserInfo} from '../../../shared/api/apiUserInfo';
 import {Company} from '../../../shared/api/company';
 import {CompanyTransactions} from '../../../shared/api/companyTransactions';
-import {FetchOptions} from '../../../shared/api/fetchOptions';
+import {GetOptions} from '../../../shared/api/getOptions';
 import {OAuthUserInfo} from '../../../shared/api/oauthUserInfo';
 import {ErrorFactory} from '../../../shared/errors/errorFactory';
 import {IpcRendererEvents} from '../../ipcRendererEvents';
@@ -31,28 +31,28 @@ export class ApiClient {
     /*
      * Get a list of companies
      */
-    public async getCompanyList(options: FetchOptions) : Promise<Company[] | null> {
+    public async getCompanyList(options: GetOptions) : Promise<Company[] | null> {
         return await this.getDataFromApi(options, () => this.ipcEvents.getCompanyList(options));
     }
 
     /*
      * Get a list of transactions for a single company
      */
-    public async getCompanyTransactions(id: string, options: FetchOptions) : Promise<CompanyTransactions | null> {
+    public async getCompanyTransactions(id: string, options: GetOptions) : Promise<CompanyTransactions | null> {
         return await this.getDataFromApi(options, () => this.ipcEvents.getCompanyTransactions(id, options));
     }
 
     /*
      * Get user information from the authorization server
      */
-    public async getOAuthUserInfo(options: FetchOptions) : Promise<OAuthUserInfo | null> {
+    public async getOAuthUserInfo(options: GetOptions) : Promise<OAuthUserInfo | null> {
         return await this.getDataFromApi(options, () => this.ipcEvents.getOAuthUserInfo(options));
     }
 
     /*
      * Download user attributes the UI needs that are not stored in the authorization server
      */
-    public async getApiUserInfo(options: FetchOptions) : Promise<ApiUserInfo | null> {
+    public async getApiUserInfo(options: GetOptions) : Promise<ApiUserInfo | null> {
         return await this.getDataFromApi(options, () => this.ipcEvents.getApiUserInfo(options));
     }
 
@@ -74,7 +74,7 @@ export class ApiClient {
     /*
      * The entry point to get data deals with caching
      */
-    private async getDataFromApi(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
+    private async getDataFromApi(options: GetOptions, callback: () => Promise<any>): Promise<any> {
 
         // Remove the item from the cache when a reload is requested
         if (options.forceReload) {
@@ -91,12 +91,12 @@ export class ApiClient {
         cacheItem = this.fetchCache.createItem(options.cacheKey);
 
         // Notify the request coordinator that we are sending an API request
-        this.requestCoordinator.onApiRequestStart(options.cacheKey);
+        this.requestCoordinator.onApiRequestStart();
 
         try {
 
             // Get the data and update the cache item for this request
-            const result = await this.getDataFromApiWithTokenRefresh(options, callback);
+            const result = await this.callApiWithTokenRefresh(callback);
             cacheItem.setData(result);
             this.requestCoordinator.onApiRequestEnd();
             return result;
@@ -116,7 +116,7 @@ export class ApiClient {
     /*
      * A standard algorithm for token refresh
      */
-    private async getDataFromApiWithTokenRefresh(options: FetchOptions, callback: () => Promise<any>): Promise<any> {
+    private async callApiWithTokenRefresh(callback: () => Promise<any>): Promise<any> {
 
         try {
 
