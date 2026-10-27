@@ -1,8 +1,7 @@
 import EventBus from 'js-event-bus';
+import {GetOptions} from '../../../shared/api/getOptions';
 import {ErrorFactory} from '../../../shared/errors/errorFactory';
-import {FetchCacheKeys} from '../../api/cache/fetchCacheKeys';
 import {ApiClient} from '../../api/client/apiClient';
-import {ViewLoadOptions} from '../utilities/viewLoadOptions';
 import {CompaniesViewState} from './companiesViewState';
 
 /*
@@ -51,19 +50,13 @@ export class CompaniesViewModel {
     /*
      * Get data from the API and notify the view
      */
-    public async callApi(options?: ViewLoadOptions): Promise<void> {
-
-        const getOptions = {
-            cacheKey: FetchCacheKeys.Companies,
-            forceReload: options?.forceReload || false,
-            causeError: options?.causeError || false,
-        };
+    public async callApi(options: GetOptions): Promise<void> {
 
         this.snapshot = {companies: this.snapshot.companies, error: null};
 
         try {
 
-            const result = await this.apiClient.getCompanyList(getOptions);
+            const result = await this.apiClient.getCompanyList(options);
             if (result) {
                 this.snapshot = {companies: result, error: null};
             }

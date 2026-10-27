@@ -1,5 +1,6 @@
 import {JSX, useEffect, useSyncExternalStore} from 'react';
 import {useLocation, useParams} from 'react-router';
+import {GetOptions} from '../../../shared/api/getOptions';
 import {Transaction} from '../../../shared/api/transaction';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
@@ -9,7 +10,6 @@ import {NavigatedEvent} from '../events/navigatedEvent';
 import {ReloadDataEvent} from '../events/reloadDataEvent';
 import {UIEventNames} from '../events/uiEventNames';
 import {CurrentLocation} from '../utilities/currentLocation';
-import {ViewLoadOptions} from '../utilities/viewLoadOptions';
 import {TransactionsViewProps} from './transactionsViewProps';
 
 /*
@@ -74,7 +74,7 @@ export function TransactionsView(props: TransactionsViewProps): JSX.Element {
     /*
      * Get data from the API; the view model notifies subscribers when done
      */
-    async function loadData(options: ViewLoadOptions): Promise<void> {
+    async function loadData(options: GetOptions): Promise<void> {
 
         // The code sample treats forbidden due to unauthorized browser URL edits as a normal, non-error event
         const onForbidden = () => {

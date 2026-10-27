@@ -1,10 +1,9 @@
 import EventBus from 'js-event-bus';
+import {GetOptions} from '../../../shared/api/getOptions';
 import {UIError} from '../../../shared/errors/uiError';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorFactory} from '../../../shared/errors/errorFactory';
-import {FetchCacheKeys} from '../../api/cache/fetchCacheKeys';
 import {ApiClient} from '../../api/client/apiClient';
-import {ViewLoadOptions} from '../utilities/viewLoadOptions';
 import {TransactionsViewState} from './transactionsViewState';
 
 /*
@@ -55,20 +54,14 @@ export class TransactionsViewModel {
     /*
      * Get data from the API and notify the view
      */
-    public async callApi(id: string, options: ViewLoadOptions, onForbidden: () => void): Promise<void> {
-
-        const getOptions = {
-            cacheKey: `${FetchCacheKeys.Transactions}-${id}`,
-            forceReload: options?.forceReload || false,
-            causeError: options?.causeError || false,
-        };
+    public async callApi(id: string, options: GetOptions, onForbidden: () => void): Promise<void> {
 
         this.snapshot = {data: this.companyId !== id ? null : this.snapshot.data, error: null};
         this.companyId = id;
 
         try {
 
-            const result = await this.apiClient.getCompanyTransactions(id, getOptions);
+            const result = await this.apiClient.getCompanyTransactions(id, options);
             if (result) {
                 this.snapshot = {data: result, error: null};
             }

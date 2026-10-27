@@ -32,28 +32,36 @@ export class ApiClient {
      * Get a list of companies
      */
     public async getCompanyList(options: GetOptions) : Promise<Company[] | null> {
-        return await this.getDataFromApi(options, () => this.ipcEvents.getCompanyList(options));
+
+        const path = '/companies';
+        return await this.getDataFromApi(path, options, () => this.ipcEvents.getCompanyList(options));
     }
 
     /*
      * Get a list of transactions for a single company
      */
     public async getCompanyTransactions(id: string, options: GetOptions) : Promise<CompanyTransactions | null> {
-        return await this.getDataFromApi(options, () => this.ipcEvents.getCompanyTransactions(id, options));
+
+        const path = `/transactions/${id}`;
+        return await this.getDataFromApi(path, options, () => this.ipcEvents.getCompanyTransactions(id, options));
     }
 
     /*
      * Get user information from the authorization server
      */
     public async getOAuthUserInfo(options: GetOptions) : Promise<OAuthUserInfo | null> {
-        return await this.getDataFromApi(options, () => this.ipcEvents.getOAuthUserInfo(options));
+
+        const path = '/oauthuserinfo';
+        return await this.getDataFromApi(path, options, () => this.ipcEvents.getOAuthUserInfo(options));
     }
 
     /*
      * Download user attributes the UI needs that are not stored in the authorization server
      */
     public async getApiUserInfo(options: GetOptions) : Promise<ApiUserInfo | null> {
-        return await this.getDataFromApi(options, () => this.ipcEvents.getApiUserInfo(options));
+
+        const path = '/apiuserinfo';
+        return await this.getDataFromApi(path, options, () => this.ipcEvents.getApiUserInfo(options));
     }
 
     /*
@@ -74,21 +82,21 @@ export class ApiClient {
     /*
      * The entry point to get data deals with caching
      */
-    private async getDataFromApi(options: GetOptions, callback: () => Promise<any>): Promise<any> {
+    private async getDataFromApi(path: string, options: GetOptions, callback: () => Promise<any>): Promise<any> {
 
         // Remove the item from the cache when a reload is requested
         if (options.forceReload) {
-            this.fetchCache.removeItem(options.cacheKey);
+            this.fetchCache.removeItem(path);
         }
 
         // Return existing data from the memory cache when available
-        let cacheItem = this.fetchCache.getItem(options.cacheKey);
+        let cacheItem = this.fetchCache.getItem(path);
         if (cacheItem) {
             return cacheItem.getData();
         }
 
         // Create the cache item with a null value, so that extra strict mode requests return null
-        cacheItem = this.fetchCache.createItem(options.cacheKey);
+        cacheItem = this.fetchCache.createItem(path);
 
         // Notify the request coordinator that we are sending an API request
         this.requestCoordinator.onApiRequestStart();
@@ -104,7 +112,7 @@ export class ApiClient {
         } catch (e: any) {
 
             // Make sure we clear the item from the cache
-            this.fetchCache.removeItem(options.cacheKey);
+            this.fetchCache.removeItem(path);
 
             // Handle the error and notify the request coordinator that the API request failed
             const error = ErrorFactory.fromException(e);

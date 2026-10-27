@@ -1,11 +1,11 @@
 import {JSX, useEffect, useSyncExternalStore} from 'react';
+import {GetOptions} from '../../../shared/api/getOptions';
 import {ErrorCodes} from '../../../shared/errors/errorCodes';
 import {ErrorSummaryView} from '../errors/errorSummaryView';
 import {ErrorSummaryViewProps} from '../errors/errorSummaryViewProps';
 import {NavigatedEvent} from '../events/navigatedEvent';
 import {ReloadDataEvent} from '../events/reloadDataEvent';
 import {UIEventNames} from '../events/uiEventNames';
-import {ViewLoadOptions} from '../utilities/viewLoadOptions';
 import {UserInfoViewProps} from './userInfoViewProps';
 
 /*
@@ -47,9 +47,16 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     async function onNavigate(event: NavigatedEvent): Promise<void> {
 
         if (!event.getIsAuthenticatedView()) {
+
             unloadData();
+
         } else {
-            await loadData();
+
+            const options = {
+                forceReload: false,
+                causeError: false,
+            };
+            await loadData(options);
         }
     }
 
@@ -100,7 +107,7 @@ export function UserInfoView(props: UserInfoViewProps): JSX.Element {
     /*
      * Ask the model to load data; the view model notifies subscribers when done
      */
-    async function loadData(options?: ViewLoadOptions): Promise<void> {
+    async function loadData(options: GetOptions): Promise<void> {
         await model.callApi(options);
     }
 
