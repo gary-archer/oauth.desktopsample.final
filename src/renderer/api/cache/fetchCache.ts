@@ -1,5 +1,3 @@
-import {FetchCacheItem} from './fetchCacheItem';
-
 /*
  * A cache to prevent redundant HTTP requests
  * This is used when the data for a view has already been retrieved
@@ -7,28 +5,20 @@ import {FetchCacheItem} from './fetchCacheItem';
  */
 export class FetchCache {
 
-    // A map of cache keys to API responses
-    private requests: Record<string, FetchCacheItem> = {};
+    // A map of cache keys (URLs) to API responses
+    private requests: Record<string, any> = {};
 
     /*
      * Create an item with no data when an API request is triggered
      */
-    public createItem(key: string): FetchCacheItem {
-
-        let item = this.getItem(key);
-        if (!item) {
-
-            item = new FetchCacheItem();
-            this.requests[key] = item;
-        }
-
-        return item;
+    public setItem(key: string, data: any): void {
+        this.requests[key] = data;
     }
 
     /*
      * Get an item if it exists
      */
-    public getItem(key: string): FetchCacheItem | null {
+    public getItem(key: string): any {
         return this.requests[key];
     }
 
@@ -44,7 +34,7 @@ export class FetchCache {
     }
 
     /*
-     * Clear the cache when logging out
+     * Clear the cache after a logout on another browser tab
      */
     public clearAll(): void {
         this.requests = {};
