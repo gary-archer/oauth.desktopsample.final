@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
@@ -17,8 +17,8 @@
     "@rollup/plugin-terser": "^1.0.0",
     "@tailwindcss/postcss": "^4.3.3",
     "cssnano": "^9.9.0",
-    "postcss": "^8.5.31",
-    "rollup": "^4.64.12",
+    "postcss": "^8.5.32",
+    "rollup": "^4.67.4",
     "rollup-plugin-esbuild": "^6.2.1",
     "rollup-plugin-postcss": "^4.0.2"
   }
