@@ -8,7 +8,8 @@
     "moduleResolution": "Bundler",
     "outDir": "dist",
     "sourceMap": true,
-    "rootDir": "src"
+    "rootDir": "src",
+    "noEmit": true
   },
   "include": [
     "src/renderer.tsx",
