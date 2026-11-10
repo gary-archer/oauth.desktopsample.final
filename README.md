@@ -6,7 +6,8 @@
 
 ## Overview
 
-A cross-platform desktop app using OAuth and OpenID Connect, which aims for the best usability and reliability.
+A cross-platform desktop app, secured using OAuth and OpenID Connect.  
+The app also aims for the best usability and reliability.
 
 ## Views
 
@@ -38,7 +39,7 @@ You can sign in using my AWS Cognito test account:
 ```
 
 The app receives the login response using a private URI scheme redirect URI.\
-Intermediate web pages ensure a user gesture after login and logout, so that responses reliably return to the app.\
+Intermediate web pages ensure a user gesture after login / logout, to reliably return responses to the app.\
 After login you can test all lifecycle operations, including token refresh, expiry events and logout.\
 You can then package a platform-specific executable and test the release build behavior:
 
